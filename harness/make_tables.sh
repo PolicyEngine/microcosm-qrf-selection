@@ -7,7 +7,9 @@ py=(.venv/bin/python -I)
 set -e
 $py harness/aggregate.py
 $py harness/remedies.py
+$py harness/coverage_by_tau.py
 $py harness/scaling.py
+$py harness/draw_means.py
 $py harness/coverage.py
 $py harness/export_public.py --private-dir $private
 $py harness/report_tables.py --source results/public --out results/public/TABLES.md

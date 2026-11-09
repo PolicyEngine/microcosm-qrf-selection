@@ -57,7 +57,7 @@ UK_ABSOLUTE = ("reported_total_mean", "reported_abs_mean")
 RESULT_PREFIXES = ("sel_", "prod_", "own_", "adaptive_", "honest_", "effect",
                    "residual_", "vs_reported", "pinball", "coverage", "material",
                    "selection", "ratio", "honest fills", "min_samples_leaf",
-                   "weighted_leaves")
+                   "weighted_leaves", "mass_effect")
 
 
 def public_targets(df: pd.DataFrame) -> pd.DataFrame:
@@ -120,26 +120,31 @@ def public_inventory(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-def public_remedies(path: Path, targets: pd.DataFrame) -> pd.DataFrame | None:
-    """Remedy rows, without UK targets that entered through production alone.
+def keep_held_out_material(df: pd.DataFrame, targets: pd.DataFrame) -> pd.DataFrame:
+    """Drop UK targets whose held-out selection is not material.
 
-    A target earns remedy runs when its selection is material on held-out donors
-    or on production recipients. On UK rows the second route would reveal a
-    production-recipient result, so a UK target appears only when its held-out
-    selection is material.
+    Remedy runs and the checks built on them cover targets whose selection is
+    material on held-out donors or on production recipients. On UK rows the
+    second route would reveal a production-recipient result, so a UK target
+    appears only when its held-out selection is material.
     """
-    if not path.exists():
-        return None
-    df = public_targets(pd.read_csv(path))
     material = targets.loc[targets["material"].fillna(False).astype(bool), ["key", "target"]]
     held_out = df.merge(material.assign(_held_out=True), on=["key", "target"], how="left")
     keep = ~held_out["key"].str.startswith("uk_") | held_out["_held_out"].eq(True)
     return df.loc[keep.to_numpy()].reset_index(drop=True)
 
 
-def public_scaling(df: pd.DataFrame, counts: pd.DataFrame) -> pd.DataFrame:
-    """The scaling check: held-out percentages, no SPI-donor fit, rare targets blank."""
-    return suppress_rare(df.loc[~df["key"].isin(SPI_DONOR_KEYS)], counts)
+def public_remedies(path: Path, targets: pd.DataFrame) -> pd.DataFrame | None:
+    """Remedy rows, without UK targets that entered through production alone."""
+    if not path.exists():
+        return None
+    return keep_held_out_material(public_targets(pd.read_csv(path)), targets)
+
+
+def public_held_out(df: pd.DataFrame, counts: pd.DataFrame, targets: pd.DataFrame) -> pd.DataFrame:
+    """A held-out check (percentages only): no SPI-donor fit, rare targets blank."""
+    out = keep_held_out_material(df.loc[~df["key"].isin(SPI_DONOR_KEYS)], targets)
+    return suppress_rare(out, counts)
 
 
 def main() -> None:
@@ -161,11 +166,13 @@ def main() -> None:
         rem = public_remedies(ROOT / "results" / name, targets)
         if rem is not None:
             suppress_rare(rem, counts).to_csv(PUBLIC / name, index=False)
-    scaling = ROOT / "results/scaling.csv"
-    if scaling.exists():
-        public_scaling(pd.read_csv(scaling), counts).to_csv(PUBLIC / "scaling.csv", index=False)
+    for name in ("scaling.csv", "draw_means.csv", "coverage_by_tau.csv"):
+        check = ROOT / "results" / name
+        if check.exists():
+            public_held_out(pd.read_csv(check), counts, targets).to_csv(PUBLIC / name, index=False)
     for name in ("all_targets.csv", "coverage.csv", "inventory_totals.csv", "remedies.csv",
-                 "remedies_compact.csv", "reproduction.csv", "scaling.csv"):
+                 "remedies_compact.csv", "reproduction.csv", "scaling.csv", "draw_means.csv",
+                 "coverage_by_tau.csv"):
         src = ROOT / "results" / name
         if src.exists():
             shutil.copy2(src, args.private_dir / name)

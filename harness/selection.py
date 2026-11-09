@@ -250,8 +250,59 @@ def quantile_metrics(A, y_sorted, y_eval, w_eval, taus=TAUS):
     return out
 
 
+def forest_quantiles(values, weights, q):
+    """quantile-forest 1.4.2's weighted quantiles at ``q`` (linear interpolation).
+
+    ``calc_weighted_quantile`` in ``_quantile_forest_fast.pyx``: ``values``
+    ascending, ``weights`` positive (bootstrap multiplicities for an adaptive
+    pool), ``q`` ascending.
+    """
+    values = np.asarray(values, dtype=np.float64)
+    weights = np.asarray(weights, dtype=np.float64)
+    q = np.asarray(q, dtype=np.float64)
+    n = len(values)
+    if n == 1:
+        return np.full(len(q), values[0])
+    cum = np.cumsum(weights)
+    f = cum[-1] + 1.0 - 2.0
+    p = q * f + 1.0
+    floor = np.maximum(np.searchsorted(cum, p, side="right") - 1, 0)
+    ceil = np.minimum(floor + 1, n - 1)
+    v_floor, v_ceil = values[floor], values[ceil]
+    with np.errstate(divide="ignore", invalid="ignore"):
+        p_floor = np.minimum(q, (cum[floor] - 1.0) / f)
+        p_ceil = np.maximum(q, (cum[ceil] - 1.0) / f)
+        p_ceil = p_floor + (p_ceil - p_floor) / weights[ceil]
+        frac = (q - p_floor) / (p_ceil - p_floor)
+    out = v_floor + np.clip(np.nan_to_num(frac, nan=0.0), 0.0, 1.0) * (v_ceil - v_floor)
+    out = np.where(q >= p_ceil, v_ceil, out)
+    out = np.where(v_floor == v_ceil, v_floor, out)
+    return np.where(floor >= n - 1, values[n - 1], out)
+
+
+def expected_draws(A, levels, grid):
+    """Each row's expected value under Microcosm's ``draw``, given its pool.
+
+    ``draw`` reads a row's value at a uniform quantile off the straight lines
+    joining the forest's predictions on a quantile grid, holding the end values
+    beyond the grid (``_interp_rows``, ``qrf.py:232``). The expectation is that
+    piecewise-linear curve's integral over 0 to 1. A row with no mass gets NaN.
+    """
+    grid = np.asarray(grid, dtype=np.float64)
+    A = A.tocsr()
+    out = np.full(A.shape[0], np.nan)
+    for i in range(A.shape[0]):
+        lo, hi = A.indptr[i], A.indptr[i + 1]
+        if lo == hi:
+            continue
+        curve = forest_quantiles(levels[A.indices[lo:hi]], A.data[lo:hi], grid)
+        out[i] = (grid[0] * curve[0] + (1.0 - grid[-1]) * curve[-1]
+                  + float(np.sum(np.diff(grid) * 0.5 * (curve[1:] + curve[:-1]))))
+    return out
+
+
 def fill_forest(model, X_fill, mass, y_fill, X_rec, scale_rec, rows_to_donor, n_donor,
-                *, eval_set=None, eval_keep=None, chunk=2000):
+                *, eval_set=None, eval_keep=None, chunk=2000, draw_grid=None):
     """Direct totals (and catchment identity) for one filled forest, both modes.
 
     Each mode's result carries ``est``, the per-recipient estimates (NaN where
@@ -259,7 +310,8 @@ def fill_forest(model, X_fill, mass, y_fill, X_rec, scale_rec, rows_to_donor, n_
     and does not store them. ``eval_set`` = (X_eval, y_eval, w_eval) adds
     quantile metrics per mode over the rows ``eval_keep[mode]`` selects
     (default: every row with filling mass, returned as ``eval_keep``, so that
-    every fill and variant of a half can score the same rows).
+    every fill and variant of a half can score the same rows). ``draw_grid``
+    adds ``draw_est``, the pooled mode's expected draw per recipient.
     """
     nodes = [e.tree_.node_count for e in model.estimators_]
     lf, lr = model.apply(X_fill), model.apply(X_rec)
@@ -272,6 +324,9 @@ def fill_forest(model, X_fill, mass, y_fill, X_rec, scale_rec, rows_to_donor, n_
         ok = np.isfinite(est)
         direct = float((est[ok] * scale_rec[ok]).sum())
         res = {"total": direct, "n_empty": int((~ok).sum()), "est": est}
+        if draw_grid is not None and mode == "pooled":
+            res["draw_est"] = expected_draws(
+                sparse_pool(lf, mass, lr, nodes, mode, level_of, len(y_sorted)), y_sorted, draw_grid)
         if ok.all():
             c_rows = fill_catchments(lf, mass, lr, scale_rec, nodes, mode)
             via_catchment = float((c_rows * y_fill).sum())
@@ -317,6 +372,20 @@ def recipient_totals(model, X_fill, mass, y_fill, X_rec, scale_rec):
     return out
 
 
+def honest_resample(weights, n_trees, rng):
+    """Integer masses for an honest half, built as production builds in-bag ones.
+
+    One weighted bootstrap of the half (``_weighted_bootstrap``, ``qrf.py:189``),
+    then each tree's own uniform bootstrap of that resample (the forest's
+    ``bootstrap=True``). Returns the resample's row indices into the half and
+    the counts per tree, shape ``(n_trees, len(weights))``.
+    """
+    n = len(weights)
+    picks = qd.weighted_bootstrap(n, np.asarray(weights, dtype=np.float64), rng)
+    counts = np.vstack([np.bincount(rng.integers(0, n, n), minlength=n) for _ in range(n_trees)])
+    return picks, counts
+
+
 def complete_honest(adaptive_est, honest_est, scale):
     """Add to the honest total the recipients no honest donor reaches.
 
@@ -339,6 +408,13 @@ def complete_honest(adaptive_est, honest_est, scale):
 # --------------------------------------------------------------------------
 
 
+def _completed_total(est, fallback, scale):
+    """A fill's total, each recipient it does not reach keeping ``fallback``."""
+    ok = np.isfinite(est)
+    added, _ = complete_honest(fallback, est, scale)
+    return float((est[ok] * scale[ok]).sum()) + added
+
+
 def halves(n, groups, rng):
     """Boolean grow-half mask, whole groups together when ``groups`` is given."""
     if groups is None:
@@ -348,7 +424,7 @@ def halves(n, groups, rng):
 
 
 def same_tree_sign(X_s, y_s, w_s, X_rec, scale, *, seed, n_estimators, variants=(1,),
-                   groups=None, eval_set=None, full_record=None, extra=None):
+                   groups=None, eval_set=None, full_record=None, extra=None, draw_grid=None):
     """Adaptive and honest totals of half-sample forests for one sign.
 
     Seeds follow ``microcosm_cps.analyse_fold``: halves from
@@ -358,6 +434,15 @@ def same_tree_sign(X_s, y_s, w_s, X_rec, scale, *, seed, n_estimators, variants=
     own Microcosm forest, rebuilt from its seed and bootstrap rows.
     ``extra`` maps a name to (X, scale) for further recipient sets (the
     production recipients); the same forests and fills give their totals.
+    ``draw_grid`` (Microcosm's quantile grid) adds ``draw_totals``, for the
+    first variant: the expected total under production's draw of the adaptive
+    fill and of an honest fill with integer masses (``honest``, from
+    ``honest_resample``, seeds ``[seed, 17, k]``), that honest fill's pooled mean
+    (``honest_mean``), and the survey-weight honest fill's expected draw
+    (``honest_weight``). quantile-forest's quantile formula reads masses as
+    frequencies, so the curve depends on their scale; bootstrap counts are the
+    masses it sees in production, and a fractional survey-weight mass has no
+    such scale. A recipient a fill does not reach keeps the adaptive estimate.
     """
     n = len(y_s)
     extra = extra or {}
@@ -371,6 +456,7 @@ def same_tree_sign(X_s, y_s, w_s, X_rec, scale, *, seed, n_estimators, variants=
     identity = 0.0
     empty = {f: {m: 0 for m in MODES} for f in FILLS}
     gap_share = {m: 0.0 for m in MODES}
+    draw_totals = {f: 0.0 for f in ("adaptive", "honest", "honest_mean", "honest_weight")}
     half = halves(n, groups, np.random.default_rng([seed, 31]))
     for k, grow_mask in enumerate((half, ~half)):
         idx_g, idx_f = np.flatnonzero(grow_mask), np.flatnonzero(~grow_mask)
@@ -384,13 +470,27 @@ def same_tree_sign(X_s, y_s, w_s, X_rec, scale, *, seed, n_estimators, variants=
             cnt = qd.bootstrap_counts(model, len(pick_g))
             mass_f = np.broadcast_to(w_s[idx_f] / w_s[idx_f].mean(),
                                      (model.n_estimators, len(idx_f)))
+            grid_v = draw_grid if v == variants[0] else None
             honest = fill_forest(model, X_s[idx_f], mass_f, y_s[idx_f], X_rec, scale,
-                                 idx_f, n, eval_set=eval_set, eval_keep=eval_keep)
+                                 idx_f, n, eval_set=eval_set, eval_keep=eval_keep, draw_grid=grid_v)
             if eval_set is not None and eval_keep is None:
                 eval_keep = {m: honest[m]["eval_keep"] for m in MODES}
             adaptive = fill_forest(model, X_s[pick_g], cnt, y_s[pick_g], X_rec, scale,
-                                   pick_g, n, eval_set=eval_set, eval_keep=eval_keep)
+                                   pick_g, n, eval_set=eval_set, eval_keep=eval_keep,
+                                   draw_grid=grid_v)
             fills = {"adaptive": adaptive, "honest": honest}
+            if grid_v is not None:
+                picks, counts = honest_resample(w_s[idx_f], model.n_estimators,
+                                                np.random.default_rng([seed, 17, k]))
+                boot = fill_forest(model, X_s[idx_f[picks]], counts, y_s[idx_f[picks]],
+                                   X_rec, scale, idx_f[picks], n, draw_grid=grid_v)["pooled"]
+                a_mean, a_draw = adaptive["pooled"]["est"], adaptive["pooled"]["draw_est"]
+                for name, (est, fallback) in {"adaptive": (a_draw, a_draw),
+                                              "honest": (boot["draw_est"], a_draw),
+                                              "honest_mean": (boot["est"], a_mean),
+                                              "honest_weight": (honest["pooled"]["draw_est"],
+                                                                a_draw)}.items():
+                    draw_totals[name] += 0.5 * _completed_total(est, fallback, scale)
             for m in MODES:
                 added, share = complete_honest(adaptive[m]["est"], honest[m]["est"], scale)
                 honest[m]["total"] += added
@@ -424,6 +524,8 @@ def same_tree_sign(X_s, y_s, w_s, X_rec, scale, *, seed, n_estimators, variants=
     out["identity_max_rel_err"] = identity
     out["max_empty_recipients"] = empty
     out["max_empty_adaptive_share"] = gap_share
+    if draw_grid is not None:
+        out["draw_totals"] = draw_totals
     if full_record is not None:
         # The pooled-mean cross-check calls quantile-forest's own ``predict``,
         # which reads stored leaf samples; it runs where storing them is cheap.
@@ -432,8 +534,11 @@ def same_tree_sign(X_s, y_s, w_s, X_rec, scale, *, seed, n_estimators, variants=
                      full_record.seed, full_record.n_estimators, store_leaf_samples=check)
         cnt = qd.bootstrap_counts(model, n)
         full = fill_forest(model, X_s[full_record.selected], cnt, y_s[full_record.selected],
-                           X_rec, scale, full_record.selected, n)
+                           X_rec, scale, full_record.selected, n, draw_grid=draw_grid)
         out["own_forest"] = {m: full[m]["total"] for m in MODES}
+        if draw_grid is not None:
+            ok = np.isfinite(full["pooled"]["draw_est"])
+            out["own_forest_draw_total"] = float((full["pooled"]["draw_est"][ok] * scale[ok]).sum())
         out["own_forest_pool_mean_check"] = (float(
             (scale * np.asarray(model.predict(X_rec, quantiles="mean"))).sum())
             if check else None)
@@ -484,7 +589,7 @@ def sign_probability(gate, X, sign):
 
 def analyse_fold(table, predictors, targets, weights, *, train, rec, seed, n_estimators,
                  groups=None, variants=(1,), quantiles=False, only=None, zero_atol=None,
-                 max_samples_leaf=None, log=print, production=None):
+                 max_samples_leaf=None, log=print, production=None, draw_grid=None):
     """One fold: capture Microcosm's fit on ``train``; test every target on ``rec``.
 
     ``production`` = (table, weights): the stage's production recipients, with
@@ -607,7 +712,8 @@ def analyse_fold(table, predictors, targets, weights, *, train, rec, seed, n_est
                     res.update(same_tree_sign(
                         X_s, y_s, w_s, X_rec, scale, seed=seed, n_estimators=n_estimators,
                         variants=variants, groups=None if g_train is None else g_train[mask],
-                        eval_set=eval_set, full_record=record, extra=extra))
+                        eval_set=eval_set, full_record=record, extra=extra,
+                        draw_grid=draw_grid))
                 except RuntimeError as exc:
                     # Too few donors of this sign to split into two non-empty
                     # halves: the test cannot run, and the target is reported
@@ -653,7 +759,7 @@ def thin_train(train, groups, fraction, seed, fold):
 def run_stage(name, table, predictors, targets, weights, *, seed, n_estimators, out_path,
               groups=None, folds=5, variants=(1,), quantiles=False, only=None,
               fold_ids=None, fold_seeds=None, max_samples_leaf=None, meta=None,
-              production=None, train_fraction=1.0):
+              production=None, train_fraction=1.0, draw_grid=None):
     """All folds of one stage; resumable (finished folds are kept).
 
     ``train_fraction`` below 1 thins each fold's training donors first. The
@@ -682,7 +788,8 @@ def run_stage(name, table, predictors, targets, weights, *, seed, n_estimators, 
                            rec=fold_ids == k, seed=fold_seed, n_estimators=n_estimators,
                            groups=groups, variants=variants, quantiles=quantiles, only=only,
                            max_samples_leaf=max_samples_leaf,
-                           log=lambda s: print(s, flush=True), production=production)
+                           log=lambda s: print(s, flush=True), production=production,
+                           draw_grid=draw_grid)
         res["fold"] = k
         res["seed"] = fold_seed
         doc["folds"].append(res)

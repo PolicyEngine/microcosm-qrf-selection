@@ -308,6 +308,31 @@ def scaling_summary(scaling: pd.DataFrame) -> str:
     return md(pd.DataFrame([row]))
 
 
+def draw_summary_row(draws: pd.DataFrame) -> dict[str, int | float]:
+    """Selection in production's expected draws beside selection in pooled means."""
+    df = draws.loc[pd.to_numeric(draws["sel_boot_mean"], errors="coerce").notna()]
+    report, mean, draw = (pd.to_numeric(df[c]) for c in ("sel_mean", "sel_boot_mean", "sel_draw"))
+    own, shift = pd.to_numeric(df["own_draw_gap"]), (draw - mean).abs()
+    mass = pd.to_numeric(df["mass_effect"]).abs()
+    return {"fits": df["key"].nunique(), "targets": len(df),
+            "same sign": int((np.sign(mean) == np.sign(draw)).sum()),
+            "median selection in means": float(mean.abs().median()),
+            "median selection at survey-weight mass": float(report.abs().median()),
+            "median selection in draws": float(draw.abs().median()),
+            "median shift": float(shift.median()),
+            "largest shift": float(shift.max()),
+            "median draw gap": float(own.median()),
+            "smallest draw gap": float(own.min()),
+            "largest draw gap": float(own.max()),
+            "median mass effect": float(mass.median()),
+            "largest mass effect": float(mass.max())}
+
+
+def draw_summary(draws: pd.DataFrame) -> str:
+    return md(pd.DataFrame([{k: f"{v:.2f}" if isinstance(v, float) else v
+                             for k, v in draw_summary_row(draws).items()}]))
+
+
 def reproduction_table() -> str:
     """What each capture checked against production, from the capture records."""
     res = ROOT / "results"
@@ -486,6 +511,17 @@ def main() -> None:
                   "Ratio of selection after thinning each fold's training donors to half, over "
                   "selection as run, held-out donors.\n",
                   scaling_summary(pd.read_csv(scaling)), ""]
+    draws = args.source / "draw_means.csv"
+    if draws.exists():
+        parts += ["## Selection in production's expected draws\n",
+                  "Held-out donors, % of the held-out reported total. The honest fill here takes "
+                  "integer masses built as production builds in-bag ones. Selection in means "
+                  "compares each fill's pooled mean; selection in draws compares each fill's "
+                  "expected draw on Microcosm's quantile grid. The shift is the absolute difference "
+                  "between them; the draw gap is the fold's full forest's expected draw over its "
+                  "pooled mean, minus one; the mass effect is the absolute change in selection in "
+                  "means from giving the honest fill integer masses instead of survey-weight "
+                  "masses.\n", draw_summary(pd.read_csv(draws)), ""]
     parts += ["## Reproduction checks (US)\n", reproduction_table(), ""]
     if args.private:
         parts += ["## UK release rebuilds against the build\n", uk_rebuild_checks(), ""]

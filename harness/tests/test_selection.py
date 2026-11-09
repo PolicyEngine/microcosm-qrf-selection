@@ -404,3 +404,118 @@ def test_quantile_metrics_ignore_how_rows_are_grouped():
     for tau in map(str, S.TAUS):
         pooled = (a["pinball"][tau] * w[:m].sum() + b["pinball"][tau] * w[m:].sum()) / w.sum()
         assert whole["pinball"][tau] == pytest.approx(pooled, rel=1e-12)
+
+
+def _no_signal_differences(monkeypatch, *, blind, seeds=40, n=1200, trees=15):
+    """Relative adaptive minus honest over seeds, with y independent of X (lognormal)."""
+    real_grow = S.grow
+
+    def grow_on_noise(X, y, seed, n_estimators, min_samples_leaf=1, store_leaf_samples=False):
+        z = np.random.default_rng([int(seed), 99]).normal(size=len(y))
+        return real_grow(X, z, seed, n_estimators, min_samples_leaf, store_leaf_samples)
+
+    if blind:
+        monkeypatch.setattr(S, "grow", grow_on_noise)
+    out = []
+    for seed in range(seeds):
+        rng = np.random.default_rng([seed, 5])
+        X = rng.normal(size=(n, 3))
+        y = np.exp(rng.normal(size=n))
+        w = rng.uniform(1, 4, size=n)
+        X_rec = rng.normal(size=(600, 3))
+        res = S.same_tree_sign(X, y, w, X_rec, np.ones(600), seed=seed, n_estimators=trees)
+        totals = res["variants"]["1"]["totals"]
+        out.append(totals["adaptive"]["pooled"] / totals["honest"]["pooled"] - 1)
+    return np.array(out)
+
+
+def test_no_selection_when_the_splits_never_see_the_filling_values(monkeypatch):
+    # Trees grown on noise, independent of y and of the predictors: the catchments
+    # do not depend on y, so adaptive and honest fills have the same expected total.
+    diffs = _no_signal_differences(monkeypatch, blind=True)
+    assert abs(diffs.mean()) < 3 * diffs.std(ddof=1) / np.sqrt(len(diffs))
+
+
+def test_selection_appears_when_the_splits_see_the_filling_values(monkeypatch):
+    # The same data with trees grown on y itself: no signal to find, yet the
+    # splits have chosen their cuts on the values that fill the leaves.
+    diffs = _no_signal_differences(monkeypatch, blind=False)
+    assert abs(diffs.mean()) > 3 * diffs.std(ddof=1) / np.sqrt(len(diffs))
+
+
+@settings(max_examples=25, deadline=None)
+@given(seed=st.integers(0, 10_000), top=st.sampled_from([None, 4]))
+def test_forest_quantiles_and_draw_means_match_quantile_forest(seed, top):
+    rng = np.random.default_rng(seed)
+    n = 200
+    X = rng.normal(size=(n, 2))
+    y = np.round(np.exp(X[:, 0] + rng.normal(size=n)), 1)
+    if top is not None:
+        y = np.minimum(np.round(y), top)
+    if len(np.unique(y)) < 2:
+        return
+    model = S.grow(X, y, seed, 12, 2, store_leaf_samples=True)
+    cnt = S.qd.bootstrap_counts(model, n)
+    Xr = rng.normal(size=(15, 2))
+    grid = S._qrf_module()._QUANTILE_GRID
+    predicted = np.asarray(model.predict(Xr, quantiles=list(grid)))
+    nodes = [e.tree_.node_count for e in model.estimators_]
+    levels, level_of = np.unique(y, return_inverse=True)
+    A = S.sparse_pool(model.apply(X), cnt, model.apply(Xr), nodes, "pooled", level_of, len(levels))
+    A = A.tocsr()
+    for i in range(Xr.shape[0]):
+        lo, hi = A.indptr[i], A.indptr[i + 1]
+        mine = S.forest_quantiles(levels[A.indices[lo:hi]], A.data[lo:hi], grid)
+        assert mine == pytest.approx(predicted[i], rel=1e-9, abs=1e-9)
+    expected = S.expected_draws(A, levels, grid)
+    by_hand = [grid[0] * c[0] + (1 - grid[-1]) * c[-1]
+               + np.trapezoid(c, grid) for c in predicted]
+    assert expected == pytest.approx(np.array(by_hand), rel=1e-9, abs=1e-9)
+
+
+def test_quantile_formula_depends_on_the_scale_of_fractional_masses():
+    # The formula reads masses as frequencies, so scaling them moves the curve.
+    values = np.array([1.0, 2.0, 3.0, 100.0])
+    grid = np.linspace(0, 1, 201)
+    assert np.all(S.forest_quantiles(values, np.full(4, 0.2), grid) == 100.0)  # total mass below one
+    area = lambda m: np.trapezoid(S.forest_quantiles(values, m, grid), grid)
+    assert area(np.full(4, 1000.0)) == pytest.approx(values.mean(), rel=1e-2)
+    assert abs(area(np.full(4, 0.4)) - values.mean()) > 0.2 * values.mean()
+
+
+def test_honest_resample_gives_integer_masses_of_the_bootstrap_shape():
+    weights = np.array([1.0, 0.0, 3.0, 4.0, 2.0])
+    picks, counts = S.honest_resample(weights, 7, np.random.default_rng(0))
+    assert picks.shape == (5,) and counts.shape == (7, 5)
+    assert 1 not in picks  # a zero-weight row never enters the resample
+    assert np.issubdtype(counts.dtype, np.integer)
+    assert (counts.sum(axis=1) == 5).all()
+
+
+def test_draw_totals_carry_every_honest_reading():
+    rng = np.random.default_rng(3)
+    X = rng.normal(size=(400, 2))
+    y = np.exp(rng.normal(size=400))
+    w = rng.uniform(1, 3, size=400)
+    X_rec = rng.normal(size=(50, 2))
+    res = S.same_tree_sign(X, y, w, X_rec, np.ones(50), seed=1, n_estimators=8,
+                           draw_grid=np.linspace(1e-6, 1 - 1e-6, 51))
+    assert set(res["draw_totals"]) == {"adaptive", "honest", "honest_mean", "honest_weight"}
+    assert all(np.isfinite(v) for v in res["draw_totals"].values())
+
+
+def test_forest_quantiles_match_the_real_formula_on_any_masses():
+    # Differential: quantile-forest's own function, on integer and fractional
+    # masses, including pools with less than one unit of mass.
+    from quantile_forest._quantile_forest_fast import calc_weighted_quantile
+
+    rng = np.random.default_rng(0)
+    grid = np.linspace(0, 1, 41)
+    for _ in range(3000):
+        n = int(rng.integers(1, 8))
+        values = np.sort(rng.lognormal(size=n))
+        weights = [rng.integers(1, 6, size=n).astype(float), rng.uniform(0.01, 3, size=n),
+                   rng.uniform(0.01, 0.2, size=n), rng.uniform(5, 500, size=n)][int(rng.integers(4))]
+        real = np.array(calc_weighted_quantile(list(values), list(weights), list(grid),
+                                               b"linear", True))
+        assert S.forest_quantiles(values, weights, grid) == pytest.approx(real, rel=1e-9, abs=1e-9)

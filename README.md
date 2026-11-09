@@ -17,8 +17,11 @@ reported target, and the CSVs beside it hold the numbers.
 | `harness/selection.py` | The same-tree test: grow Microcosm-style forests, fill them adaptively and honestly, compare |
 | `harness/run_selection.py`, `run_*.sh` | Run the test on one captured production fit or a batch |
 | `harness/capture*.py`, `puf_chain_twin.py`, `prodpath.py`, `groups.py`, `uc_groups.py`, `validate_cps.py` | Rebuild each production fit's donors, settings and recipients from the pinned inputs |
-| `harness/aggregate.py`, `remedies.py`, `remedies_plan.py`, `scaling.py`, `coverage.py`, `inventory_totals.py`, `resummarize.py`, `empty_check.py`, `make_tables.sh` | Summaries of the runs |
+| `harness/aggregate.py`, `remedies.py`, `remedies_plan.py`, `coverage_by_tau.py`, `scaling.py`, `draw_means.py`, `coverage.py`, `inventory_totals.py`, `resummarize.py`, `empty_check.py`, `make_tables.sh` | Summaries of the runs |
 | `harness/compare_runs.py`, `rerun_check.sh` | Compare two runs number by number; rerun finished fits under the current harness |
+| `harness/known_answer.py` | The test on synthetic data where the answer is known |
+| `harness/run_draw_means.sh` | Selection in production's expected draws on 13 fits |
+| `harness/report_rows.py` | Generates every table row `REPORT.md` quotes from the public files; `harness/tests/test_report_numbers.py` checks them |
 | `harness/export_public.py`, `report_tables.py` | Write the public result files and their tables |
 | `harness/vendor/` | Byte-identical helpers from [qrf-moop-shortfall](https://github.com/PolicyEngine/qrf-moop-shortfall) at dba3940 (MIT) |
 | `harness/tests/` | Tests: harness invariants on synthetic data, and rules the public files must meet |
