@@ -68,6 +68,16 @@ def _median_nonzero(doc: dict, target: str) -> float:
     return float(np.median(counts)) if counts else float("nan")
 
 
+def _gap_share(doc: dict, target: str, production: bool) -> float:
+    """Largest share (%) of the adaptive total held by recipients no honest donor reached."""
+    out = []
+    for f in doc["folds"]:
+        for s in (f["targets"].get(target) or {}).get("signs", {}).values():
+            rec = ((s.get("extra") or {}).get("production") or {}) if production else s
+            out.append(float((rec.get("max_empty_adaptive_share") or {}).get("pooled", 0.0)))
+    return 100 * max(out) if out else float("nan")
+
+
 def table() -> pd.DataFrame:
     rows = []
     for key in keys():
@@ -78,6 +88,8 @@ def table() -> pd.DataFrame:
         s.insert(0, "key", key)
         s["n_folds_done"] = len(doc["folds"])
         s["n_train_nonzero"] = s["target"].map(lambda t: _median_nonzero(doc, t))
+        s["honest_gap_share"] = s["target"].map(lambda t: _gap_share(doc, t, False))
+        s["prod_honest_gap_share"] = s["target"].map(lambda t: _gap_share(doc, t, True))
         rows.append(s)
     df = pd.concat(rows, ignore_index=True)
     ran = df["regime"] != "not_run"

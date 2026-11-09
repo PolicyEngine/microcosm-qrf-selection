@@ -23,7 +23,10 @@ on CPS MOOP, for every target and every sign forest:
 3. Weight each held-out recipient's estimate by its survey weight times the
    fold gate's probability of that sign, and sum over signs. Adaptive minus
    honest isolates what the splits' sight of the donors' own values does to
-   the total.
+   the total. A recipient no honest donor reaches in any tree keeps its
+   adaptive estimate (``complete_honest``), so the difference runs over the
+   recipients both fills reach; ``max_empty_adaptive_share`` records how much
+   of the adaptive total such recipients hold.
 
 Remedy variants share each half's bootstrap rows and ``random_state``: leaves
 of at least 5 or 20 samples (``min_samples_leaf``), per-tree leaf weights
@@ -205,10 +208,17 @@ def sparse_pool(leaves_fill, mass, leaves_rec, node_counts, mode, order):
 
 
 def quantile_metrics(A, y_sorted, y_eval, w_eval, taus=TAUS):
-    """Pinball loss and coverage of each row's pooled conditional quantiles."""
+    """Pinball loss and coverage of each row's pooled conditional quantiles.
+
+    A row with no filling mass has no quantiles and scores nothing.
+    """
     counts = np.diff(A.indptr)
     if (counts == 0).any():
-        raise RuntimeError("a recipient has no filling mass")
+        keep = counts > 0
+        A, y_eval, w_eval = A[keep], y_eval[keep], w_eval[keep]
+        counts = np.diff(A.indptr)
+    if A.shape[0] == 0:
+        return None
     rs = np.asarray(A.sum(axis=1)).ravel()
     data = A.data / np.repeat(rs, counts)
     cum = np.cumsum(data)
@@ -228,10 +238,15 @@ def quantile_metrics(A, y_sorted, y_eval, w_eval, taus=TAUS):
 
 
 def fill_forest(model, X_fill, mass, y_fill, X_rec, scale_rec, rows_to_donor, n_donor,
-                *, eval_set=None, chunk=2000):
+                *, eval_set=None, eval_keep=None, chunk=2000):
     """Direct totals (and catchment identity) for one filled forest, both modes.
 
-    ``eval_set`` = (X_eval, y_eval, w_eval) adds quantile metrics per mode.
+    Each mode's result carries ``est``, the per-recipient estimates (NaN where
+    no tree holds filling mass for the recipient); ``same_tree_sign`` uses them
+    and does not store them. ``eval_set`` = (X_eval, y_eval, w_eval) adds
+    quantile metrics per mode over the rows ``eval_keep[mode]`` selects
+    (default: every row with filling mass, returned as ``eval_keep``, so that
+    every fill and variant of a half can score the same rows).
     """
     nodes = [e.tree_.node_count for e in model.estimators_]
     lf, lr = model.apply(X_fill), model.apply(X_rec)
@@ -244,7 +259,7 @@ def fill_forest(model, X_fill, mass, y_fill, X_rec, scale_rec, rows_to_donor, n_
             est = recipient_estimates(lf, mass, y_fill, lr, nodes, mode)
         ok = np.isfinite(est)
         direct = float((est[ok] * scale_rec[ok]).sum())
-        res = {"total": direct, "n_empty": int((~ok).sum())}
+        res = {"total": direct, "n_empty": int((~ok).sum()), "est": est}
         if ok.all():
             c_rows = fill_catchments(lf, mass, lr, scale_rec, nodes, mode)
             via_catchment = float((c_rows * y_fill).sum())
@@ -264,10 +279,9 @@ def fill_forest(model, X_fill, mass, y_fill, X_rec, scale_rec, rows_to_donor, n_
                 parts.append((A, start, stop))
             # Stack chunks back into one CSR for the metric pass.
             A_all = sp.vstack([p[0] for p in parts]).tocsr()
-            try:
-                res["quantile"] = quantile_metrics(A_all, y_sorted, y_eval, w_eval)
-            except RuntimeError:
-                res["quantile"] = None  # an evaluation row with no filling mass
+            keep = np.diff(A_all.indptr) > 0 if eval_keep is None else eval_keep[mode]
+            res["eval_keep"] = keep
+            res["quantile"] = quantile_metrics(A_all[keep], y_sorted, y_eval[keep], w_eval[keep])
         out[mode] = res
     return out
 
@@ -275,8 +289,8 @@ def fill_forest(model, X_fill, mass, y_fill, X_rec, scale_rec, rows_to_donor, n_
 def recipient_totals(model, X_fill, mass, y_fill, X_rec, scale_rec):
     """Direct totals over another recipient set (no catchments, no quantiles).
 
-    A recipient whose leaves hold no filling mass in any tree gets no
-    estimate; ``n_empty`` counts them (zero in every run reported).
+    A recipient whose leaves hold no filling mass in any tree gets no estimate
+    (NaN in ``est_<mode>``); ``n_empty_<mode>`` counts them.
     """
     nodes = [e.tree_.node_count for e in model.estimators_]
     lf, lr = model.apply(X_fill), model.apply(X_rec)
@@ -287,7 +301,25 @@ def recipient_totals(model, X_fill, mass, y_fill, X_rec, scale_rec):
         ok = np.isfinite(est)
         out[mode] = float((est[ok] * scale_rec[ok]).sum())
         out[f"n_empty_{mode}"] = int((~ok).sum())
+        out[f"est_{mode}"] = est
     return out
+
+
+def complete_honest(adaptive_est, honest_est, scale):
+    """Add to the honest total the recipients no honest donor reaches.
+
+    A recipient whose leaves hold no honest donor in any tree has no honest
+    estimate. It keeps its adaptive estimate, so it adds nothing to adaptive
+    minus honest: the difference runs over the recipients both fills reach.
+    Returns the amount to add to the honest total and those recipients' share
+    of the adaptive total (absolute values).
+    """
+    gap = ~np.isfinite(honest_est)
+    if not gap.any():
+        return 0.0, 0.0
+    added = adaptive_est[gap] * scale[gap]
+    denom = float(np.abs(adaptive_est * scale).sum())
+    return float(added.sum()), (float(np.abs(added).sum()) / denom if denom else 0.0)
 
 
 # --------------------------------------------------------------------------
@@ -322,9 +354,11 @@ def same_tree_sign(X_s, y_s, w_s, X_rec, scale, *, seed, n_estimators, variants=
     xtot = {e: {v: {f: {m: 0.0 for m in MODES} for f in FILLS} for v in variants}
             for e in extra}
     xempty = {e: 0 for e in extra}
+    xgap = {e: {m: 0.0 for m in MODES} for e in extra}
     qfit = {v: {f: {m: [] for m in MODES} for f in FILLS} for v in variants}
     identity = 0.0
     empty = {f: {m: 0 for m in MODES} for f in FILLS}
+    gap_share = {m: 0.0 for m in MODES}
     half = halves(n, groups, np.random.default_rng([seed, 31]))
     for k, grow_mask in enumerate((half, ~half)):
         idx_g, idx_f = np.flatnonzero(grow_mask), np.flatnonzero(~grow_mask)
@@ -332,17 +366,23 @@ def same_tree_sign(X_s, y_s, w_s, X_rec, scale, *, seed, n_estimators, variants=
             raise RuntimeError("an empty half; too few donors for the same-tree test")
         pick_g = idx_g[qd.weighted_bootstrap(len(idx_g), w_s[idx_g],
                                              np.random.default_rng([seed, 7, k]))]
+        eval_keep = None  # rows the first variant's honest fill reaches; every fill scores them
         for v in variants:
             model = grow(X_s[pick_g], y_s[pick_g], seed, n_estimators, v)
             cnt = qd.bootstrap_counts(model, len(pick_g))
             mass_f = np.broadcast_to(w_s[idx_f] / w_s[idx_f].mean(),
                                      (model.n_estimators, len(idx_f)))
-            fills = {
-                "adaptive": fill_forest(model, X_s[pick_g], cnt, y_s[pick_g], X_rec, scale,
-                                        pick_g, n, eval_set=eval_set),
-                "honest": fill_forest(model, X_s[idx_f], mass_f, y_s[idx_f], X_rec, scale,
-                                      idx_f, n, eval_set=eval_set),
-            }
+            honest = fill_forest(model, X_s[idx_f], mass_f, y_s[idx_f], X_rec, scale,
+                                 idx_f, n, eval_set=eval_set, eval_keep=eval_keep)
+            if eval_set is not None and eval_keep is None:
+                eval_keep = {m: honest[m]["eval_keep"] for m in MODES}
+            adaptive = fill_forest(model, X_s[pick_g], cnt, y_s[pick_g], X_rec, scale,
+                                   pick_g, n, eval_set=eval_set, eval_keep=eval_keep)
+            fills = {"adaptive": adaptive, "honest": honest}
+            for m in MODES:
+                added, share = complete_honest(adaptive[m]["est"], honest[m]["est"], scale)
+                honest[m]["total"] += added
+                gap_share[m] = max(gap_share[m], share)
             for f in FILLS:
                 for m in MODES:
                     totals[v][f][m] += 0.5 * fills[f][m]["total"]
@@ -351,12 +391,18 @@ def same_tree_sign(X_s, y_s, w_s, X_rec, scale, *, seed, n_estimators, variants=
                     if eval_set is not None:
                         qfit[v][f][m].append(fills[f][m]["quantile"])
             for e, (X_e, scale_e) in extra.items():
-                for f, (X_f, mass, y_f) in (("adaptive", (X_s[pick_g], cnt, y_s[pick_g])),
-                                            ("honest", (X_s[idx_f], mass_f, y_s[idx_f]))):
-                    tot = recipient_totals(model, X_f, mass, y_f, X_e, scale_e)
-                    for m in MODES:
-                        xtot[e][v][f][m] += 0.5 * tot[m]
-                        xempty[e] = max(xempty[e], tot[f"n_empty_{m}"])
+                tots = {"adaptive": recipient_totals(model, X_s[pick_g], cnt, y_s[pick_g],
+                                                     X_e, scale_e),
+                        "honest": recipient_totals(model, X_s[idx_f], mass_f, y_s[idx_f],
+                                                   X_e, scale_e)}
+                for m in MODES:
+                    added, share = complete_honest(tots["adaptive"][f"est_{m}"],
+                                                   tots["honest"][f"est_{m}"], scale_e)
+                    tots["honest"][m] += added
+                    xgap[e][m] = max(xgap[e][m], share)
+                    for f in FILLS:
+                        xtot[e][v][f][m] += 0.5 * tots[f][m]
+                        xempty[e] = max(xempty[e], tots[f][f"n_empty_{m}"])
     for v in variants:
         rec = {"totals": totals[v]}
         if eval_set is not None:
@@ -365,6 +411,7 @@ def same_tree_sign(X_s, y_s, w_s, X_rec, scale, *, seed, n_estimators, variants=
         out["variants"][str(v)] = rec
     out["identity_max_rel_err"] = identity
     out["max_empty_recipients"] = empty
+    out["max_empty_adaptive_share"] = gap_share
     if full_record is not None:
         # The pooled-mean cross-check calls quantile-forest's own ``predict``,
         # which reads stored leaf samples; it runs where storing them is cheap.
@@ -387,7 +434,8 @@ def same_tree_sign(X_s, y_s, w_s, X_rec, scale, *, seed, n_estimators, variants=
         out["extra"] = {e: {"variants": {str(v): {"totals": xtot[e][v]} for v in variants},
                             "own_forest": {m: own_extra[e][m] for m in MODES}
                             if e in own_extra else None,
-                            "max_empty": xempty[e]} for e in extra}
+                            "max_empty": xempty[e],
+                            "max_empty_adaptive_share": xgap[e]} for e in extra}
     return out
 
 

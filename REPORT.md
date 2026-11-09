@@ -3,7 +3,11 @@
 Status: draft of 2026-11-09, before independent review. Runs in progress:
 the 44 PUF tax-detail targets outside the 20 largest, the PUF chain's
 production side on ASEC-twin recipients, the NTS bus-use band, and remedies
-beyond the LCFS chain. The sections below say where each one lands.
+beyond the LCFS chain. The harness also changed on 2026-11-09: a recipient no
+honest donor reaches in any tree used to fall out of the honest total, which
+inflated adaptive minus honest. It now keeps its adaptive estimate, and every
+fit with such a recipient (the PUF chain, the SCF fits and a few others) is
+running again. The numbers below for those fits predate the fix.
 
 This public version leaves out every number derived from the HMRC Survey of
 Personal Incomes (SPI) public use tape and every UK production-recipient

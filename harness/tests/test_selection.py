@@ -25,6 +25,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+import scipy.sparse as sp
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
@@ -297,3 +298,51 @@ def test_chain_fit_matches_fit():
             for ta, tb in zip(fa.model.estimators_, fb.model.estimators_):
                 np.testing.assert_array_equal(ta.tree_.threshold, tb.tree_.threshold)
                 np.testing.assert_array_equal(ta.tree_.value, tb.tree_.value)
+
+
+def test_recipients_no_honest_donor_reaches_add_nothing():
+    """A recipient without an honest estimate keeps its adaptive estimate."""
+    adaptive = np.array([10.0, 20.0, 30.0, 40.0])
+    honest = np.array([8.0, np.nan, 33.0, np.nan])
+    scale = np.array([1.0, 2.0, 3.0, 4.0])
+    added, share = S.complete_honest(adaptive, honest, scale)
+    assert added == 2.0 * 20.0 + 4.0 * 40.0
+    assert share == pytest.approx((40.0 + 160.0) / (10.0 + 40.0 + 90.0 + 160.0))
+    ok = np.isfinite(honest)
+    honest_total = float((honest[ok] * scale[ok]).sum()) + added
+    adaptive_total = float((adaptive * scale).sum())
+    assert adaptive_total - honest_total == pytest.approx(
+        float(((adaptive - honest)[ok] * scale[ok]).sum()))
+
+
+def test_complete_honest_changes_nothing_when_every_recipient_is_reached():
+    adaptive, honest, scale = np.array([1.0, 2.0]), np.array([1.5, 2.5]), np.array([3.0, 4.0])
+    assert S.complete_honest(adaptive, honest, scale) == (0.0, 0.0)
+
+
+def test_quantile_metrics_skip_rows_without_mass():
+    A = sp.csr_matrix(np.array([[1.0, 1.0, 0.0], [0.0, 0.0, 0.0], [0.0, 2.0, 2.0]]))
+    y_sorted = np.array([1.0, 2.0, 3.0])
+    w = np.array([1.0, 5.0, 1.0])
+    with_gap = S.quantile_metrics(A, y_sorted, np.array([1.5, 9.0, 2.5]), w)
+    without = S.quantile_metrics(A[[0, 2]], y_sorted, np.array([1.5, 2.5]), w[[0, 2]])
+    assert with_gap == without
+
+
+def test_empty_recipients_never_inflate_selection():
+    """With a sparse honest half, the forest's own record reports what it completed."""
+    rng = np.random.default_rng(3)
+    n = 60
+    X = rng.normal(size=(n, 3))
+    y = np.exp(X[:, 0]) + 1.0
+    w = np.ones(n)
+    X_rec = np.vstack([X, X * 8.0])  # recipients far out land in sparse leaves
+    scale = np.ones(len(X_rec))
+    out = S.same_tree_sign(X, y, w, X_rec, scale, seed=5, n_estimators=3, variants=(1,))
+    totals = out["variants"]["1"]["totals"]
+    assert np.isfinite(totals["honest"]["pooled"])
+    assert np.isfinite(totals["adaptive"]["pooled"])
+    share = out["max_empty_adaptive_share"]["pooled"]
+    assert 0.0 <= share <= 1.0
+    if out["max_empty_recipients"]["honest"]["pooled"]:
+        assert share > 0.0
