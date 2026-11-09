@@ -28,8 +28,8 @@ repository holds those numbers.
   SIPP bank accounts +5.6%), and deflates UK property wealth (WAS
   non-residential property −9.9%, other property −10.2%) and UK vehicle counts
   (−9.0%).
-- Honest fills usually land nearer the truth on held-out data. Against the
-  held-out donors' reported totals, honest fills beat adaptive fills on 114
+- Honest fills usually land nearer the held-out totals. Against the held-out
+  donors' reported totals, honest fills beat adaptive fills on 114
   of the 161 targets with nonzero selection. The median absolute gap falls
   from 4.3% (adaptive) to 1.8% (honest); the forests as production fits them
   land 3.7% away.
@@ -148,8 +148,8 @@ The forests take the stage's own number of trees (100 on every stage, 32 on
 the PUF chain, which `harness/capture_us_puf_chain.py` reads from
 production's configuration).
 
-The brief's threshold calls a target material when its selection exceeds its
-fold standard error and 0.5% of the total. For rare targets the held-out
+This analysis calls a target material when its selection exceeds its fold
+standard error and 0.5% of the total. For rare targets the held-out
 reported total rests on few donors, so the table also gives adaptive over
 honest minus one, a ratio of two model totals that small folds do not blow up.
 
@@ -389,7 +389,7 @@ selection on ordinary returns.
 Microcosm's build already pulls part of the LCFS over-draw back. It levels
 each COICOP division whose drawn spend per frame household, over the donor's
 mean per donor household, exceeds the divisions' shared ratio, down to that
-ratio (`division_excess_factors`, `lcfs_consumption.py:2124-2175` at
+ratio (`division_excess_factors`, `lcfs_consumption.py:2121-2177` at
 67ee2ddf3; rule constants at lines 460-473; microcosm#1278). Other things
 equal, positive selection raises that ratio. The private addendum compares
 the build's ratios with these selection numbers; the two rank the divisions
@@ -598,8 +598,8 @@ target of the same joint QRF and conditions on the dropped first target.
   own-value predictors (section 4).
 - **Standard errors and the threshold.** The five folds' training sets
   overlap, so a fold standard error understates sampling uncertainty. The
-  brief's threshold works as a materiality screen, not a test: with no
-  selection at all, a five-fold mean clears one standard error about a third
+  materiality threshold screens and does not test: with no selection at all
+  and independent folds, a five-fold mean clears one standard error about 37%
   of the time, before the 0.5% floor.
 - **Before levelling and calibration.** These numbers measure what the
   forests impute. Later build steps (the LCFS division levelling in section 4
