@@ -624,18 +624,37 @@ def analyse_fold(table, predictors, targets, weights, *, train, rec, seed, n_est
     return out
 
 
+def thin_train(train, groups, fraction, seed, fold):
+    """Keep a random share of a fold's training rows, whole groups together."""
+    rng = np.random.default_rng([int(seed), 77, int(fold)])
+    idx = np.flatnonzero(train)
+    if groups is None:
+        keep = rng.random(len(idx)) < fraction
+    else:
+        codes, inverse = np.unique(np.asarray(groups)[idx], return_inverse=True)
+        keep = (rng.random(len(codes)) < fraction)[inverse]
+    out = np.zeros(len(train), dtype=bool)
+    out[idx[keep]] = True
+    return out
+
+
 def run_stage(name, table, predictors, targets, weights, *, seed, n_estimators, out_path,
               groups=None, folds=5, variants=(1,), quantiles=False, only=None,
               fold_ids=None, fold_seeds=None, max_samples_leaf=None, meta=None,
-              production=None):
-    """All folds of one stage; resumable (finished folds are kept)."""
+              production=None, train_fraction=1.0):
+    """All folds of one stage; resumable (finished folds are kept).
+
+    ``train_fraction`` below 1 thins each fold's training donors first. The
+    scaling check uses it to see how selection moves with the donor count.
+    """
     out_path = Path(out_path)
     if out_path.exists():
         doc = json.loads(out_path.read_text())
     else:
         doc = {"stage": name, "meta": meta or {}, "predictors": list(predictors),
                "targets": list(targets), "seed": int(seed), "n_estimators": int(n_estimators),
-               "variants": list(variants), "quantiles": bool(quantiles), "folds": []}
+               "variants": list(variants), "quantiles": bool(quantiles),
+               "train_fraction": float(train_fraction), "folds": []}
     done = {f["fold"] for f in doc["folds"]}
     if fold_ids is None:
         fold_ids = assign_folds(len(table), groups, folds, seed)
@@ -644,7 +663,10 @@ def run_stage(name, table, predictors, targets, weights, *, seed, n_estimators, 
             continue
         print(f"{name}: fold {k}", flush=True)
         fold_seed = int(seed) + k if fold_seeds is None else int(fold_seeds[k])
-        res = analyse_fold(table, predictors, targets, weights, train=fold_ids != k,
+        train = fold_ids != k
+        if train_fraction < 1.0:
+            train = thin_train(train, groups, train_fraction, seed, k)
+        res = analyse_fold(table, predictors, targets, weights, train=train,
                            rec=fold_ids == k, seed=fold_seed, n_estimators=n_estimators,
                            groups=groups, variants=variants, quantiles=quantiles, only=only,
                            max_samples_leaf=max_samples_leaf,

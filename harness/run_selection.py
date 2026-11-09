@@ -58,6 +58,8 @@ def main() -> None:
     ap.add_argument("--only", nargs="+")
     ap.add_argument("--no-production", action="store_true")
     ap.add_argument("--tag", default="")
+    ap.add_argument("--train-fraction", type=float, default=1.0,
+                    help="thin each fold's training donors to this share first")
     args = ap.parse_args()
 
     table, meta, groups, prod = load_inputs(args.key, not args.no_production)
@@ -75,7 +77,8 @@ def main() -> None:
         seed=int(meta["seed"]), n_estimators=int(meta["n_estimators"]), out_path=out,
         groups=groups, folds=args.folds, variants=tuple(args.variants),
         quantiles=args.quantiles, only=args.only,
-        max_samples_leaf=meta.get("max_samples_leaf"), meta=run_meta, production=prod)
+        max_samples_leaf=meta.get("max_samples_leaf"), meta=run_meta, production=prod,
+        train_fraction=args.train_fraction)
     for v in args.variants:
         summary = S.summarize(doc, variant=str(v))
         summary.to_csv(out.with_name(out.stem + f"_v{v}.csv"), index=False)

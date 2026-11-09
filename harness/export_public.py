@@ -56,7 +56,8 @@ SUPPRESS_BELOW = 50
 UK_ABSOLUTE = ("reported_total_mean", "reported_abs_mean")
 RESULT_PREFIXES = ("sel_", "prod_", "own_", "adaptive_", "honest_", "effect",
                    "residual_", "vs_reported", "pinball", "coverage", "material",
-                   "selection", "honest fills", "min_samples_leaf", "weighted_leaves")
+                   "selection", "ratio", "honest fills", "min_samples_leaf",
+                   "weighted_leaves")
 
 
 def public_targets(df: pd.DataFrame) -> pd.DataFrame:
@@ -136,6 +137,11 @@ def public_remedies(path: Path, targets: pd.DataFrame) -> pd.DataFrame | None:
     return df.loc[keep.to_numpy()].reset_index(drop=True)
 
 
+def public_scaling(df: pd.DataFrame, counts: pd.DataFrame) -> pd.DataFrame:
+    """The scaling check: held-out percentages, no SPI-donor fit, rare targets blank."""
+    return suppress_rare(df.loc[~df["key"].isin(SPI_DONOR_KEYS)], counts)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--private-dir", type=Path,
@@ -155,8 +161,11 @@ def main() -> None:
         rem = public_remedies(ROOT / "results" / name, targets)
         if rem is not None:
             suppress_rare(rem, counts).to_csv(PUBLIC / name, index=False)
+    scaling = ROOT / "results/scaling.csv"
+    if scaling.exists():
+        public_scaling(pd.read_csv(scaling), counts).to_csv(PUBLIC / "scaling.csv", index=False)
     for name in ("all_targets.csv", "coverage.csv", "inventory_totals.csv", "remedies.csv",
-                 "remedies_compact.csv", "reproduction.csv"):
+                 "remedies_compact.csv", "reproduction.csv", "scaling.csv"):
         src = ROOT / "results" / name
         if src.exists():
             shutil.copy2(src, args.private_dir / name)

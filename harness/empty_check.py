@@ -1,8 +1,9 @@
 """Count recipients an honest or adaptive fill left with no donor in any tree.
 
-``fill_forest`` drops such a recipient from a total. Every run records the most
-any half-forest left empty, per sign, fill and mode. Prints each target with a
-nonzero count and the largest count overall.
+``complete_honest`` in ``selection.py`` gives such a recipient its adaptive
+estimate, so it adds nothing to the difference. Every run records the most any
+half-forest left empty, per sign, fill and mode. This prints each nonzero count
+and the largest counts overall.
 
 Usage: python empty_check.py
 """
@@ -22,9 +23,6 @@ def walk():
         for fold in doc.get("folds", []):
             for target, t in fold["targets"].items():
                 for sign, s in (t.get("signs") or {}).items():
-                    for variant, v in s.get("variants", {}).items():
-                        # max_empty_recipients: {fill: {mode: n}}, on the sign or variant
-                        pass
                     empty = s.get("max_empty_recipients")
                     if isinstance(empty, dict):
                         for fill, modes in empty.items():

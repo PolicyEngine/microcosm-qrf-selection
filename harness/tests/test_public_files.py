@@ -25,10 +25,11 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 PUBLIC = ROOT / "results/public"
 SPI_DONOR_KEYS = {"uk_spi_stage1", "uk_property_finance"}
-RESULT_FILES = ("all_targets.csv", "remedies.csv", "remedies_compact.csv")
+RESULT_FILES = ("all_targets.csv", "remedies.csv", "remedies_compact.csv", "scaling.csv")
 RESULT_PREFIXES = ("sel_", "prod_", "own_", "adaptive_", "honest_", "effect",
                    "residual_", "vs_reported", "pinball", "coverage", "material",
-                   "selection", "honest fills", "min_samples_leaf", "weighted_leaves")
+                   "selection", "ratio", "honest fills", "min_samples_leaf",
+                   "weighted_leaves")
 SUPPRESS_BELOW = 50
 
 
