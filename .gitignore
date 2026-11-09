@@ -1,0 +1,21 @@
+# Whitelist: the repository carries code, the report and the curated public
+# results only. Survey records (donors/), releases (data/), the private
+# calibration artifact and build record (prereqs/), Microcosm and populace
+# checkouts (code/, src/), run logs, raw run outputs (results/*, which carry
+# production-side totals over SPI-derived rows) and anything private stay out.
+/*
+!/.gitignore
+!/.github/
+!/LICENSE
+!/README.md
+!/requirements.txt
+!/REPORT.md
+!/harness/
+!/inventory/
+!/results/
+/results/*
+!/results/public/
+__pycache__/
+*.pyc
+.hypothesis/
+.pytest_cache/
