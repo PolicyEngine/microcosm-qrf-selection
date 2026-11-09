@@ -1,0 +1,299 @@
+country,stage,output,weighted_total,status,key,target,reason,code
+us,puf_tax_detail,employment_income_before_lsr,10736284142568.36,measured,puf_chain,employment_income_before_lsr,,
+us,puf_tax_detail,self_employment_income_before_lsr,468842531609.09814,measured,puf_chain,self_employment_income_before_lsr,,
+us,puf_tax_detail,taxable_interest_income,321144484133.02344,measured,puf_chain,taxable_interest_income,,
+us,puf_tax_detail,qualified_dividend_income,345492224815.876,measured,puf_chain,qualified_dividend_income,,
+us,puf_tax_detail,non_qualified_dividend_income,111968750392.95348,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,tax_exempt_interest_income,61414352879.89343,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,short_term_capital_gains,148025495287.9989,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,long_term_capital_gains_before_response,1087380894679.1176,measured,puf_chain,long_term_capital_gains_before_response,,
+us,puf_tax_detail,long_term_capital_gains_on_collectibles,32766601076.17552,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,unrecaptured_section_1250_gain,36635348470.74101,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,non_sch_d_capital_gains,10156076274.76812,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,taxable_private_pension_income,1001719885830.4568,measured,puf_chain,taxable_private_pension_income,,
+us,puf_tax_detail,taxable_ira_distributions,485127965151.2007,measured,puf_chain,taxable_ira_distributions,,
+us,puf_tax_detail,social_security_retirement,1110832749823.3547,measured,puf_chain,social_security_retirement,,
+us,puf_tax_detail,social_security_disability,147139843799.23166,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,social_security_dependents,45653627391.50229,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,social_security_survivors,161214722211.3794,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,alimony_income,20360388554.684433,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,alimony_expense,15417825011.26576,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,salt_refund_income,61423540517.61931,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,charitable_cash_donations,276015761005.21704,measured,puf_chain,charitable_cash_donations,,
+us,puf_tax_detail,charitable_non_cash_donations,83759915757.8406,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,real_estate_taxes,243423636508.34897,measured,puf_chain,real_estate_taxes,,
+us,puf_tax_detail,home_mortgage_interest,371504037664.472,measured,puf_chain,home_mortgage_interest,,
+us,puf_tax_detail,investment_interest_expense,50092639535.051414,derived,puf_chain/home_mortgage_interest,,"Not a target of the base chain (64 targets at 6d06410bb, none of them this). In the release it is nonzero on exactly the rows where home_mortgage_interest is (14,107 of 14,108 persons) and its share of the two clusters at a few values (1.5%, 4.0%, 6.0%, 6.8%), as a per-AGI-band split of one interest draw gives. It inherits that draw's selection. The split step was not traced end to end.",populace cae8640 us_runtime/puf_interest_components.py:164-185 (split_us_puf_e19200_by_agi_band)
+us,puf_tax_detail,investment_income_elected_form_4952,8035355959.522122,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,student_loan_interest,11252168901.538343,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,educator_expense,918805479.059482,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,qualified_tuition_expenses,4400689960.718023,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,casualty_loss,1499294397.0815911,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,domestic_production_ald,35451606332.57192,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,unreimbursed_business_employee_expenses,165677041406.48236,measured,puf_chain,unreimbursed_business_employee_expenses,,
+us,puf_tax_detail,traditional_ira_contributions_desired,15222101619.158508,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,self_employed_pension_contributions_desired,1372682200.3430414,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,rental_income,92275811667.53314,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,estate_income,46752946543.78868,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,farm_income,11937188659.91053,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,farm_operations_income,28228347906.24134,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,farm_rent_income,3748351351.611574,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,miscellaneous_income,-1348184041.146536,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,partnership_income,1068487153846.8304,measured,puf_chain,partnership_income,,
+us,puf_tax_detail,s_corp_income,0.0,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,partnership_self_employment_net_earnings,75514470339.55211,measured,puf_chain,partnership_self_employment_net_earnings,,
+us,puf_tax_detail,first_home_mortgage_balance,9507355601017.072,measured,puf_chain,first_home_mortgage_balance,,
+us,puf_tax_detail,second_home_mortgage_balance,0.0,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,first_home_mortgage_interest,387453859675.80743,measured,puf_chain,first_home_mortgage_interest,,
+us,puf_tax_detail,second_home_mortgage_interest,0.0,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,first_home_mortgage_origination_year,58986639471.67664,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,second_home_mortgage_origination_year,0.0,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,health_savings_account_ald,11463497353.751198,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,estate_income_would_be_qualified,256194783.75680935,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,farm_operations_income_would_be_qualified,336021501.24357,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,farm_rent_income_would_be_qualified,306092697.6451397,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,partnership_s_corp_income_would_be_qualified,326668523.74895,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,rental_income_would_be_qualified,281676469.1940527,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,self_employment_income_would_be_qualified,318415597.78401554,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,sstb_self_employment_income_would_be_qualified,8105194.828294589,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,business_is_sstb,8171686.953404422,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,qualified_bdc_income,149386362.40318263,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,qualified_reit_and_ptp_income,9258897131.625486,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,sstb_self_employment_income_before_lsr,368067900210.8731,measured,puf_chain,sstb_self_employment_income_before_lsr,,
+us,puf_tax_detail,sstb_unadjusted_basis_qualified_property,1372293544301.582,measured,puf_chain,sstb_unadjusted_basis_qualified_property,,
+us,puf_tax_detail,sstb_w2_wages_from_qualified_business,156476289786.1134,unclassified,,,no measurement and no recorded reason,
+us,puf_tax_detail,unadjusted_basis_qualified_property,2714916315047.3726,measured,puf_chain,unadjusted_basis_qualified_property,,
+us,puf_tax_detail,w2_wages_from_qualified_business,294147041341.90063,measured,puf_chain,w2_wages_from_qualified_business,,
+us,retirement_contributions,traditional_401k_contributions_desired,287784807398.4741,measured,puf_support_retirement_contributions,traditional_401k_contributions_desired,,
+us,retirement_contributions,roth_401k_contributions_desired,50725654703.43413,measured,puf_support_retirement_contributions,roth_401k_contributions_desired,,
+us,retirement_contributions,traditional_ira_contributions_desired,15222101619.158508,measured,puf_support_retirement_contributions,traditional_ira_contributions_desired,,
+us,retirement_contributions,roth_ira_contributions_desired,23074919316.942062,measured,puf_support_retirement_contributions,roth_ira_contributions_desired,,
+us,retirement_contributions,self_employed_pension_contributions_desired,1372682200.3430414,measured,puf_support_retirement_contributions,self_employed_pension_contributions_desired,,
+us,childcare_inputs,spm_unit_pre_subsidy_childcare_expenses,77847523235.1895,measured,puf_support_childcare,spm_unit_pre_subsidy_childcare_expenses,,
+us,energy_subsidy,spm_unit_energy_subsidy,4178614545.0673776,measured,puf_support_energy_subsidy,spm_unit_energy_subsidy,,
+us,child_support_inputs,child_support_received,16477157905.26066,measured,puf_support_child_support,child_support_received,,
+us,child_support_inputs,child_support_expense,9715275484.278963,measured,puf_support_child_support,child_support_expense,,
+us,disability_benefits_input,disability_benefits,20736375009.24885,measured,puf_support_disability_benefits,disability_benefits,,
+us,workers_compensation_input,workers_compensation,4826582116.41667,measured,puf_support_workers_compensation,workers_compensation,,
+us,weeks_unemployed_input,weeks_unemployed,148139388.07987484,measured,puf_support_weeks_unemployed,weeks_unemployed,,
+us,scf_wealth,net_worth,169728095484550.38,measured,scf_net_worth,net_worth,,
+us,scf_wealth,scf_primary_residence_value,,not_produced,,,Declared in the stage manifest only: no runtime file at cae8640 names it and the release lacks it.,populace cae8640 populace-build/src/populace/build/us/source_stages.json
+us,scf_wealth,scf_retirement_assets,,not_produced,,,Declared in the stage manifest only: no runtime file at cae8640 names it and the release lacks it.,populace cae8640 populace-build/src/populace/build/us/source_stages.json
+us,scf_wealth,scf_business_equity,,not_produced,,,Declared in the stage manifest only: no runtime file at cae8640 names it and the release lacks it.,populace cae8640 populace-build/src/populace/build/us/source_stages.json
+us,scf_wealth,scf_mortgage_debt,,not_produced,,,Declared in the stage manifest only: no runtime file at cae8640 names it and the release lacks it.,populace cae8640 populace-build/src/populace/build/us/source_stages.json
+us,scf_wealth,scf_other_residential_real_estate,,not_produced,,,Declared in the stage manifest only: no runtime file at cae8640 names it and the release lacks it.,populace cae8640 populace-build/src/populace/build/us/source_stages.json
+us,scf_wealth,scf_nonresidential_real_estate_equity,,not_produced,,,Declared in the stage manifest only: no runtime file at cae8640 names it and the release lacks it.,populace cae8640 populace-build/src/populace/build/us/source_stages.json
+us,scf_wealth,scf_other_residential_debt,,not_produced,,,Declared in the stage manifest only: no runtime file at cae8640 names it and the release lacks it.,populace cae8640 populace-build/src/populace/build/us/source_stages.json
+us,scf_wealth,scf_other_financial_assets,,not_produced,,,Declared in the stage manifest only: no runtime file at cae8640 names it and the release lacks it.,populace cae8640 populace-build/src/populace/build/us/source_stages.json
+us,scf_wealth,scf_other_nonfinancial_assets,,not_produced,,,Declared in the stage manifest only: no runtime file at cae8640 names it and the release lacks it.,populace cae8640 populace-build/src/populace/build/us/source_stages.json
+us,scf_wealth,scf_other_managed_assets,,not_produced,,,Declared in the stage manifest only: no runtime file at cae8640 names it and the release lacks it.,populace cae8640 populace-build/src/populace/build/us/source_stages.json
+us,scf_wealth,scf_cash_value_life_insurance,,not_produced,,,Declared in the stage manifest only: no runtime file at cae8640 names it and the release lacks it.,populace cae8640 populace-build/src/populace/build/us/source_stages.json
+us,scf_wealth,scf_certificates_of_deposit,,not_produced,,,Declared in the stage manifest only: no runtime file at cae8640 names it and the release lacks it.,populace cae8640 populace-build/src/populace/build/us/source_stages.json
+us,scf_wealth,scf_savings_bonds,,not_produced,,,Declared in the stage manifest only: no runtime file at cae8640 names it and the release lacks it.,populace cae8640 populace-build/src/populace/build/us/source_stages.json
+us,scf_wealth,scf_credit_card_debt,,not_produced,,,Declared in the stage manifest only: no runtime file at cae8640 names it and the release lacks it.,populace cae8640 populace-build/src/populace/build/us/source_stages.json
+us,scf_wealth,scf_student_loan_debt,,not_produced,,,Declared in the stage manifest only: no runtime file at cae8640 names it and the release lacks it.,populace cae8640 populace-build/src/populace/build/us/source_stages.json
+us,scf_wealth,scf_vehicle_installment_debt,,not_produced,,,Declared in the stage manifest only: no runtime file at cae8640 names it and the release lacks it.,populace cae8640 populace-build/src/populace/build/us/source_stages.json
+us,scf_wealth,scf_other_installment_debt,,not_produced,,,Declared in the stage manifest only: no runtime file at cae8640 names it and the release lacks it.,populace cae8640 populace-build/src/populace/build/us/source_stages.json
+us,scf_wealth,scf_other_lines_of_credit,,not_produced,,,Declared in the stage manifest only: no runtime file at cae8640 names it and the release lacks it.,populace cae8640 populace-build/src/populace/build/us/source_stages.json
+us,scf_wealth,scf_other_debt,,not_produced,,,Declared in the stage manifest only: no runtime file at cae8640 names it and the release lacks it.,populace cae8640 populace-build/src/populace/build/us/source_stages.json
+us,scf_wealth,auto_loan_balance,1304982171687.2466,measured,scf_auto_loans,auto_loan_balance,,
+us,scf_wealth,auto_loan_interest,70588542769.77603,measured,scf_auto_loans,auto_loan_interest,,
+us,scf_wealth,qualified_passenger_vehicle_loan_interest,12159846759.509422,derived,scf_auto_loans/auto_loan_interest,,"auto_loan_interest times one expected-share factor (6 million loans over weighted households with positive interest, capped at one).","populace cae8640 us_runtime/scf_auto_loans.py:15-24, 520-525"
+us,scf_wealth,bank_account_assets,7165632918709.912,measured,scf_financial_assets,bank_account_assets,,
+us,scf_wealth,bond_assets,726703996328.0251,measured,scf_financial_assets,bond_assets,,
+us,scf_wealth,stock_assets,17539996243619.338,measured,scf_financial_assets,stock_assets,,
+us,ssi_disability_criteria,meets_ssi_disability_criteria,17341716.800176404,binary_zero,,,"Boolean QRF target: the positive forest holds only the value 1, so every fill returns 1 and adaptive equals honest.",harness/tests/test_selection.py::test_binary_target_has_no_selection
+us,sipp_head_start,takes_up_head_start_if_eligible,608205.4170853742,measured,sipp_head_start,takes_up_head_start_if_eligible,,
+us,sipp_tips,tip_income,34291578019.42001,measured,sipp_tips,tip_income,,
+us,sipp_tips,treasury_tipped_occupation_code,11847079713.347507,not_qrf,,,Carried from the ASEC occupation code PEIOOCC.,"populace cae8640 us_runtime/sipp_tips.py:22-23, 374"
+us,org_wages,cps_race,536701311.373684,not_qrf,,,ASEC demographic or occupation field carried through.,"populace cae8640 us_runtime/org_wages.py:4-10, 539-548"
+us,org_wages,is_hispanic,63774200.96893245,not_qrf,,,ASEC demographic or occupation field carried through.,"populace cae8640 us_runtime/org_wages.py:4-10, 539-548"
+us,org_wages,detailed_occupation_recode,10445474263.34548,not_qrf,,,ASEC demographic or occupation field carried through.,"populace cae8640 us_runtime/org_wages.py:4-10, 539-548"
+us,org_wages,has_never_worked,94923163.010423,not_qrf,,,ASEC demographic or occupation field carried through.,"populace cae8640 us_runtime/org_wages.py:4-10, 539-548"
+us,org_wages,is_military,800790.204949178,not_qrf,,,ASEC demographic or occupation field carried through.,"populace cae8640 us_runtime/org_wages.py:4-10, 539-548"
+us,org_wages,is_computer_scientist,5305059.394392647,not_qrf,,,ASEC demographic or occupation field carried through.,"populace cae8640 us_runtime/org_wages.py:4-10, 539-548"
+us,org_wages,is_executive_administrative_professional,93296280.2314527,not_qrf,,,ASEC demographic or occupation field carried through.,"populace cae8640 us_runtime/org_wages.py:4-10, 539-548"
+us,org_wages,is_farmer_fisher,1400316.9820685252,not_qrf,,,ASEC demographic or occupation field carried through.,"populace cae8640 us_runtime/org_wages.py:4-10, 539-548"
+us,org_wages,hourly_wage,5778580319.368563,measured,org_wages,hourly_wage,,
+us,org_wages,is_paid_hourly,88716319.7877891,measured,org_wages,is_paid_hourly,,
+us,org_wages,is_union_member_or_covered,18848268.246540025,not_qrf,,,Assigned at random from published 2024 BLS state rates.,"populace cae8640 us_runtime/org_wages.py:252, 682"
+us,org_wages,fsla_overtime_premium,149225902000.53937,derived,org_wages/hourly_wage,,Computed from the imputed hourly wage and the hours signals.,"populace cae8640 us_runtime/org_wages.py:14-31, 943"
+us,prior_year_income,employment_income_last_year,,not_rebuilt,,,"First target of the stage's joint QRF; formula-owned in PolicyEngine-US, so the stage drops it and the release lacks it. Its donor is the adjacent-year ASEC join on the base pool, which the release does not carry.","populace 6d06410bb us_runtime/prior_year_income.py:10-18, 118"
+us,prior_year_income,self_employment_income_last_year,430460144536.79346,not_rebuilt,,,"Second target of the same joint QRF; it conditions on the dropped first target, so the fit cannot be rebuilt from the release.","populace 6d06410bb us_runtime/prior_year_income.py:10-18, 118"
+us,prior_year_income,previous_year_income_available,58118916.015807986,not_qrf,,,Flag recording whether both prior-year amounts were observed.,populace 6d06410bb us_runtime/prior_year_income.py:3-8
+us,retirement_distributions,taxable_401k_distributions,61076163441.27492,measured,puf_support_retirement_distributions,taxable_401k_distributions,,
+us,retirement_distributions,taxable_403b_distributions,4046809235.3185062,measured,puf_support_retirement_distributions,taxable_403b_distributions,,
+us,retirement_distributions,tax_exempt_ira_distributions,17712192488.292282,not_qrf,,,Roth IRA distributions: the ASEC value copied to the PUF half.,populace 6d06410bb us_runtime/retirement_distributions.py:338-347
+us,retirement_distributions,taxable_ira_distributions,485127965151.2007,measured,puf_chain,taxable_ira_distributions,,
+us,retirement_distributions,keogh_distributions,793244812.4255424,measured,puf_support_retirement_distributions,keogh_distributions,,
+us,retirement_distributions,taxable_sep_distributions,321872726005.21136,measured,puf_support_retirement_distributions,taxable_sep_distributions,,
+us,acs_rent,pre_subsidy_rent,616005608462.6482,measured_as,acs_rent/rent,,"The ACS rent QRF's draw, placed on the household head.",populace cae8640 us_runtime/housing_inputs.py:10-14
+us,acs_rent,receives_housing_assistance,2681161.045887227,binary_zero,,,"ASEC SPM mapping on the ASEC half; on the PUF half a boolean QRF target, whose positive forest is constant.","populace cae8640 us_runtime/housing_inputs.py:5-9, 519, 1095-1105"
+us,acs_rent,takes_up_housing_assistance_if_eligible,2681161.045887227,not_qrf,,,Set equal to receipt of housing assistance.,"populace cae8640 us_runtime/housing_inputs.py:520, 1129"
+us,acs_rent,spm_unit_tenure_type,,not_qrf,,,ASEC SPM_TENMORTSTATUS mapped directly.,populace cae8640 us_runtime/housing_inputs.py:5-9
+us,acs_rent,tenure_type,,not_qrf,,,ASEC H_TENURE mapped directly.,populace cae8640 us_runtime/housing_inputs.py:5-6
+us,vehicle_assets,household_vehicles_owned,187485968.66803628,not_qrf,,,"scikit-learn RandomForestClassifier (majority vote), not RegimeGatedQRF.",populace cae8640 us_runtime/sipp_vehicles.py:804-818
+us,vehicle_assets,household_vehicles_value,2590779124088.2656,measured,sipp_vehicles,household_vehicles_value,,
+us,voluntary_filing_input,would_file_taxes_voluntarily,143405694.71467483,measured,voluntary_filing,would_file_taxes_voluntarily,,
+us,other_health_insurance_premiums,health_insurance_premiums_without_medicare_part_b,432288806911.6732,measured,puf_support_other_health_insurance,health_insurance_premiums_without_medicare_part_b,,
+us,other_health_insurance_premiums,other_health_insurance_premiums,410533979082.3915,measured,puf_support_other_health_insurance,other_health_insurance_premiums,,
+us,other_health_insurance_premiums,health_insurance_premiums,18348182338.68384,derived,puf_support_other_health_insurance/health_insurance_premiums_without_medicare_part_b,,Self-employed premium attribution of the imputed premiums.,populace cae8640 us_runtime/other_health_insurance.py:111-122
+us,other_health_insurance_premiums,is_self_employed,36753477.07445174,not_qrf,,,Flag set by the self-employed premium attribution.,populace cae8640 us_runtime/other_health_insurance.py:111-122
+uk,hmrc_spi_income_spine,other_investment_income,,measured,uk_spi_stage1,other_investment_income,SPI-derived: result held until HMRC clears it (licence: ten working days' notice),
+uk,hmrc_spi_income_spine,gift_aid,,measured,uk_spi_stage1,gift_aid,SPI-derived: result held until HMRC clears it (licence: ten working days' notice),
+uk,hmrc_spi_income_spine,charitable_investment_gifts,,measured,uk_spi_stage1,charitable_investment_gifts,SPI-derived: result held until HMRC clears it (licence: ten working days' notice),
+uk,hmrc_spi_income_spine,property_finance_costs,,measured,uk_spi_stage1,property_finance_costs,SPI-derived: result held until HMRC clears it (licence: ten working days' notice),
+uk,hmrc_spi_income_spine,hmrc_spi_employment_benefits,,measured,uk_spi_stage1,hmrc_spi_employment_benefits,SPI-derived: result held until HMRC clears it (licence: ten working days' notice),
+uk,hmrc_spi_income_spine,hmrc_spi_employment_expenses,,measured,uk_spi_stage1,hmrc_spi_employment_expenses,SPI-derived: result held until HMRC clears it (licence: ten working days' notice),
+uk,hmrc_spi_income_spine,hmrc_spi_other_social_security_income,,measured,uk_spi_stage1,hmrc_spi_other_social_security_income,SPI-derived: result held until HMRC clears it (licence: ten working days' notice),
+uk,hmrc_spi_income_spine,hmrc_spi_taxable_termination_pay,,measured,uk_spi_stage1,hmrc_spi_taxable_termination_pay,SPI-derived: result held until HMRC clears it (licence: ten working days' notice),
+uk,hmrc_spi_income_spine,hmrc_spi_miscellaneous_employment_income,,measured,uk_spi_stage1,hmrc_spi_miscellaneous_employment_income,SPI-derived: result held until HMRC clears it (licence: ten working days' notice),
+uk,hmrc_spi_income_spine,hmrc_spi_other_income,,measured,uk_spi_stage1,hmrc_spi_other_income,SPI-derived: result held until HMRC clears it (licence: ten working days' notice),
+uk,hmrc_spi_income_spine,hmrc_spi_state_pension_income,,measured,uk_spi_stage1,hmrc_spi_state_pension_income,SPI-derived: result held until HMRC clears it (licence: ten working days' notice),
+uk,hmrc_spi_income_spine,hmrc_spi_employed_income,,derived,uk_spi_stage1,,Sum of drawn SPI employment components.,microcosm 67ee2ddf3 uk_runtime/spi_income.py:2085-2124
+uk,hmrc_spi_income_spine,hmrc_spi_total_earned_income,,derived,uk_spi_stage1,,Employed income plus drawn earned components.,microcosm 67ee2ddf3 uk_runtime/spi_income.py:2104-2110
+uk,hmrc_spi_income_spine,hmrc_spi_total_investment_income,,derived,uk_spi_stage1,,Sum of drawn investment components.,microcosm 67ee2ddf3 uk_runtime/spi_income.py:2111-2116
+uk,hmrc_spi_income_spine,hmrc_spi_assessable_income,,derived,uk_spi_stage1,,Earned plus investment totals.,"microcosm 67ee2ddf3 uk_runtime/spi_income.py:2117, 2124"
+uk,hmrc_spi_income_spine,person_is_spi_income_recipient,,not_qrf,,,Flag marking SPI-channel income recipients.,microcosm 67ee2ddf3 uk_runtime/spi_income.py:128
+uk,was_wealth,owned_land,,measured,uk_was__0,owned_land,,
+uk,was_wealth,property_wealth,,not_produced,,,Declared derived total (sum of the property values); absent from the release.,microcosm 67ee2ddf3 uk_runtime/was_wealth.py:118-131
+uk,was_wealth,corporate_wealth,,derived,uk_was__3,,corporate_wealth_excl_isa plus stocks_and_shares_isa.,microcosm 67ee2ddf3 uk_runtime/was_wealth.py:132
+uk,was_wealth,private_pension_wealth,,measured,uk_was__3,private_pension_wealth,,
+uk,was_wealth,gross_financial_wealth,,derived,"uk_was__3,uk_was__4",,"Savings, cash ISA, corporate wealth and other financial assets.",microcosm 67ee2ddf3 uk_runtime/was_wealth.py:133-138
+uk,was_wealth,net_financial_wealth,,derived,"uk_was__3,uk_was__4,uk_was__7",,Gross financial wealth less consumer debt and student loans.,microcosm 67ee2ddf3 uk_runtime/was_wealth.py:145-148
+uk,was_wealth,main_residence_value,,measured,uk_was__1,main_residence_value,,
+uk,was_wealth,other_residential_property_value,,measured,uk_was__2,other_residential_property_value,,
+uk,was_wealth,non_residential_property_value,,measured,uk_was__2,non_residential_property_value,,
+uk,was_wealth,savings,,measured,uk_was__4,savings,,
+uk,was_wealth,num_vehicles,,measured,uk_was__4,num_vehicles,,
+uk,was_wealth,cash_isa,,measured,uk_was__4,cash_isa,,
+uk,was_wealth,stocks_and_shares_isa,,measured,uk_was__3,stocks_and_shares_isa,,
+uk,was_wealth,student_loan_balance,,measured,uk_was__4,student_loan_balance,,
+uk,was_wealth,mortgage_debt,,derived,"uk_was__5,uk_was__6",,Main-residence mortgage plus other mortgages.,microcosm 67ee2ddf3 uk_runtime/was_wealth.py:139-142
+uk,was_wealth,consumer_debt,,measured,uk_was__7,consumer_debt,,
+uk,was_wealth,directly_held_shares,,derived,"uk_was__8,uk_was__3",,The drawn directly-held fraction of the non-ISA share total.,microcosm 67ee2ddf3 uk_runtime/was_wealth.py:151-165
+uk,was_wealth,unit_and_investment_trusts,,derived,"uk_was__8,uk_was__3",,The non-ISA share total less directly held shares.,microcosm 67ee2ddf3 uk_runtime/was_wealth.py:151-165
+uk,was_wealth,other_residential_property_secured_debt,,measured,uk_was__9,other_residential_property_secured_debt,,
+uk,was_wealth,non_residential_property_secured_debt,,measured,uk_was__10,non_residential_property_secured_debt,,
+uk,was_lisa,has_lifetime_isa,,not_qrf,,,scikit-learn LogisticRegression ownership model.,microcosm 67ee2ddf3 uk_runtime/was_lisa.py:923-1000
+uk,was_lisa,lifetime_isa_balance,,measured,uk_was_lisa,lifetime_isa_balance,,
+uk,was_lisa,household_lifetime_isa_balance,,derived,uk_was_lisa/lifetime_isa_balance,,Person balances summed to the household.,microcosm 67ee2ddf3 uk_runtime/was_lisa.py (aggregate_person_to_household)
+uk,property_components,property_rental_income,,not_qrf,,,Receipts allocated to people with positive profit by HMRC Table 13 bands.,microcosm 67ee2ddf3 uk_runtime/property_components.py:664-680
+uk,nts_bus_travel,local_bus_use_band,,pending,uk_nts_bus_band/local_bus_use_band,,"Ordinal band (0-6) drawn by RegimeGatedQRF, zero-inflated positive.",microcosm 67ee2ddf3 uk_runtime/nts_bus_travel.py:1185-1240
+uk,nts_bus_travel,bus_in_london_trips,,derived,uk_nts_bus_band,,Band means by residence group.,microcosm 67ee2ddf3 uk_runtime/nts_bus_travel.py:1513
+uk,nts_bus_travel,other_local_bus_trips,,derived,uk_nts_bus_band,,Band means by residence group.,microcosm 67ee2ddf3 uk_runtime/nts_bus_travel.py:1513
+uk,nts_bus_travel,local_bus_trips,,derived,uk_nts_bus_band,,Sum of the two trip series.,microcosm 67ee2ddf3 uk_runtime/nts_bus_travel.py:1513
+uk,nts_bus_travel,bus_pass_eligible,,not_qrf,,,Age and region eligibility rules.,microcosm 67ee2ddf3 uk_runtime/nts_bus_travel.py:1611
+uk,nts_bus_travel,local_bus_single_fare_share,,not_qrf,,,Donor single-fare shares by group.,microcosm 67ee2ddf3 uk_runtime/nts_bus_travel.py:1302
+uk,nts_bus_travel,household_local_bus_trips,,derived,uk_nts_bus_band,,Person trips summed to the household.,microcosm 67ee2ddf3 uk_runtime/nts_bus_travel.py:1513
+uk,lcfs_consumption,food_and_non_alcoholic_beverages_consumption,,measured,uk_lcfs,food_and_non_alcoholic_beverages_consumption,,
+uk,lcfs_consumption,alcohol_and_tobacco_consumption,,measured,uk_lcfs,alcohol_and_tobacco_consumption,,
+uk,lcfs_consumption,clothing_and_footwear_consumption,,measured,uk_lcfs,clothing_and_footwear_consumption,,
+uk,lcfs_consumption,housing_water_and_electricity_consumption,,measured,uk_lcfs,housing_water_and_electricity_consumption,,
+uk,lcfs_consumption,household_furnishings_consumption,,measured,uk_lcfs,household_furnishings_consumption,,
+uk,lcfs_consumption,health_consumption,,measured,uk_lcfs,health_consumption,,
+uk,lcfs_consumption,transport_consumption,,measured,uk_lcfs,transport_consumption,,
+uk,lcfs_consumption,communication_consumption,,measured,uk_lcfs,communication_consumption,,
+uk,lcfs_consumption,recreation_consumption,,measured,uk_lcfs,recreation_consumption,,
+uk,lcfs_consumption,education_consumption,,measured,uk_lcfs,education_consumption,,
+uk,lcfs_consumption,restaurants_and_hotels_consumption,,measured,uk_lcfs,restaurants_and_hotels_consumption,,
+uk,lcfs_consumption,miscellaneous_consumption,,measured,uk_lcfs,miscellaneous_consumption,,
+uk,lcfs_consumption,petrol_spending,,measured,uk_lcfs,petrol_spending,,
+uk,lcfs_consumption,diesel_spending,,measured,uk_lcfs,diesel_spending,,
+uk,lcfs_consumption,bus_fare_spending,,measured,uk_lcfs,bus_fare_spending,,
+uk,lcfs_consumption,domestic_energy_consumption,,measured,uk_lcfs,domestic_energy_consumption,,
+uk,lcfs_consumption,electricity_consumption,,measured,uk_lcfs,electricity_consumption,,
+uk,lcfs_consumption,gas_consumption,,measured,uk_lcfs,gas_consumption,,
+uk,lcfs_consumption,liquid_fuel_consumption,,measured,uk_lcfs,liquid_fuel_consumption,,
+uk,lcfs_consumption,solid_fuel_consumption,,measured,uk_lcfs,solid_fuel_consumption,,
+uk,lcfs_consumption,has_fuel_consumption,,not_qrf,,,Assigned from a rate (assign_recipient_has_fuel).,microcosm 67ee2ddf3 uk_runtime/lcfs_consumption.py:608
+uk,lcfs_consumption,uses_energy_prepayment_meter,,binary_zero,,,Boolean QRF target: the positive forest is constant.,"microcosm 67ee2ddf3 uk_runtime/lcfs_consumption.py:1483-1497, 1550-1570"
+uk,etb_vat,full_rate_vat_expenditure_rate,,measured,uk_etb_vat,full_rate_vat_expenditure_rate,,
+uk,etb_services,dfe_education_spending,,measured,uk_etb_services,dfe_education_spending,,
+uk,etb_services,rail_subsidy_spending,,measured,uk_etb_services,rail_subsidy_spending,,
+uk,etb_services,bus_subsidy_spending,,measured,uk_etb_services,bus_subsidy_spending,,
+uk,etb_services,rail_usage,,derived,uk_etb_services/rail_subsidy_spending,,Rail subsidy spending over a fare index.,microcosm 67ee2ddf3 uk_runtime/etb_services.py:211
+uk,etb_services,a_and_e_visits,,not_qrf,,,NHS visits and spending allocated by age-gender cells.,microcosm 67ee2ddf3 uk_runtime/etb_services.py:656-677
+uk,etb_services,admitted_patient_visits,,not_qrf,,,NHS visits and spending allocated by age-gender cells.,microcosm 67ee2ddf3 uk_runtime/etb_services.py:656-677
+uk,etb_services,outpatient_visits,,not_qrf,,,NHS visits and spending allocated by age-gender cells.,microcosm 67ee2ddf3 uk_runtime/etb_services.py:656-677
+uk,etb_services,nhs_a_and_e_spending,,not_qrf,,,NHS visits and spending allocated by age-gender cells.,microcosm 67ee2ddf3 uk_runtime/etb_services.py:656-677
+uk,etb_services,nhs_admitted_patient_spending,,not_qrf,,,NHS visits and spending allocated by age-gender cells.,microcosm 67ee2ddf3 uk_runtime/etb_services.py:656-677
+uk,etb_services,nhs_outpatient_spending,,not_qrf,,,NHS visits and spending allocated by age-gender cells.,microcosm 67ee2ddf3 uk_runtime/etb_services.py:656-677
+uk,salary_sacrifice,pension_contributions_via_salary_sacrifice,,measured,uk_salary_sacrifice,pension_contributions_via_salary_sacrifice,,
+uk,salary_sacrifice,pension_contributions_via_bonus_sacrifice,,not_qrf,,,Bonus conversion at an anchored rate.,microcosm 67ee2ddf3 uk_runtime/salary_sacrifice.py:109-184
+uk,salary_sacrifice,employee_pension_contributions,,not_qrf,,,Contributions of the converted records move to salary sacrifice.,microcosm 67ee2ddf3 uk_runtime/salary_sacrifice.py:654-689
+uk,salary_sacrifice,employment_income,,not_qrf,,,Pay reduced by the amount converted to salary sacrifice.,microcosm 67ee2ddf3 uk_runtime/salary_sacrifice.py:654-689
+uk,salary_sacrifice,salary_sacrifice_pre_conversion_pay,,not_produced,,,Audit column of the conversion; absent from the release.,microcosm 67ee2ddf3 uk_runtime/salary_sacrifice.py:654-689
+us,sipp_financial_assets__0,bank_account_assets,,measured,sipp_financial_assets__0,bank_account_assets,internal target; not a declared stage output,
+us,sipp_financial_assets__1,stock_assets,,measured,sipp_financial_assets__1,stock_assets,internal target; not a declared stage output,
+us,sipp_financial_assets__2,bond_assets,,measured,sipp_financial_assets__2,bond_assets,internal target; not a declared stage output,
+uk,lcfs_consumption,road_fuel_total,,measured,uk_lcfs_road_fuel,road_fuel_total,zero road-fuel redraw; not a declared stage output,
+uk,lcfs_consumption,petrol_share_of_road_fuel,,measured,uk_lcfs_road_fuel,petrol_share_of_road_fuel,zero road-fuel redraw; not a declared stage output,
+uk,property_components,property_finance_costs,,measured,uk_property_finance,property_finance_costs,SPI-derived: result held until HMRC clears it (licence: ten working days' notice),
+uk,spi_housing_shell,council_tax,,measured,uk_spi_housing_shell,council_tax,SPI housing shell; not a declared stage output,
+uk,spi_housing_shell,council_tax_reported,,measured,uk_spi_housing_shell,council_tax_reported,SPI housing shell; not a declared stage output,
+uk,spi_housing_shell,rent,,measured,uk_spi_housing_shell,rent,SPI housing shell; not a declared stage output,
+uk,spi_housing_shell,mortgage_interest_repayment,,measured,uk_spi_housing_shell,mortgage_interest_repayment,SPI housing shell; not a declared stage output,
+uk,spi_housing_shell,mortgage_capital_repayment,,measured,uk_spi_housing_shell,mortgage_capital_repayment,SPI housing shell; not a declared stage output,
+uk,spi_housing_shell,structural_insurance_payments,,measured,uk_spi_housing_shell,structural_insurance_payments,SPI housing shell; not a declared stage output,
+uk,spi_housing_shell,housing_service_charges,,measured,uk_spi_housing_shell,housing_service_charges,SPI housing shell; not a declared stage output,
+uk,spi_housing_shell,water_and_sewerage_charges,,measured,uk_spi_housing_shell,water_and_sewerage_charges,SPI housing shell; not a declared stage output,
+uk,spi_housing_shell,domestic_rates,,measured,uk_spi_housing_shell,domestic_rates,SPI housing shell; not a declared stage output,
+uk,spi_housing_shell,subrent,,measured,uk_spi_housing_shell,subrent,SPI housing shell; not a declared stage output,
+uk,spi_housing_shell,housing_benefit_head_unit,,measured,uk_spi_housing_shell,housing_benefit_head_unit,SPI housing shell; not a declared stage output,
+uk,spi_housing_shell,council_tax_benefit_hrp,,measured,uk_spi_housing_shell,council_tax_benefit_hrp,SPI housing shell; not a declared stage output,
+uk,hmrc_spi_income_spine,self_employment_income,,measured,uk_spi_stage1,self_employment_income,SPI-derived: result held until HMRC clears it (licence: ten working days' notice),
+uk,hmrc_spi_income_spine,savings_interest_income,,measured,uk_spi_stage1,savings_interest_income,SPI-derived: result held until HMRC clears it (licence: ten working days' notice),
+uk,hmrc_spi_income_spine,dividend_income,,measured,uk_spi_stage1,dividend_income,SPI-derived: result held until HMRC clears it (licence: ten working days' notice),
+uk,hmrc_spi_income_spine,private_pension_income,,measured,uk_spi_stage1,private_pension_income,SPI-derived: result held until HMRC clears it (licence: ten working days' notice),
+uk,hmrc_spi_income_spine,property_income,,measured,uk_spi_stage1,property_income,SPI-derived: result held until HMRC clears it (licence: ten working days' notice),
+uk,hmrc_spi_income_spine,hmrc_spi_pay,,measured,uk_spi_stage1,hmrc_spi_pay,SPI-derived: result held until HMRC clears it (licence: ten working days' notice),
+uk,hmrc_spi_income_spine,hmrc_spi_incapacity_benefit_income,,measured,uk_spi_stage1,hmrc_spi_incapacity_benefit_income,SPI-derived: result held until HMRC clears it (licence: ten working days' notice),
+uk,hmrc_spi_income_spine,hmrc_spi_unemployment_benefit_income,,measured,uk_spi_stage1,hmrc_spi_unemployment_benefit_income,SPI-derived: result held until HMRC clears it (licence: ten working days' notice),
+uk,hmrc_spi_income_spine,spi_profit_before_losses_draw,,measured,uk_spi_stage1,spi_profit_before_losses_draw,SPI-derived: result held until HMRC clears it (licence: ten working days' notice),
+uk,hmrc_spi_income_spine,spi_losses_brought_forward_draw,,measured,uk_spi_stage1,spi_losses_brought_forward_draw,SPI-derived: result held until HMRC clears it (licence: ten working days' notice),
+uk,hmrc_spi_income_spine,employee_pension_contributions,,measured,uk_spi_stage2,employee_pension_contributions,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,employer_pension_contributions,,measured,uk_spi_stage2,employer_pension_contributions,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,personal_pension_contributions,,measured,uk_spi_stage2,personal_pension_contributions,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,pension_contributions_via_salary_sacrifice,,measured,uk_spi_stage2,pension_contributions_via_salary_sacrifice,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,tax_free_savings_income,,measured,uk_spi_stage2,tax_free_savings_income,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,universal_credit_reported,,measured,uk_spi_stage2,universal_credit_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,pension_credit_reported,,measured,uk_spi_stage2,pension_credit_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,child_benefit_reported,,measured,uk_spi_stage2,child_benefit_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,housing_benefit_reported,,measured,uk_spi_stage2,housing_benefit_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,income_support_reported,,measured,uk_spi_stage2,income_support_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,working_tax_credit_reported,,measured,uk_spi_stage2,working_tax_credit_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,child_tax_credit_reported,,measured,uk_spi_stage2,child_tax_credit_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,attendance_allowance_reported,,measured,uk_spi_stage2,attendance_allowance_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,state_pension_reported,,measured,uk_spi_stage2,state_pension_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,dla_sc_reported,,measured,uk_spi_stage2,dla_sc_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,dla_m_reported,,measured,uk_spi_stage2,dla_m_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,pip_m_reported,,measured,uk_spi_stage2,pip_m_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,pip_dl_reported,,measured,uk_spi_stage2,pip_dl_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,sda_reported,,measured,uk_spi_stage2,sda_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,carers_allowance_reported,,measured,uk_spi_stage2,carers_allowance_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,iidb_reported,,measured,uk_spi_stage2,iidb_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,afcs_reported,,measured,uk_spi_stage2,afcs_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,bsp_reported,,measured,uk_spi_stage2,bsp_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,war_widows_pension_reported,,measured,uk_spi_stage2,war_widows_pension_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,widowed_parents_allowance_reported,,measured,uk_spi_stage2,widowed_parents_allowance_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,winter_fuel_allowance_reported,,measured,uk_spi_stage2,winter_fuel_allowance_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,council_tax_benefit_reported,,measured,uk_spi_stage2,council_tax_benefit_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,jsa_contrib_reported,,measured,uk_spi_stage2,jsa_contrib_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,jsa_income_reported,,measured,uk_spi_stage2,jsa_income_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,esa_contrib_reported,,measured,uk_spi_stage2,esa_contrib_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,esa_income_reported,,measured,uk_spi_stage2,esa_income_reported,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,trading_loss,,measured,uk_spi_stage2,trading_loss,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,stands_as_sole_owner_or_partner_of_company,,measured,uk_spi_stage2,stands_as_sole_owner_or_partner_of_company,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,is_engaged_in_owned_company_trade,,measured,uk_spi_stage2,is_engaged_in_owned_company_trade,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,owned_company_is_main_employment,,measured,uk_spi_stage2,owned_company_is_main_employment,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,owned_company_carries_on_trade,,measured,uk_spi_stage2,owned_company_carries_on_trade,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,owned_company_carries_on_property_business,,measured,uk_spi_stage2,owned_company_carries_on_property_business,FRS-only fill (stage 2); not a declared stage output,
+uk,hmrc_spi_income_spine,owned_company_income_share,,measured,uk_spi_stage2,owned_company_income_share,FRS-only fill (stage 2); not a declared stage output,
+uk,uc_reporter_redraw,universal_credit_reported_amount,,measured,uk_uc_reporter_redraw,universal_credit_reported_amount,UC reporter redraw; not a declared stage output,
+uk,uk_was__2,other_property_value,,measured,uk_was__2,other_property_value,internal target; not a declared stage output,
+uk,uk_was__3,corporate_wealth_excl_isa,,measured,uk_was__3,corporate_wealth_excl_isa,internal target; not a declared stage output,
+uk,uk_was__4,other_financial_assets,,measured,uk_was__4,other_financial_assets,internal target; not a declared stage output,
+uk,uk_was__5,main_residence_mortgage,,measured,uk_was__5,main_residence_mortgage,internal target; not a declared stage output,
+uk,uk_was__6,other_mortgage,,measured,uk_was__6,other_mortgage,internal target; not a declared stage output,
+uk,uk_was__8,directly_held_share_fraction,,measured,uk_was__8,directly_held_share_fraction,internal target; not a declared stage output,

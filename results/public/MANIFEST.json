@@ -1,0 +1,7 @@
+{
+ "all_targets.csv": "b20b43d8c1688a1c1689cdfcd070c21d3ff0dc8bcda14a7a82abb768430fb68c",
+ "coverage.csv": "cbfdc0b08a0e3928877778f85af5e9713e00e817fb8f2f1ef0485f225e21959f",
+ "inventory_totals.csv": "89d20f2e8c8037d17c0deb366087b306930570aba010135e7523a501a1f23476",
+ "remedies.csv": "b0239e1943309108591f0978e05b9dbd96ad764bdd3a430d4bb1a97ccaf7e977",
+ "remedies_compact.csv": "641e2ceccf331d2e85cba20a6924bf88ebd275546457d578b5b6722f24416316"
+}
