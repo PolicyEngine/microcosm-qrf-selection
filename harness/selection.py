@@ -179,15 +179,20 @@ def grow(X, y, seed, n_estimators, min_samples_leaf=1, store_leaf_samples=False)
     return model.fit(np.asarray(X, dtype=np.float64), np.asarray(y, dtype=np.float64))
 
 
-def sparse_pool(leaves_fill, mass, leaves_rec, node_counts, mode, order):
-    """Each recipient's normalized weight on each filling row (CSR).
+#: A cumulative share this close below a quantile level counts as reaching it.
+TIE_TOLERANCE = 1e-10
 
-    Columns follow ``order`` (filling rows sorted by value), so each row's
-    entries come out in value order once indices are sorted.
+
+def sparse_pool(leaves_fill, mass, leaves_rec, node_counts, mode, level_of, n_levels):
+    """Each recipient's normalized weight on each distinct filling value (CSR).
+
+    ``level_of`` gives each filling row's column, the rank of its value among
+    the ``n_levels`` distinct values, so each row's entries come out in value
+    order once indices are sorted. Filling rows with one value share a column:
+    a quantile depends only on the mass at each value, and a near-discrete
+    target then costs a handful of columns per recipient, not one per donor.
     """
-    n_fill, n_trees = leaves_fill.shape
-    col_of = np.empty(n_fill, dtype=np.int64)
-    col_of[order] = np.arange(n_fill)
+    n_trees = leaves_fill.shape[1]
     A = None
     for t in range(n_trees):
         m = np.asarray(mass[t], dtype=np.float64)
@@ -197,8 +202,7 @@ def sparse_pool(leaves_fill, mass, leaves_rec, node_counts, mode, order):
         if mode == "tree":
             M = np.bincount(leaves_fill[:, t], weights=m, minlength=node_counts[t])
             val = val / M[lf]
-        F = sp.csr_matrix((val, (lf, col_of[np.flatnonzero(nz)])),
-                          shape=(node_counts[t], n_fill))
+        F = sp.csr_matrix((val, (lf, level_of[nz])), shape=(node_counts[t], n_levels))
         At = F[leaves_rec[:, t], :]
         A = At if A is None else A + At
     A = A.tocsr()
@@ -219,16 +223,25 @@ def quantile_metrics(A, y_sorted, y_eval, w_eval, taus=TAUS):
         counts = np.diff(A.indptr)
     if A.shape[0] == 0:
         return None
+    rows = np.arange(A.shape[0])
     rs = np.asarray(A.sum(axis=1)).ravel()
     data = A.data / np.repeat(rs, counts)
-    cum = np.cumsum(data)
-    base = np.concatenate([[0.0], cum])[A.indptr[:-1]]
-    last = A.indptr[1:] - 1
+    # Each row's running share of its own mass. Taking one unit off at each new
+    # row keeps the running sum between 0 and 1, so rounding stays below
+    # TIE_TOLERANCE however many rows the pool holds, and an exact tie between
+    # two values always resolves to the lower one.
+    first, last = A.indptr[:-1], A.indptr[1:] - 1
+    steps = data.copy()
+    steps[first[1:]] -= 1.0
+    running = np.cumsum(steps)
+    base = np.concatenate([[0.0], running])[first]
+    base[1:] -= 1.0
+    key = np.repeat(rows, counts) + (running - np.repeat(base, counts))
     out = {"pinball": {}, "coverage": {}}
     W = w_eval.sum()
     for tau in taus:
-        pos = np.searchsorted(cum, base + tau - 1e-12, side="left")
-        pos = np.minimum(np.maximum(pos, A.indptr[:-1]), last)
+        pos = np.searchsorted(key, rows + tau - TIE_TOLERANCE, side="left")
+        pos = np.minimum(np.maximum(pos, first), last)
         q = y_sorted[A.indices[pos]]
         loss = (y_eval - q) * (tau - (y_eval < q))
         out["pinball"][str(tau)] = float((w_eval * loss).sum() / W)
@@ -251,8 +264,7 @@ def fill_forest(model, X_fill, mass, y_fill, X_rec, scale_rec, rows_to_donor, n_
     nodes = [e.tree_.node_count for e in model.estimators_]
     lf, lr = model.apply(X_fill), model.apply(X_rec)
     out = {}
-    order = np.argsort(y_fill, kind="stable")
-    y_sorted = np.asarray(y_fill, dtype=np.float64)[order]
+    y_sorted, level_of = np.unique(np.asarray(y_fill, dtype=np.float64), return_inverse=True)
     le = model.apply(eval_set[0]) if eval_set is not None else None
     for mode in MODES:
         with np.errstate(invalid="ignore", divide="ignore"):
@@ -275,7 +287,7 @@ def fill_forest(model, X_fill, mass, y_fill, X_rec, scale_rec, rows_to_donor, n_
             parts = []
             for start in range(0, len(y_eval), chunk):
                 stop = min(start + chunk, len(y_eval))
-                A = sparse_pool(lf, mass, le[start:stop], nodes, mode, order)
+                A = sparse_pool(lf, mass, le[start:stop], nodes, mode, level_of, len(y_sorted))
                 parts.append((A, start, stop))
             # Stack chunks back into one CSR for the metric pass.
             A_all = sp.vstack([p[0] for p in parts]).tocsr()

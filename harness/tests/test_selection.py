@@ -189,28 +189,32 @@ def brute_quantiles(lf, mass, y_fill, lr, nodes, mode, taus):
         order = np.argsort(y_fill, kind="stable")
         cw = np.cumsum(wts[order]) / wts.sum()
         for k, tau in enumerate(taus):
-            pos = np.searchsorted(cw, tau - 1e-12, side="left")
+            pos = np.searchsorted(cw, tau - S.TIE_TOLERANCE, side="left")
             out[i, k] = y_fill[order][min(pos, len(cw) - 1)]
     return out
 
 
-@settings(max_examples=15, deadline=None)
-@given(seed=st.integers(0, 10_000), mode=st.sampled_from(["pooled", "tree"]))
-def test_sparse_quantiles_match_brute_force(seed, mode):
+@settings(max_examples=30, deadline=None)
+@given(seed=st.integers(0, 10_000), mode=st.sampled_from(["pooled", "tree"]),
+       top=st.sampled_from([None, 4]))
+def test_sparse_quantiles_match_brute_force(seed, mode, top):
     rng = np.random.default_rng(seed)
     n = 120
     X = rng.normal(size=(n, 2))
     y = np.round(np.exp(X[:, 0] + rng.normal(size=n)), 1)  # ties on purpose
+    if top is not None:  # a near-discrete target: a handful of values
+        y = np.minimum(np.round(y), top)
     model = S.grow(X, y, seed, 6, 2)
     cnt = S.qd.bootstrap_counts(model, n)
     Xr = rng.normal(size=(25, 2))
     nodes = [e.tree_.node_count for e in model.estimators_]
     lf, lr = model.apply(X), model.apply(Xr)
-    order = np.argsort(y, kind="stable")
-    A = S.sparse_pool(lf, cnt, lr, nodes, mode, order)
+    levels, level_of = np.unique(y, return_inverse=True)
+    A = S.sparse_pool(lf, cnt, lr, nodes, mode, level_of, len(levels))
+    assert A.shape[1] == len(levels)
     y_eval = rng.normal(size=25)
     w_eval = np.ones(25)
-    res = S.quantile_metrics(A, y[order], y_eval, w_eval)
+    res = S.quantile_metrics(A, levels, y_eval, w_eval)
     brute = brute_quantiles(lf, cnt, y, lr, nodes, mode, S.TAUS)
     for k, tau in enumerate(S.TAUS):
         q = brute[:, k]
@@ -346,3 +350,57 @@ def test_empty_recipients_never_inflate_selection():
     assert 0.0 <= share <= 1.0
     if out["max_empty_recipients"]["honest"]["pooled"]:
         assert share > 0.0
+
+
+def test_compare_runs_counts_every_changed_number():
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    import compare_runs as C
+
+    base = {"folds": [{"a": 1.0, "seconds": 3.0, "b": {"c": [1, float("nan")]}}]}
+    same = {"folds": [{"a": 1.0, "seconds": 9.0, "b": {"c": [1, float("nan")]}}]}
+    out = C.compare(base, same)
+    assert (out["numbers"], out["differing"], out["unmatched"]) == (3, [], [])
+    changed = {"folds": [{"a": 1.5, "seconds": 3.0, "b": {"c": [1, 2.0]}}]}
+    assert len(C.compare(base, changed)["differing"]) == 2
+    assert len(C.compare(base, changed)["outside_quantile"]) == 2
+    a = {"folds": [{"quantile": {"pinball": 1.0}, "total": 2.0}]}
+    b = {"folds": [{"quantile": {"pinball": 1.5}, "total": 2.0}]}
+    out = C.compare(a, b)
+    assert (len(out["differing"]), out["outside_quantile"]) == (1, [])
+    assert out["max_rel_quantile"] == pytest.approx(1 / 3)
+    missing = {"folds": [{"a": 1.0, "seconds": 3.0, "b": {}}]}
+    assert C.compare(base, missing)["unmatched"] == [[0, "b", "c"]]
+    assert C.compare(base, missing, common=True)["unmatched"] == []
+    assert C.compare(base, missing, common=True)["numbers"] == 1
+
+
+def test_quantile_ties_resolve_low_however_many_rows_precede():
+    # Two values with exactly half the mass each: the median is the lower one.
+    # A running sum over every row would let rounding flip late rows.
+    n = 200_000
+    rng = np.random.default_rng(0)
+    half = rng.integers(1, 50, size=n).astype(np.float64)
+    data = np.column_stack([half, half]).ravel()
+    A = sp.csr_matrix((data, np.tile([0, 1], n), np.arange(0, 2 * n + 1, 2)), shape=(n, 2))
+    y_eval, w = np.zeros(n), np.ones(n)
+    res = S.quantile_metrics(A, np.array([1.0, 5.0]), y_eval, w, taus=(0.5,))
+    assert res["pinball"]["0.5"] == pytest.approx(0.5 * 1.0)  # q = 1 on every row
+    assert res["coverage"]["0.5"] == 1.0
+
+
+def test_quantile_metrics_ignore_how_rows_are_grouped():
+    rng = np.random.default_rng(3)
+    A = sp.random(300, 40, density=0.3, random_state=4, format="csr")
+    A.data = rng.integers(1, 6, size=A.nnz).astype(np.float64)
+    keep = np.diff(A.indptr) > 0
+    A = A[keep]
+    A.sort_indices()
+    y_sorted = np.sort(rng.normal(size=40))
+    y_eval, w = rng.normal(size=A.shape[0]), rng.uniform(1, 3, size=A.shape[0])
+    whole = S.quantile_metrics(A, y_sorted, y_eval, w)
+    m = A.shape[0] // 2
+    a = S.quantile_metrics(A[:m], y_sorted, y_eval[:m], w[:m])
+    b = S.quantile_metrics(A[m:], y_sorted, y_eval[m:], w[m:])
+    for tau in map(str, S.TAUS):
+        pooled = (a["pinball"][tau] * w[:m].sum() + b["pinball"][tau] * w[m:].sum()) / w.sum()
+        assert whole["pinball"][tau] == pytest.approx(pooled, rel=1e-12)

@@ -134,7 +134,21 @@ def remedies_table(compact: pd.DataFrame) -> str:
 
 
 #: What counts as selection removed: under the brief's 0.5%-of-total threshold.
+HAZARD_ABOVE = 1
 REMOVED_BELOW = 0.5
+
+
+def report_groups(df: pd.DataFrame) -> list[tuple[str, pd.Series]]:
+    """Each country, the PUF chain apart from the other US fits, and everything.
+
+    The PUF chain gets its own rows because its forests split on the imputed
+    value itself on held-out donors (REPORT.md, section 4).
+    """
+    country = df["key"].map(lambda k: info(k)[0])
+    puf = df["key"].str.startswith("puf_chain")
+    return [("US", country.eq("US")), ("US outside the PUF chain", country.eq("US") & ~puf),
+            ("PUF chain", puf), ("UK", country.eq("UK")),
+            ("All", pd.Series(True, index=df.index))]
 
 
 def remedy_summary(compact: pd.DataFrame, targets: pd.DataFrame) -> pd.DataFrame:
@@ -148,11 +162,8 @@ def remedy_summary(compact: pd.DataFrame, targets: pd.DataFrame) -> pd.DataFrame
     material = targets.loc[targets["material"].astype(str).str.lower().eq("true"),
                            ["key", "target"]]
     df = compact.merge(material, on=["key", "target"])
-    df = df.assign(country=df["key"].map(lambda k: info(k)[0]))
     rows = []
-    groups = [("US", df["country"].eq("US")), ("UK", df["country"].eq("UK")),
-              ("All", pd.Series(True, index=df.index))]
-    for label, mask in groups:
+    for label, mask in report_groups(df):
         g = df.loc[mask]
         if g.empty:
             continue
@@ -171,11 +182,26 @@ def remedy_summary(compact: pd.DataFrame, targets: pd.DataFrame) -> pd.DataFrame
                     int((residual < REMOVED_BELOW).sum()),
                 "median pinball change, %": pinball.median() if len(pinball) else float("nan"),
                 "targets with lower pinball": int((pinball < 0).sum()),
+                f"targets with pinball up more than {HAZARD_ABOVE}%": int((pinball > HAZARD_ABOVE).sum()),
                 "targets scored": len(pinball),
                 "median change in coverage gap": coverage.median(),
                 "median change in gap to reported total": gap.median(),
             })
     return pd.DataFrame(rows)
+
+
+def remedy_hazards(compact: pd.DataFrame, targets: pd.DataFrame) -> str:
+    """Targets on which a remedy raises pinball loss by more than ``HAZARD_ABOVE`` percent."""
+    material = targets.loc[targets["material"].astype(str).str.lower().eq("true"),
+                           ["key", "target"]]
+    df = compact.merge(material, on=["key", "target"])
+    rows = []
+    for name in REMEDY_NAMES:
+        hit = df.loc[pd.to_numeric(df[f"{name}: pinball"], errors="coerce") > HAZARD_ABOVE]
+        for _, r in hit.sort_values(f"{name}: pinball", ascending=False).iterrows():
+            rows.append({"remedy": name, "fit": r["key"], "target": r["target"],
+                         "pinball change, %": pm(r[f"{name}: pinball"], r[f"{name}: pinball_se"], 1)})
+    return md(pd.DataFrame(rows)) if rows else "None."
 
 
 def remedy_summary_md(summary: pd.DataFrame) -> str:
@@ -199,6 +225,87 @@ def remedies_short(compact: pd.DataFrame) -> str:
                 f"{r[f'{n}: pinball']:+.1f}")
         rows.append(row)
     return md(pd.DataFrame(rows))
+
+
+def closer_summary(targets: pd.DataFrame) -> pd.DataFrame:
+    """Which total lands nearer the held-out donors' reported total, per group.
+
+    Runs over targets with a measured, nonzero selection. "Forest as fitted" is
+    the fold's own full forest, read as production reads it; adaptive and honest
+    are the two fills of the half-sample trees. Gaps are absolute, % of the
+    held-out reported total. Medians, since a few rare targets run to thousands
+    of percent.
+    """
+    sel = pd.to_numeric(targets["sel_pooled"], errors="coerce")
+    df = targets.loc[sel.notna() & sel.ne(0)].copy()
+    material = df["material"].astype(str).str.lower().eq("true")
+    rows = []
+    for label, mask in [*report_groups(df), ("All, material targets only", material)]:
+        g = df.loc[mask]
+        if g.empty:
+            continue
+        own = pd.to_numeric(g["own_vs_reported"], errors="coerce").abs()
+        adaptive = pd.to_numeric(g["adaptive_vs_reported"], errors="coerce").abs()
+        honest = pd.to_numeric(g["honest_vs_reported"], errors="coerce").abs()
+        rows.append({"targets": label, "n": len(g), "forest as fitted": own.median(),
+                     "adaptive fill": adaptive.median(), "honest fill": honest.median(),
+                     "honest nearer than adaptive": int((honest < adaptive).sum()),
+                     "honest nearer than forest as fitted": int((honest < own).sum())})
+    return pd.DataFrame(rows)
+
+
+def closer_summary_md(summary: pd.DataFrame) -> str:
+    out = summary.copy()
+    for c in ("forest as fitted", "adaptive fill", "honest fill"):
+        out[c] = out[c].map(lambda x: f"{x:.2f}")
+    return md(out)
+
+
+def production_vs_held_out(targets: pd.DataFrame) -> str:
+    """Selection on the production recipients beside selection on held-out donors.
+
+    The PUF chain's rows use adaptive over honest minus one as well as the
+    percent of the drawn total, which reads unreliably on that chain.
+    """
+    from scipy.stats import spearmanr
+
+    def num(col: str) -> pd.Series:
+        return pd.to_numeric(targets[col], errors="coerce") if col in targets else pd.Series(
+            float("nan"), index=targets.index)
+
+    held = num("sel_pooled")
+    df = targets.loc[held.notna() & held.ne(0)].assign(
+        held=held, prod=num("prod_sel_pooled"), ratio=num("prod_sel_vs_honest"))
+    masks = dict(report_groups(df))
+    rows = []
+    for label, group, column in (("US", "US", "prod"),
+                                 ("US outside the PUF chain", "US outside the PUF chain", "prod"),
+                                 ("PUF chain, % of the drawn total", "PUF chain", "prod"),
+                                 ("PUF chain, adaptive over honest minus one", "PUF chain", "ratio"),
+                                 ("UK", "UK", "prod")):
+        g = df.loc[masks[group] & df[column].notna()]
+        if len(g) < 3:
+            continue
+        rows.append({"targets": label, "n": len(g),
+                     "same sign": int((np.sign(g["held"]) == np.sign(g[column])).sum()),
+                     "median absolute, held-out": f"{g['held'].abs().median():.2f}",
+                     "median absolute, production": f"{g[column].abs().median():.2f}",
+                     "Spearman rank correlation": f"{spearmanr(g['held'], g[column]).statistic:.2f}"})
+    return md(pd.DataFrame(rows))
+
+
+def scaling_summary(scaling: pd.DataFrame) -> str:
+    """How selection moved when each fold's training donors halved again."""
+    df = scaling.loc[pd.to_numeric(scaling["ratio"], errors="coerce").notna()]
+    df = df.assign(ratio=pd.to_numeric(df["ratio"]))
+    ratio = df["ratio"]
+    finite = ratio[np.isfinite(ratio)]
+    row = {"fits": df["key"].nunique(), "targets": len(df),
+           "median ratio": f"{finite.median():.2f}",
+           "lower quartile": f"{finite.quantile(.25):.2f}",
+           "upper quartile": f"{finite.quantile(.75):.2f}",
+           "targets with ratio above 1": int((finite > 1).sum())}
+    return md(pd.DataFrame([row]))
 
 
 def reproduction_table() -> str:
@@ -359,6 +466,26 @@ def main() -> None:
                   "absolute difference between the imputed and the held-out reported total, %. "
                   "Negative changes improve on production's configuration.\n",
                   remedy_summary_md(remedy_summary(c, material_col)), ""]
+        parts += [f"## Where a remedy raises pinball loss by more than {HAZARD_ABOVE}%\n",
+                  "Over the same targets, the change from production's configuration, mean over "
+                  "folds ± its standard error.\n", remedy_hazards(c, material_col), ""]
+    parts += ["## Which total lands nearer the held-out reported total\n",
+              "Median absolute gap to the held-out donors' reported total, % of that total, over "
+              "targets with a measured, nonzero selection. The forest as fitted is the fold's "
+              "full forest, read as production reads it; the two fills belong to the half-sample "
+              "trees. Targets share donors within a fit, so these counts describe the targets "
+              "rather than independent trials.\n", closer_summary_md(closer_summary(targets)), ""]
+    if pd.to_numeric(targets["prod_sel_pooled"], errors="coerce").notna().any():
+        parts += ["## Production recipients beside held-out donors\n",
+                  "Selection as % of the drawn total on production recipients (or, on the PUF "
+                  "chain's second row, adaptive over honest minus one) and of the reported total "
+                  "on held-out donors.\n", production_vs_held_out(targets), ""]
+    scaling = args.source / "scaling.csv"
+    if scaling.exists():
+        parts += ["## Selection as training donors halve\n",
+                  "Ratio of selection after thinning each fold's training donors to half, over "
+                  "selection as run, held-out donors.\n",
+                  scaling_summary(pd.read_csv(scaling)), ""]
     parts += ["## Reproduction checks (US)\n", reproduction_table(), ""]
     if args.private:
         parts += ["## UK release rebuilds against the build\n", uk_rebuild_checks(), ""]
