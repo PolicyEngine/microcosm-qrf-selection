@@ -168,7 +168,8 @@ def compact(df: pd.DataFrame) -> pd.DataFrame:
         row = {"key": key, "target": target, "folds": int(base["folds"]),
                "selection": base["residual_selection"],
                "selection_se": base["residual_selection_se"],
-               "coverage_error": base["coverage_error"]}
+               "coverage_error": base["coverage_error"],
+               "vs_reported": base["vs_reported"]}
         for name, (v, f, m) in REMEDIES.items():
             r = g.loc[(g["min_samples_leaf"] == int(v)) & (g["fill"] == f)
                       & (g["mode"] == m)].iloc[0]
@@ -179,6 +180,7 @@ def compact(df: pd.DataFrame) -> pd.DataFrame:
             row[f"{name}: pinball"] = r["pinball_change"]
             row[f"{name}: pinball_se"] = r["pinball_change_se"]
             row[f"{name}: coverage_error"] = r["coverage_error"]
+            row[f"{name}: vs_reported"] = r["vs_reported"]
             if "prod_effect" in r and pd.notna(r.get("prod_effect")):
                 row[f"{name}: prod_effect"] = r["prod_effect"]
         out.append(row)

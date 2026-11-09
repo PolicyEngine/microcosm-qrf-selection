@@ -90,13 +90,20 @@ def test_capture_matches_real_fit():
                 np.testing.assert_array_equal(a.tree_.threshold, b.tree_.threshold)
 
 
-def test_grow_matches_earlier_forest():
-    from microcosm_bias import forest
+def earlier_forest(X, y, seed):
+    """``forest`` from qrf-moop-shortfall@dba3940 ``harness/microcosm_bias.py:85-88``."""
+    from quantile_forest import RandomForestQuantileRegressor
 
+    model = RandomForestQuantileRegressor(n_estimators=100, max_samples_leaf=None,
+                                          random_state=seed, n_jobs=4)
+    return model.fit(X, y)
+
+
+def test_grow_matches_earlier_forest():
     table = synthetic_table(800)
     X = table[["x1", "x2", "x3"]].to_numpy()
     y = table["pos"].to_numpy()
-    a = forest(X, y, 11)
+    a = earlier_forest(X, y, 11)
     for b in (S.grow(X, y, 11, 100), S.grow(X, y, 11, 100, store_leaf_samples=True)):
         np.testing.assert_array_equal(a.apply(X[:50]), b.apply(X[:50]))
         for ta, tb in zip(a.estimators_, b.estimators_):

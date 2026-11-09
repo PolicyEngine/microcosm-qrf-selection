@@ -30,6 +30,10 @@ import selection as S  # noqa: E402
 ROOT = HERE.parent
 SKIP_TAGS = ("_trace", "_remedies", "_traceprod", "_trace_scorp", "_rest")
 THRESHOLD = 0.5  # percent of total
+#: A fit measured again with better recipients: the newer key replaces the
+#: older one once it has every fold, and stays out of the table until then.
+SUPERSEDED_BY = {"puf_chain": "puf_chain_twin"}
+FOLDS = 5
 
 
 def keys() -> list[str]:
@@ -39,6 +43,10 @@ def keys() -> list[str]:
         if any(key.endswith(t) for t in SKIP_TAGS):
             continue
         out.append(key)
+    for old, new in SUPERSEDED_BY.items():
+        if new in out:
+            done = len(json.loads((ROOT / f"results/selection_{new}.json").read_text())["folds"])
+            out.remove(old if done >= FOLDS and old in out else new)
     return out
 
 

@@ -133,6 +133,60 @@ def remedies_table(compact: pd.DataFrame) -> str:
     return md(pd.DataFrame(rows))
 
 
+#: What counts as selection removed: under the brief's 0.5%-of-total threshold.
+REMOVED_BELOW = 0.5
+
+
+def remedy_summary(compact: pd.DataFrame, targets: pd.DataFrame) -> pd.DataFrame:
+    """Each remedy over the targets whose held-out selection is material.
+
+    One row per (group, remedy), the groups being each country and both
+    together. Medians run over targets; "residual" is adaptive minus honest
+    left under the remedy, in % of the held-out total. Pinball and coverage
+    come from the positive forest's quantiles on held-out positive donors.
+    """
+    material = targets.loc[targets["material"].astype(str).str.lower().eq("true"),
+                           ["key", "target"]]
+    df = compact.merge(material, on=["key", "target"])
+    df = df.assign(country=df["key"].map(lambda k: info(k)[0]))
+    rows = []
+    groups = [("US", df["country"].eq("US")), ("UK", df["country"].eq("UK")),
+              ("All", pd.Series(True, index=df.index))]
+    for label, mask in groups:
+        g = df.loc[mask]
+        if g.empty:
+            continue
+        selection = g["selection"].abs()
+        for name in REMEDY_NAMES:
+            residual = g[f"{name}: residual"].abs()
+            pinball = g[f"{name}: pinball"].dropna()
+            gap = g[f"{name}: vs_reported"].abs() - g["vs_reported"].abs()
+            coverage = g[f"{name}: coverage_error"] - g["coverage_error"]
+            rows.append({
+                "group": label, "remedy": name, "targets": len(g),
+                "median selection (absolute)": selection.median(),
+                "median residual (absolute)": residual.median(),
+                "targets with a smaller residual": int((residual < selection).sum()),
+                f"targets with residual below {REMOVED_BELOW}%":
+                    int((residual < REMOVED_BELOW).sum()),
+                "median pinball change, %": pinball.median() if len(pinball) else float("nan"),
+                "targets with lower pinball": int((pinball < 0).sum()),
+                "targets scored": len(pinball),
+                "median change in coverage gap": coverage.median(),
+                "median change in gap to reported total": gap.median(),
+            })
+    return pd.DataFrame(rows)
+
+
+def remedy_summary_md(summary: pd.DataFrame) -> str:
+    out = summary.copy()
+    for c in out.columns:
+        if out[c].dtype == float:
+            digits = 3 if "coverage" in c else 2
+            out[c] = out[c].map(lambda x: "—" if pd.isna(x) else f"{x:.{digits}f}")
+    return md(out)
+
+
 def remedies_short(compact: pd.DataFrame) -> str:
     """Effect on the total (%) and pinball change (%) per remedy, one line each."""
     rows = []
@@ -297,6 +351,14 @@ def main() -> None:
                   "change in mean pinball loss, all %; effect and residual as % of the held-out "
                   "reported total, pinball relative to production's configuration.\n",
                   remedies_short(c), ""]
+        material_col = targets[["key", "target", "material"]]
+        parts += ["## Remedies across fits\n", "Over the targets whose held-out selection is "
+                  "material. Selection and residual are % of the held-out total. A coverage gap "
+                  "is the mean absolute difference between each tau and the share of held-out "
+                  "positive donors at or below that quantile; a gap to the reported total is the "
+                  "absolute difference between the imputed and the held-out reported total, %. "
+                  "Negative changes improve on production's configuration.\n",
+                  remedy_summary_md(remedy_summary(c, material_col)), ""]
     parts += ["## Reproduction checks (US)\n", reproduction_table(), ""]
     if args.private:
         parts += ["## UK release rebuilds against the build\n", uk_rebuild_checks(), ""]

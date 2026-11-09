@@ -42,7 +42,7 @@ UK = "microcosm 67ee2ddf3"
 REASONS: dict[tuple[str, str, str], tuple[str, str | None, str, str]] = {
     # ---------------- US ----------------
     ("us", "puf_tax_detail", "investment_interest_expense"): (
-        "derived", "puf_chain/home_mortgage_interest",
+        "derived", "puf_chain_twin/home_mortgage_interest",
         "Not a target of the base chain (64 targets at 6d06410bb, none of them this). In the "
         "release it is nonzero on exactly the rows where home_mortgage_interest is (14,107 of "
         "14,108 persons) and its share of the two clusters at a few values (1.5%, 4.0%, 6.0%, "
@@ -172,10 +172,6 @@ REASONS: dict[tuple[str, str, str], tuple[str, str | None, str, str]] = {
         "not_qrf", None,
         "Receipts allocated to people with positive profit by HMRC Table 13 bands.",
         f"{UK} uk_runtime/property_components.py:664-680"),
-    ("uk", "nts_bus_travel", "local_bus_use_band"): (
-        "pending", "uk_nts_bus_band/local_bus_use_band",
-        "Ordinal band (0-6) drawn by RegimeGatedQRF, zero-inflated positive.",
-        f"{UK} uk_runtime/nts_bus_travel.py:1185-1240"),
     ("uk", "nts_bus_travel", "bus_in_london_trips"): (
         "derived", "uk_nts_bus_band", "Band means by residence group.",
         f"{UK} uk_runtime/nts_bus_travel.py:1513"),
@@ -253,7 +249,7 @@ for _o in ("scf_primary_residence_value", "scf_retirement_assets", "scf_business
 #: Inventory output -> the key holding its same-tree result, where the key's
 #: name does not follow from the stage.
 STAGE_KEYS = {
-    "puf_tax_detail": ["puf_chain"],
+    "puf_tax_detail": ["puf_chain_twin", "puf_chain"],
     "scf_wealth": ["scf_net_worth", "scf_financial_assets", "scf_auto_loans",
                    "sipp_financial_assets__0", "sipp_financial_assets__1",
                    "sipp_financial_assets__2"],
@@ -266,7 +262,9 @@ STAGE_KEYS = {
     "energy_subsidy": ["puf_support_energy_subsidy"],
     "other_health_insurance_premiums": ["puf_support_other_health_insurance"],
     "retirement_contributions": ["puf_support_retirement_contributions"],
-    "retirement_distributions": ["puf_support_retirement_distributions", "puf_chain"],
+    "retirement_distributions": ["puf_support_retirement_distributions", "puf_chain_twin",
+                                 "puf_chain"],
+    "nts_bus_travel": ["uk_nts_bus_band"],
     "weeks_unemployed_input": ["puf_support_weeks_unemployed"],
     "workers_compensation_input": ["puf_support_workers_compensation"],
     "hmrc_spi_income_spine": ["uk_spi_stage1"],
