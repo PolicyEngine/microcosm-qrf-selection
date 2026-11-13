@@ -90,7 +90,7 @@ def material_table(targets: pd.DataFrame) -> str:
         rows.append({
             "country": country, "donors": survey, "fit": r["key"], "target": r["target"],
             "folds": int(r["folds"]) if pd.notna(r.get("folds")) else "",
-            "held-out selection, % of total": pm(r["sel_pooled"], r["sel_pooled_se"]),
+            "held-out contrast, % of total": pm(r["sel_pooled"], r["sel_pooled_se"]),
             "production recipients, % of drawn total": pm(r.get("prod_sel_pooled"),
                                                          r.get("prod_sel_pooled_se")),
             "_abs": abs(r["sel_pooled"]) if pd.notna(r["sel_pooled"]) else 0.0,
@@ -123,17 +123,17 @@ def remedies_table(compact: pd.DataFrame) -> str:
     rows = []
     for _, r in compact.iterrows():
         row = {"fit": r["key"], "target": r["target"],
-               "selection (leaf 1, adaptive, pooled)": pm(r["selection"], r["selection_se"])}
+               "contrast (leaf 1, adaptive, pooled)": pm(r["selection"], r["selection_se"])}
         for n in REMEDY_NAMES:
             row[f"{n}: effect on total"] = pm(r[f"{n}: effect"], r[f"{n}: effect_se"])
-            row[f"{n}: residual selection"] = (f"{r[f'{n}: residual']:+.2f}"
+            row[f"{n}: residual contrast"] = (f"{r[f'{n}: residual']:+.2f}"
                                                if pd.notna(r[f"{n}: residual"]) else "—")
             row[f"{n}: pinball change"] = pm(r[f"{n}: pinball"], r[f"{n}: pinball_se"], 1)
         rows.append(row)
     return md(pd.DataFrame(rows))
 
 
-#: What counts as selection removed: under the brief's 0.5%-of-total threshold.
+#: What counts as a contrast removed: under the brief's 0.5%-of-total threshold.
 HAZARD_ABOVE = 1
 REMOVED_BELOW = 0.5
 
@@ -152,7 +152,7 @@ def report_groups(df: pd.DataFrame) -> list[tuple[str, pd.Series]]:
 
 
 def remedy_summary(compact: pd.DataFrame, targets: pd.DataFrame) -> pd.DataFrame:
-    """Each remedy over the targets whose held-out selection is material.
+    """Each remedy over the targets whose held-out contrast is material.
 
     One row per (group, remedy), the groups being each country and both
     together. Medians run over targets; "residual" is adaptive minus honest
@@ -167,7 +167,7 @@ def remedy_summary(compact: pd.DataFrame, targets: pd.DataFrame) -> pd.DataFrame
         g = df.loc[mask]
         if g.empty:
             continue
-        selection = g["selection"].abs()
+        contrast = g["selection"].abs()
         for name in REMEDY_NAMES:
             residual = g[f"{name}: residual"].abs()
             pinball = g[f"{name}: pinball"].dropna()
@@ -175,9 +175,9 @@ def remedy_summary(compact: pd.DataFrame, targets: pd.DataFrame) -> pd.DataFrame
             coverage = g[f"{name}: coverage_error"] - g["coverage_error"]
             rows.append({
                 "group": label, "remedy": name, "targets": len(g),
-                "median selection (absolute)": selection.median(),
+                "median contrast (absolute)": contrast.median(),
                 "median residual (absolute)": residual.median(),
-                "targets with a smaller residual": int((residual < selection).sum()),
+                "targets with a smaller residual": int((residual < contrast).sum()),
                 f"targets with residual below {REMOVED_BELOW}%":
                     int((residual < REMOVED_BELOW).sum()),
                 "median pinball change, %": pinball.median() if len(pinball) else float("nan"),
@@ -204,6 +204,69 @@ def remedy_hazards(compact: pd.DataFrame, targets: pd.DataFrame) -> str:
     return md(pd.DataFrame(rows)) if rows else "None."
 
 
+FULL_SIZE_NAMES = ("honest fills", "min_samples_leaf=5", "min_samples_leaf=20",
+                   "weighted_leaves=True", "half-size adaptive")
+LARGE_HAZARD = 100
+
+
+def full_size_summary(full: pd.DataFrame, targets: pd.DataFrame) -> pd.DataFrame:
+    """Each configuration against the fold's production-size forest.
+
+    One row per (group, configuration), over the targets whose held-out
+    contrast is material. The baseline is the leaf-1 pooled forest grown on
+    every donor of the sign, which is production's construction at production's
+    size. The production column needs every target of the group: the public
+    files carry no UK production number, so a group holding UK targets shows
+    none there.
+    """
+    material = targets.loc[targets["material"].astype(str).str.lower().eq("true"),
+                           ["key", "target"]]
+    df = full.merge(material, on=["key", "target"])
+    if "prod_effect" not in df:
+        df["prod_effect"] = float("nan")
+    base = df.loc[df["config"].eq("production"), ["key", "target", "vs_reported", "coverage_error"]]
+    base = base.rename(columns={"vs_reported": "base_vs_reported", "coverage_error": "base_coverage"})
+    df = df.loc[df["config"].ne("production")].merge(base, on=["key", "target"])
+    rows = []
+    for label, mask in report_groups(df):
+        for name in FULL_SIZE_NAMES:
+            g = df.loc[mask & df["config"].eq(name)]
+            if g.empty:
+                continue
+            pinball = pd.to_numeric(g["pinball_change"], errors="coerce").dropna()
+            prod = pd.to_numeric(g["prod_effect"], errors="coerce")
+            gap = g["vs_reported"].abs() - g["base_vs_reported"].abs()
+            rows.append({
+                "group": label, "configuration": name, "targets": len(g),
+                "median effect on the total (absolute)": g["effect"].abs().median(),
+                "median effect on production recipients (absolute)":
+                    prod.abs().median() if prod.notna().all() else float("nan"),
+                "median pinball change, %": pinball.median() if len(pinball) else float("nan"),
+                "targets with lower pinball": int((pinball < 0).sum()),
+                f"targets with pinball up more than {HAZARD_ABOVE}%": int((pinball > HAZARD_ABOVE).sum()),
+                f"targets with pinball up {LARGE_HAZARD}% or more": int((pinball >= LARGE_HAZARD).sum()),
+                "targets scored": len(pinball),
+                "median change in coverage gap": (g["coverage_error"] - g["base_coverage"]).median(),
+                "median change in gap to reported total": gap.median(),
+            })
+    return pd.DataFrame(rows)
+
+
+def full_size_hazards(full: pd.DataFrame, targets: pd.DataFrame) -> str:
+    """Targets a configuration worsens by more than ``HAZARD_ABOVE`` percent at full size."""
+    material = targets.loc[targets["material"].astype(str).str.lower().eq("true"),
+                           ["key", "target"]]
+    df = full.merge(material, on=["key", "target"])
+    rows = []
+    for name in FULL_SIZE_NAMES[:-1]:
+        g = df.loc[df["config"].eq(name)]
+        hit = g.loc[pd.to_numeric(g["pinball_change"], errors="coerce") > HAZARD_ABOVE]
+        for _, r in hit.sort_values("pinball_change", ascending=False).iterrows():
+            rows.append({"configuration": name, "fit": r["key"], "target": r["target"],
+                         "pinball change, %": pm(r["pinball_change"], r["pinball_change_se"], 1)})
+    return md(pd.DataFrame(rows)) if rows else "None."
+
+
 def remedy_summary_md(summary: pd.DataFrame) -> str:
     out = summary.copy()
     for c in out.columns:
@@ -218,7 +281,7 @@ def remedies_short(compact: pd.DataFrame) -> str:
     rows = []
     for _, r in compact.iterrows():
         row = {"fit": r["key"], "target": r["target"],
-               "selection": pm(r["selection"], r["selection_se"])}
+               "contrast": pm(r["selection"], r["selection_se"])}
         for n, short in zip(REMEDY_NAMES, ("honest", "leaf 5", "leaf 20", "tree weights")):
             row[f"{short}: total / residual / pinball"] = (
                 f"{r[f'{n}: effect']:+.1f} / {r[f'{n}: residual']:+.1f} / "
@@ -230,11 +293,12 @@ def remedies_short(compact: pd.DataFrame) -> str:
 def closer_summary(targets: pd.DataFrame) -> pd.DataFrame:
     """Which total lands nearer the held-out donors' reported total, per group.
 
-    Runs over targets with a measured, nonzero selection. "Forest as fitted" is
+    Runs over targets with a measured, nonzero contrast. "Forest as fitted" is
     the fold's own full forest, read as production reads it; adaptive and honest
     are the two fills of the half-sample trees. Gaps are absolute, % of the
-    held-out reported total. Medians, since a few rare targets run to thousands
-    of percent.
+    held-out reported total. Each fill's gap is the absolute value of its
+    fold-mean signed gap, so opposite fold errors cancel. Medians, since a few
+    rare targets run to thousands of percent.
     """
     sel = pd.to_numeric(targets["sel_pooled"], errors="coerce")
     df = targets.loc[sel.notna() & sel.ne(0)].copy()
@@ -262,7 +326,7 @@ def closer_summary_md(summary: pd.DataFrame) -> str:
 
 
 def production_vs_held_out(targets: pd.DataFrame) -> str:
-    """Selection on the production recipients beside selection on held-out donors.
+    """The contrast on the production recipients beside the contrast on held-out donors.
 
     The PUF chain's rows use adaptive over honest minus one as well as the
     percent of the drawn total, which reads unreliably on that chain.
@@ -295,7 +359,7 @@ def production_vs_held_out(targets: pd.DataFrame) -> str:
 
 
 def scaling_summary(scaling: pd.DataFrame) -> str:
-    """How selection moved when each fold's training donors halved again."""
+    """How the contrast moved when each fold's training donors halved again."""
     df = scaling.loc[pd.to_numeric(scaling["ratio"], errors="coerce").notna()]
     df = df.assign(ratio=pd.to_numeric(df["ratio"]))
     ratio = df["ratio"]
@@ -309,23 +373,30 @@ def scaling_summary(scaling: pd.DataFrame) -> str:
 
 
 def draw_summary_row(draws: pd.DataFrame) -> dict[str, int | float]:
-    """Selection in production's expected draws beside selection in pooled means."""
+    """The contrast in production's expected draws beside the contrast in pooled means."""
     df = draws.loc[pd.to_numeric(draws["sel_boot_mean"], errors="coerce").notna()]
     report, mean, draw = (pd.to_numeric(df[c]) for c in ("sel_mean", "sel_boot_mean", "sel_draw"))
     own, shift = pd.to_numeric(df["own_draw_gap"]), (draw - mean).abs()
     mass = pd.to_numeric(df["mass_effect"]).abs()
     return {"fits": df["key"].nunique(), "targets": len(df),
             "same sign": int((np.sign(mean) == np.sign(draw)).sum()),
-            "median selection in means": float(mean.abs().median()),
-            "median selection at survey-weight mass": float(report.abs().median()),
-            "median selection in draws": float(draw.abs().median()),
+            "median contrast in means": float(mean.abs().median()),
+            "median contrast at survey-weight mass": float(report.abs().median()),
+            "median contrast in draws": float(draw.abs().median()),
             "median shift": float(shift.median()),
             "largest shift": float(shift.max()),
             "median draw gap": float(own.median()),
             "smallest draw gap": float(own.min()),
             "largest draw gap": float(own.max()),
             "median mass effect": float(mass.median()),
-            "largest mass effect": float(mass.max())}
+            "largest mass effect": float(mass.max()),
+            # The same draws against the survey-weight honest fill the rest of the
+            # report uses: the shift then also carries the honest fill's resampling.
+            "same sign as survey-weight means": int((np.sign(report) == np.sign(draw)).sum()),
+            "median shift from survey-weight means": float((draw - report).abs().median()),
+            "largest shift from survey-weight means": float((draw - report).abs().max()),
+            "largest shift target": str(df.loc[(draw - report).abs().idxmax(), "key"]) + "/"
+                                    + str(df.loc[(draw - report).abs().idxmax(), "target"])}
 
 
 def draw_summary(draws: pd.DataFrame) -> str:
@@ -418,12 +489,54 @@ def uk_rebuild_checks() -> str:
     return md(pd.DataFrame(rows))
 
 
+def smoothing_check_md(check: pd.DataFrame) -> str:
+    """The synthetic split for every process, donor count, growth target and averaging."""
+    rows = []
+    for _, r in check.iterrows():
+        rows.append({"process": r["process"], "donors": int(r["donors"]),
+                     "trees grown on": r["trees grown on"], "averaging": r["mode"],
+                     "seeds": int(r["seeds"]),
+                     "contrast": pm(r["contrast"], r["contrast_se"]),
+                     "selection": pm(r["selection"], r["selection_se"]),
+                     "smoothing": pm(r["smoothing"], r["smoothing_se"]),
+                     "smoothing from the fitted mean": pm(r["smoothing_estimated"],
+                                                          r["smoothing_estimated_se"]),
+                     "estimate's error": pm(r["estimate_error"], r["estimate_error_se"])})
+    return md(pd.DataFrame(rows))
+
+
+def _estimated(smoothing: pd.DataFrame) -> pd.Series:
+    return smoothing["estimated"].astype(str).str.lower().eq("true")
+
+
+def smoothing_md(smoothing: pd.DataFrame) -> str:
+    """Each target's contrast split with a conditional mean fitted on held-out donors."""
+    df = smoothing.loc[_estimated(smoothing)
+                       & pd.to_numeric(smoothing.get("contrast"), errors="coerce").notna()]
+    rows = []
+    for _, r in df.iterrows():
+        prod = pd.to_numeric(pd.Series([r.get("prod_contrast")]), errors="coerce").iloc[0]
+        rows.append({"fit": r["key"], "target": r["target"],
+                     "contrast": pm(r["contrast"], r["contrast_se"]),
+                     "estimated smoothing": pm(r["smoothing"], r["smoothing_se"]),
+                     "estimated selection": pm(r["selection_est"], r["selection_est_se"]),
+                     "per-tree contrast": pm(r["contrast_tree"], r["contrast_tree_se"]),
+                     "per-tree estimated smoothing": pm(r["smoothing_tree"], r["smoothing_tree_se"]),
+                     "production: contrast / estimated smoothing, % of drawn": (
+                         f"{pm(r.get('prod_contrast'), r.get('prod_contrast_se'))} / "
+                         f"{pm(r.get('prod_smoothing'), r.get('prod_smoothing_se'))}"
+                         if pd.notna(prod) else "—"),
+                     "estimated selection material": "yes" if str(
+                         r.get("material_selection_est")).lower() == "true" else ""})
+    return md(pd.DataFrame(rows))
+
+
 LCFS_BUILD_RECORD = (ROOT / "prereqs/uk_staged_a6299504/staged/"
                      "uk-frs-calibration-attempt-20261025T091414Z-a6299504/build_record.json")
 
 
 def lcfs_levelling(targets: pd.DataFrame, build_record: Path = LCFS_BUILD_RECORD) -> str:
-    """The build's division over-draw ratios beside each division's selection.
+    """The build's division over-draw ratios beside each division's contrast.
 
     Private: the ratios are weighted frame spend, and the frame holds the
     SPI-channel households.
@@ -438,20 +551,20 @@ def lcfs_levelling(targets: pd.DataFrame, build_record: Path = LCFS_BUILD_RECORD
     for division, v in lev["divisions"].items():
         r = lcfs.loc[division]
         rows.append({"division": division.removesuffix("_consumption"),
-                     "selection, % (held-out)": r["sel_pooled"],
+                     "contrast, % (held-out)": r["sel_pooled"],
                      "se": r["sel_pooled_se"], "over-draw ratio": v["ratio"],
                      "levelling factor": v["factor"]})
-    df = pd.DataFrame(rows).sort_values("selection, % (held-out)", ascending=False)
-    rho = spearmanr(df["selection, % (held-out)"], df["over-draw ratio"])
+    df = pd.DataFrame(rows).sort_values("contrast, % (held-out)", ascending=False)
+    rho = spearmanr(df["contrast, % (held-out)"], df["over-draw ratio"])
     out = df.assign(**{
-        "selection, % (held-out)": [pm(a, b) for a, b in zip(df["selection, % (held-out)"],
+        "contrast, % (held-out)": [pm(a, b) for a, b in zip(df["contrast, % (held-out)"],
                                                             df["se"])],
         "over-draw ratio": df["over-draw ratio"].map(lambda x: f"{x:.3f}"),
         "levelling factor": df["levelling factor"].map(
             lambda x: "—" if x == 1.0 else f"{x:.3f}")}).drop(columns="se")
     return (md(out) + f"\n\nShared ratio {lev['shared_ratio']:.4f} (rule "
             f"`{lev['rule']}`, basis `{lev['basis']}`). Spearman rank correlation of "
-            f"selection with the over-draw ratio over the {len(df)} divisions: "
+            f"the contrast with the over-draw ratio over the {len(df)} divisions: "
             f"{rho.statistic:.3f} (p = {rho.pvalue:.4f}).")
 
 
@@ -469,23 +582,25 @@ def main() -> None:
     cov = pd.read_csv(args.source / "coverage.csv")
     parts = ["# Tables\n", "Generated by `harness/report_tables.py` from "
              f"`{args.source.relative_to(ROOT) if args.source.is_relative_to(ROOT) else args.source}`."
-             " Selection is adaptive minus honest fills of the same trees, as % of the "
+             " The contrast is adaptive minus honest fills of the same trees, as % of the "
              "held-out fold's reported total (held-out) or of the production recipients' "
-             "drawn total (production); mean over 5 folds ± its standard error.\n",
+             "drawn total (production); mean over 5 folds ± its standard error. It carries "
+             "selection (the splits' use of the filling rows' values) and the two fills' "
+             "different smoothing; the smoothing sections split it.\n",
              "## Coverage of production QRF outputs\n", coverage_counts(cov), "",
-             "## Material targets\n", "Selection exceeds its fold standard error and 0.5% of "
+             "## Material targets\n", "The contrast exceeds its fold standard error and 0.5% of "
              "the total on the held-out donors or on the production recipients.\n",
              material_table(targets), ""]
     comp = args.source / "remedies_compact.csv"
     if comp.exists():
         c = pd.read_csv(comp)
-        parts += ["## Remedies\n", "Each cell: effect on the total / residual selection / "
+        parts += ["## Remedies\n", "Each cell: effect on the total / residual contrast / "
                   "change in mean pinball loss, all %; effect and residual as % of the held-out "
                   "reported total, pinball relative to production's configuration.\n",
                   remedies_short(c), ""]
         material_col = targets[["key", "target", "material"]]
-        parts += ["## Remedies across fits\n", "Over the targets whose held-out selection is "
-                  "material. Selection and residual are % of the held-out total. A coverage gap "
+        parts += ["## Remedies across fits\n", "Over the targets whose held-out contrast is "
+                  "material. Contrast and residual are % of the held-out total. A coverage gap "
                   "is the mean absolute difference between each tau and the share of held-out "
                   "positive donors at or below that quantile; a gap to the reported total is the "
                   "absolute difference between the imputed and the held-out reported total, %. "
@@ -494,38 +609,76 @@ def main() -> None:
         parts += [f"## Where a remedy raises pinball loss by more than {HAZARD_ABOVE}%\n",
                   "Over the same targets, the change from production's configuration, mean over "
                   "folds ± its standard error.\n", remedy_hazards(c, material_col), ""]
+    full = args.source / "full_size.csv"
+    if full.exists():
+        f = pd.read_csv(full)
+        material_col = targets[["key", "target", "material"]]
+        parts += ["## Remedies at production's forest size\n", "Over the targets whose held-out "
+                  "contrast is material. The baseline is the fold's leaf-1 pooled forest grown on "
+                  "every donor of the sign. Honest fills and the half-size adaptive fill come from "
+                  "the same-tree test's half-size trees; the leaf floors and tree weights grow at "
+                  "full size. The effect on the total is % of the held-out reported total. The "
+                  "effect on production recipients is the configuration's total over the baseline's "
+                  "on those recipients, minus one, %. Negative changes improve on the baseline.\n",
+                  remedy_summary_md(full_size_summary(f, material_col)), ""]
+        parts += [f"## Where a configuration raises pinball loss by more than {HAZARD_ABOVE}% at "
+                  "production's forest size\n", "Over the same targets, the change from the fold's "
+                  "full-size forest, mean over folds ± its standard error.\n",
+                  full_size_hazards(f, material_col), ""]
     parts += ["## Which total lands nearer the held-out reported total\n",
               "Median absolute gap to the held-out donors' reported total, % of that total, over "
-              "targets with a measured, nonzero selection. The forest as fitted is the fold's "
-              "full forest, read as production reads it; the two fills belong to the half-sample "
-              "trees. Targets share donors within a fit, so these counts describe the targets "
+              "targets with a measured, nonzero contrast. Each gap is the absolute value of the "
+              "fold-mean signed gap, so opposite fold errors cancel. The forest as fitted is the "
+              "fold's full forest, read as production reads it; the two fills belong to the "
+              "half-sample trees. Targets share donors within a fit, so these counts describe the targets "
               "rather than independent trials.\n", closer_summary_md(closer_summary(targets)), ""]
     if pd.to_numeric(targets["prod_sel_pooled"], errors="coerce").notna().any():
         parts += ["## Production recipients beside held-out donors\n",
-                  "Selection as % of the drawn total on production recipients (or, on the PUF "
+                  "The contrast as % of the drawn total on production recipients (or, on the PUF "
                   "chain's second row, adaptive over honest minus one) and of the reported total "
                   "on held-out donors.\n", production_vs_held_out(targets), ""]
     scaling = args.source / "scaling.csv"
     if scaling.exists():
-        parts += ["## Selection as training donors halve\n",
-                  "Ratio of selection after thinning each fold's training donors to half, over "
-                  "selection as run, held-out donors.\n",
+        parts += ["## The contrast as training donors halve\n",
+                  "Ratio of the contrast after thinning each fold's training donors to half, over "
+                  "the contrast as run, held-out donors.\n",
                   scaling_summary(pd.read_csv(scaling)), ""]
     draws = args.source / "draw_means.csv"
     if draws.exists():
-        parts += ["## Selection in production's expected draws\n",
+        parts += ["## The contrast in production's expected draws\n",
                   "Held-out donors, % of the held-out reported total. The honest fill here takes "
-                  "integer masses built as production builds in-bag ones. Selection in means "
-                  "compares each fill's pooled mean; selection in draws compares each fill's "
+                  "integer masses built as production builds in-bag ones. The contrast in means "
+                  "compares each fill's pooled mean; the contrast in draws compares each fill's "
                   "expected draw on Microcosm's quantile grid. The shift is the absolute difference "
                   "between them; the draw gap is the fold's full forest's expected draw over its "
-                  "pooled mean, minus one; the mass effect is the absolute change in selection in "
+                  "pooled mean, minus one; the mass effect is the absolute change in the contrast in "
                   "means from giving the honest fill integer masses instead of survey-weight "
                   "masses.\n", draw_summary(pd.read_csv(draws)), ""]
+    check = args.source / "smoothing_check.csv"
+    if check.exists():
+        parts += ["## Synthetic processes: the contrast split\n",
+                  "`harness/smoothing_check.py`: % of the recipients' true total, mean over seeds "
+                  "± its standard error. Selection and smoothing use the known conditional mean; "
+                  "the fitted mean is `selection.mean_model` fitted on a held-out sample, as the "
+                  "real-data split fits it, and its error is its smoothing minus the true "
+                  "smoothing.\n", smoothing_check_md(pd.read_csv(check)), ""]
+    smoothing = args.source / "smoothing.csv"
+    if smoothing.exists():
+        s = pd.read_csv(smoothing)
+        n_missing = int((~_estimated(s)).sum())
+        parts += ["## The contrast split into selection and smoothing\n",
+                  "`harness/smoothing.py`: held-out donors, % of the held-out reported total, "
+                  "mean over 5 folds ± its standard error. Estimated smoothing evaluates a "
+                  "conditional mean fitted on each sign's held-out donors (which fill no tree) at "
+                  "the filling rows; estimated selection is the contrast minus it. Estimated "
+                  "selection is material when it exceeds its fold standard error and 0.5%. "
+                  f"{n_missing} targets lack an estimate, because some fold left fewer than "
+                  "100 held-out donors of a sign or the target rests on too few donors to "
+                  "report.\n", smoothing_md(s), ""]
     parts += ["## Reproduction checks (US)\n", reproduction_table(), ""]
     if args.private:
         parts += ["## UK release rebuilds against the build\n", uk_rebuild_checks(), ""]
-        parts += ["## LCFS division levelling against selection\n",
+        parts += ["## LCFS division levelling against the contrast\n",
                   lcfs_levelling(pd.read_csv(args.source / "all_targets.csv")), ""]
     parts += ["## Every measured target\n", all_measured(targets), ""]
     args.out.parent.mkdir(parents=True, exist_ok=True)

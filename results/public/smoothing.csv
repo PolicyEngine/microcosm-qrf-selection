@@ -1,0 +1,16 @@
+key,target,folds,estimated,n_fit_min,contrast,contrast_se,smoothing,smoothing_se,selection_est,selection_est_se,contrast_tree,contrast_tree_se,smoothing_tree,smoothing_tree_se,selection_est_tree,selection_est_tree_se,prod_contrast,prod_contrast_se,prod_contrast_vs_honest,prod_contrast_vs_honest_se,prod_smoothing,prod_smoothing_se,prod_smoothing_vs_honest,prod_smoothing_vs_honest_se,prod_selection_est,prod_selection_est_se,prod_selection_est_vs_honest,prod_selection_est_vs_honest_se,material_selection_est,n_train_nonzero,suppressed
+acs_rent,rent,5,True,406.0,2.0322006917228976,1.463327967798673,0.0233007734985231,0.1434750348463051,2.0088999182243743,1.4061161571014564,0.5841614977650179,1.5531640620888971,-0.3280343973194796,0.1519708616478155,0.9121958950844976,1.5210174640738898,4.712094931419151,0.8949988965444722,5.003418136451028,0.9524667605731476,0.2624816488488088,0.0473669441983009,0.2787846121559793,0.050495897499936,4.4496132825703425,0.8767584847626577,4.724633524295049,0.9329200939685782,True,1719.0,
+puf_support_childcare,spm_unit_pre_subsidy_childcare_expenses,5,False,,,,,,,,,,,,,,,,,,,,,,,,,,False,428.0,
+puf_support_disability_benefits,disability_benefits,5,False,,,,,,,,,,,,,,,,,,,,,,,,,,,,fewer than 50 nonzero training donors
+puf_support_energy_subsidy,spm_unit_energy_subsidy,5,False,,,,,,,,,,,,,,,,,,,,,,,,,,False,148.0,
+puf_support_weeks_unemployed,weeks_unemployed,5,False,,,,,,,,,,,,,,,,,,,,,,,,,,False,196.0,
+puf_support_workers_compensation,workers_compensation,5,False,,,,,,,,,,,,,,,,,,,,,,,,,,,,fewer than 50 nonzero training donors
+sipp_financial_assets__2,bond_assets,5,True,133.0,-5.7686619090949325,7.274668468592388,1.3528952788978883,2.074090434329151,-7.121557187992821,8.602792288206484,-7.78811636885152,5.783065349587896,0.1146417538132894,2.179737468566376,-7.902758122664808,7.606148629649731,-5.326455443403425,8.078636173541183,-6.349069773224518,9.814797677209606,0.3414231399339726,2.0710817341249013,0.3658972016200923,2.508757817249435,-5.667878583337398,6.349877507569183,-6.714966974844609,7.710378159984185,False,558.0,
+sipp_head_start,takes_up_head_start_if_eligible,5,True,,,,,,,,,,,,,,,,,,,,,,,,,,,,fewer than 50 nonzero training donors
+uk_etb_vat,full_rate_vat_expenditure_rate,5,True,832.0,0.3139276873756305,0.3481439449385951,-0.0954207814945841,0.0533961503388446,0.4093484688702148,0.3648682050830544,-0.1645334433754863,0.4051855614315923,-0.0097942260900506,0.0468200055003768,-0.1547392172854356,0.418394396827483,,,,,,,,,,,,,False,3360.0,
+uk_salary_sacrifice,pension_contributions_via_salary_sacrifice,5,False,,,,,,,,,,,,,,,,,,,,,,,,,,False,362.0,
+uk_uc_reporter_redraw,universal_credit_reported_amount,5,True,407.0,0.6597044910213192,1.072548104671228,0.4200200215480704,0.3555679343283507,0.239684469473249,1.1618528963051336,1.0443399330287466,0.7611072293111679,0.648143015988756,0.3135455438092432,0.3961969170399905,0.94627607124749,,,,,,,,,,,,,False,1678.0,
+uk_was__0,owned_land,5,False,,,,,,,,,,,,,,,,,,,,,,,,,,False,145.0,
+uk_was__10,non_residential_property_secured_debt,5,False,,,,,,,,,,,,,,,,,,,,,,,,,,,,fewer than 50 nonzero training donors
+uk_was_lisa,lifetime_isa_balance,5,False,,,,,,,,,,,,,,,,,,,,,,,,,,False,94.0,
+voluntary_filing,would_file_taxes_voluntarily,5,True,,,,,,,,,,,,,,,,,,,,,,,,,,,,fewer than 50 nonzero training donors

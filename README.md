@@ -2,9 +2,11 @@
 
 Microcosm builds PolicyEngine's microdata, and its `RegimeGatedQRF` imputes
 hundreds of survey variables onto the population frame. Each amount forest
-reads its leaves with the same rows that chose its splits. This repository
-measures what that does to the totals the production build imputes, target by
-target, and how four remedies change it.
+fills its leaves with the same rows that chose its splits. This repository
+compares that adaptive fill with an honest fill of the same trees on the
+targets the production build imputes, splits the contrast into selection and
+the fills' different smoothing, and measures how four remedies change the
+totals and the quantile fit.
 
 Start with [REPORT.md](REPORT.md). `results/public/TABLES.md` lists every
 reported target, and the CSVs beside it hold the numbers.
@@ -20,7 +22,10 @@ reported target, and the CSVs beside it hold the numbers.
 | `harness/aggregate.py`, `remedies.py`, `remedies_plan.py`, `coverage_by_tau.py`, `scaling.py`, `draw_means.py`, `coverage.py`, `inventory_totals.py`, `resummarize.py`, `empty_check.py`, `make_tables.sh` | Summaries of the runs |
 | `harness/compare_runs.py`, `rerun_check.sh` | Compare two runs number by number; rerun finished fits under the current harness |
 | `harness/known_answer.py` | The test on synthetic data where the answer is known |
-| `harness/run_draw_means.sh` | Selection in production's expected draws on 13 fits |
+| `harness/smoothing_check.py` | The contrast's split into selection and smoothing on synthetic processes with a known conditional mean |
+| `harness/smoothing_plan.py`, `run_smoothing.sh`, `smoothing.py` | The same split on every reported fit, with a conditional mean fitted on held-out donors |
+| `harness/run_draw_means.sh` | The contrast in production's expected draws on 13 fits |
+| `harness/run_full_size.sh`, `full_size.py` | Each remedy against the forest production would grow on all of a fold's donors |
 | `harness/report_rows.py` | Generates every table row `REPORT.md` quotes from the public files; `harness/tests/test_report_numbers.py` checks them |
 | `harness/export_public.py`, `report_tables.py` | Write the public result files and their tables |
 | `harness/vendor/` | Byte-identical helpers from [qrf-moop-shortfall](https://github.com/PolicyEngine/qrf-moop-shortfall) at dba3940 (MIT) |

@@ -112,19 +112,21 @@ COVERAGE_LABELS = [
     ("measured", "measured"),
     ("measured_as", "measured under the fit's own name"),
     ("derived", "derived from measured draws"),
-    ("binary_zero", "binary target, selection zero by construction"),
+    ("binary_zero", "binary target (a gate, no amount forest)"),
     ("not_qrf", "another method (carry, rule, classifier, rates)"),
     ("not_produced", "declared but absent from the release"),
     ("not_rebuilt", "QRF target this analysis cannot rebuild"),
 ]
-_ADAPTIVE_1 = ("adaptive", 1, "adaptive, leaf 1 (production)")
-_HONEST_1 = ("honest", 1, "honest, leaf 1")
+_PRODUCTION = ("production", "full-size forest, leaf 1 (production)")
+_HALF_ADAPTIVE = ("half-size adaptive", "half-size forest, adaptive fill")
+_HONEST = ("honest fills", "half-size forest, honest fill")
+_LEAF_20 = ("min_samples_leaf=20", "full-size forest, leaf 20")
 DISTRIBUTION_ROWS = [
     ("household_furnishings_consumption", "household furnishings",
-     [_ADAPTIVE_1, _HONEST_1, ("adaptive", 20, "adaptive, leaf 20")]),
-    ("health_consumption", "health", [_ADAPTIVE_1, _HONEST_1]),
+     [_PRODUCTION, _HALF_ADAPTIVE, _HONEST, _LEAF_20]),
+    ("health_consumption", "health", [_PRODUCTION, _HALF_ADAPTIVE, _HONEST]),
     ("housing_water_and_electricity_consumption", "housing, water and electricity",
-     [_ADAPTIVE_1, _HONEST_1]),
+     [_PRODUCTION, _HALF_ADAPTIVE, _HONEST]),
 ]
 REMEDY_GROUPS = ("US outside the PUF chain", "PUF chain", "UK", "All")
 
@@ -139,21 +141,83 @@ def plus_minus(x: float, se: float, digits: int = 2) -> str:
     return signed(x, digits) + (f" ± {se:.{digits}f}" if pd.notna(se) else "")
 
 
-def selection_rows(targets: pd.DataFrame) -> list[str]:
+def _split_cells(smoothing: pd.DataFrame, key: str, target: str) -> str:
+    """'estimated smoothing | estimated selection' for one target, or dashes."""
+    s = smoothing.loc[smoothing["key"].eq(key) & smoothing["target"].eq(target)]
+    if s.empty or not _true(s["estimated"]).iloc[0]:
+        return "— | —"
+    r = s.iloc[0]
+    return (f"{plus_minus(r.smoothing, r.smoothing_se)} | "
+            f"{plus_minus(r.selection_est, r.selection_est_se)}")
+
+
+def selection_rows(targets: pd.DataFrame, smoothing: pd.DataFrame) -> list[str]:
+    """Section 4's tables: the contrast, its estimated split and the production column."""
     a = targets.set_index(["key", "target"])
     out = []
     for key, target, label, donors in US_ROWS:
         r = a.loc[(key, target)]
         out.append(f"| {donors} | {label} | {plus_minus(r.sel_pooled, r.sel_pooled_se)} | "
+                   f"{_split_cells(smoothing, key, target)} | "
                    f"{plus_minus(r.prod_sel_pooled, r.prod_sel_pooled_se)} |")
     for target, label in PUF_ROWS:
         r = a.loc[("puf_chain_twin", target)]
         out.append(f"| {label} | {plus_minus(r.sel_pooled, r.sel_pooled_se)} | "
+                   f"{_split_cells(smoothing, 'puf_chain_twin', target)} | "
                    f"{plus_minus(r.prod_sel_vs_honest, r.prod_sel_vs_honest_se)} |")
     for key, target, label, donors in UK_ROWS:
         r = a.loc[(key, target)]
-        out.append(f"| {donors} | {label} | {plus_minus(r.sel_pooled, r.sel_pooled_se)} |")
+        out.append(f"| {donors} | {label} | {plus_minus(r.sel_pooled, r.sel_pooled_se)} | "
+                   f"{_split_cells(smoothing, key, target)} |")
     return out
+
+
+CHECK_LABELS = {"deterministic": "y = exp(x1), no noise", "lognormal": "lognormal",
+                "lognormal, heavy tail": "lognormal, heavy tail",
+                "lognormal, discrete predictors": "lognormal, discrete predictors",
+                "no signal": "no signal (the known-answer process)"}
+CHECK_GROWN = {"target": "the target", "noise": "separate noise"}
+
+
+def smoothing_check_rows(check: pd.DataFrame) -> list[str]:
+    """Section 2's synthetic split: pooled averaging, trees grown on the target or on noise."""
+    out = []
+    df = check.loc[check["mode"].eq("pooled") & check["trees grown on"].isin(list(CHECK_GROWN))]
+    for process, label in CHECK_LABELS.items():
+        for grown in CHECK_GROWN:
+            for _, r in df.loc[df["process"].eq(process) & df["trees grown on"].eq(grown)].iterrows():
+                out.append(f"| {label} | {CHECK_GROWN[grown]} | {int(r['donors']):,} | "
+                           f"{plus_minus(r['contrast'], r['contrast_se'])} | "
+                           f"{plus_minus(r['selection'], r['selection_se'])} | "
+                           f"{plus_minus(r['smoothing'], r['smoothing_se'])} | "
+                           f"{plus_minus(r['smoothing_estimated'], r['smoothing_estimated_se'])} |")
+    return out
+
+
+def smoothing_numbers(targets: pd.DataFrame, smoothing: pd.DataFrame) -> dict[str, int | float]:
+    """The split's counts and medians the report states, over reported targets with an estimate."""
+    rep = targets.loc[targets["suppressed"].fillna("").eq(""), ["key", "target", "material"]]
+    df = smoothing.merge(rep, on=["key", "target"])
+    est = df.loc[_true(df["estimated"])]
+    uk, puf = est["key"].str.startswith("uk_"), est["key"].str.startswith("puf_chain")
+    con, smo, sel = (pd.to_numeric(est[c], errors="coerce") for c in
+                     ("contrast", "smoothing", "selection_est"))
+    mat_c, mat_s = _true(est["material"]), _true(est["material_selection_est"])
+    return {"reported": len(df), "estimated": len(est), "missing": len(df) - len(est),
+            "us_estimated": int((~uk).sum()), "uk_estimated": int(uk.sum()),
+            "material_contrast": int(mat_c.sum()),
+            "material_selection": int(mat_s.sum()),
+            "us_material_selection": int((mat_s & ~uk).sum()),
+            "uk_material_selection": int((mat_s & uk).sum()),
+            "outside_estimated": int((~uk & ~puf).sum()),
+            "outside_material_selection": int((mat_s & ~uk & ~puf).sum()),
+            "puf_estimated": int(puf.sum()), "puf_material_selection": int((mat_s & puf).sum()),
+            "material_both": int((mat_c & mat_s).sum()),
+            "same_sign": int((mat_c & mat_s & (np.sign(con) == np.sign(sel))).sum()),
+            "median_contrast": float(con.abs().median()),
+            "median_smoothing": float(smo.abs().median()),
+            "median_selection": float(sel.abs().median()),
+            "smoothing_over_half": int((smo.abs() > 0.5 * con.abs()).sum())}
 
 
 def closer_rows(targets: pd.DataFrame) -> list[str]:
@@ -173,13 +237,33 @@ def remedy_rows(compact: pd.DataFrame, targets: pd.DataFrame) -> list[str]:
     for _, r in s.loc[s["group"].isin(REMEDY_GROUPS)].iterrows():
         out.append(" ".join([
             f"| {r['group']} | {r['remedy']} | {r['targets']} |",
-            f"{r['median selection (absolute)']:.2f} |",
+            f"{r['median contrast (absolute)']:.2f} |",
             f"{r['median residual (absolute)']:.2f} |",
             f"{r['targets with a smaller residual']} |",
             f"{r[f'targets with residual below {RT.REMOVED_BELOW}%']} |",
             f"{signed(r['median pinball change, %'])} |",
             f"{r['targets with lower pinball']} |",
             f"{r[f'targets with pinball up more than {RT.HAZARD_ABOVE}%']} |",
+            f"{signed(r['median change in coverage gap'], 3)} |",
+            f"{signed(r['median change in gap to reported total'])} |",
+        ]))
+    return out
+
+
+def full_size_rows(full: pd.DataFrame, targets: pd.DataFrame) -> list[str]:
+    """Each configuration against the fold's production-size forest, per group."""
+    out = []
+    s = RT.full_size_summary(full, targets[["key", "target", "material"]])
+    for _, r in s.loc[s["group"].isin(REMEDY_GROUPS)].iterrows():
+        prod = r["median effect on production recipients (absolute)"]
+        out.append(" ".join([
+            f"| {r['group']} | {r['configuration']} | {r['targets']} |",
+            f"{r['median effect on the total (absolute)']:.2f} |",
+            "— |" if pd.isna(prod) else f"{prod:.2f} |",
+            f"{signed(r['median pinball change, %'])} |",
+            f"{r['targets with lower pinball']} |",
+            f"{r[f'targets with pinball up more than {RT.HAZARD_ABOVE}%']} |",
+            f"{r[f'targets with pinball up {RT.LARGE_HAZARD}% or more']} |",
             f"{signed(r['median change in coverage gap'], 3)} |",
             f"{signed(r['median change in gap to reported total'])} |",
         ]))
@@ -214,37 +298,90 @@ def known_answer_rows(known: pd.DataFrame) -> list[str]:
             for _, r in known.iterrows()]
 
 
-def distribution_rows(cov: pd.DataFrame) -> list[str]:
+def distribution_rows(full: pd.DataFrame) -> list[str]:
     """Section 5's table: coverage at the 10th, 50th and 90th percentiles, LCFS divisions."""
-    c = cov.loc[cov["key"].eq("uk_lcfs")].set_index(["target", "fill", "min_samples_leaf"])
+    c = full.loc[full["key"].eq("uk_lcfs")].set_index(["target", "config"])
     out = []
     for target, label, fills in DISTRIBUTION_ROWS:
-        for i, (fill, leaf, name) in enumerate(fills):
-            r = c.loc[(target, fill, leaf)]
+        for i, (config, name) in enumerate(fills):
+            r = c.loc[(target, config)]
             out.append(f"| {label if i == 0 else ''} | {name} | {100 * r['coverage_0.1']:.1f}% | "
                        f"{100 * r['coverage_0.5']:.1f}% | {100 * r['coverage_0.9']:.1f}% |")
     return out
 
 
-def lcfs_coverage_ranges(cov: pd.DataFrame) -> dict[str, int]:
-    """Whole-percent ranges over the LCFS remedy targets, at production's leaf setting."""
-    c = cov.loc[cov["key"].eq("uk_lcfs") & cov["min_samples_leaf"].eq(1)]
+def lcfs_coverage_ranges(full: pd.DataFrame) -> dict[str, int]:
+    """Whole-percent ranges over the LCFS remedy targets: the production-size forest and honest fills."""
+    c = full.loc[full["key"].eq("uk_lcfs")]
     out = {}
-    for fill, name in (("adaptive", "a"), ("honest", "h")):
-        d = c.loc[c["fill"].eq(fill)]
+    for config, name in (("production", "a"), ("honest fills", "h")):
+        d = c.loc[c["config"].eq(config)]
         for col, tau in (("coverage_0.1", "10"), ("coverage_0.9", "90")):
             out[f"{name}{tau}lo"] = round(100 * d[col].min())
             out[f"{name}{tau}hi"] = round(100 * d[col].max())
-    out["n"] = int(c.loc[c["fill"].eq("adaptive")].shape[0])
+    out["n"] = int(c.loc[c["config"].eq("production")].shape[0])
     return out
 
 
+def lcfs_gap_ranges(full: pd.DataFrame) -> dict[str, int | float]:
+    """The LCFS remedy targets' mean coverage gaps, against the production-size forest."""
+    c = full.loc[full["key"].eq("uk_lcfs")].pivot(index="target", columns="config",
+                                                  values="coverage_error")
+    out = {"n": len(c), "prod_lo": c["production"].min(), "prod_hi": c["production"].max()}
+    for config, name in (("honest fills", "honest"), ("min_samples_leaf=20", "leaf20")):
+        lower = c[config] < c["production"]
+        out[f"{name}_lower"] = int(lower.sum())
+        out[f"{name}_lo"], out[f"{name}_hi"] = c[config].min(), c[config].max()
+        if not lower.all():
+            worst = (c[config] - c["production"]).idxmax()
+            out[f"{name}_worst"] = (worst, c.loc[worst, "production"], c.loc[worst, config])
+    return out
+
+
+def full_size_numbers(full: pd.DataFrame, targets: pd.DataFrame) -> dict[str, dict]:
+    """Each configuration's numbers at production's forest size, over the material targets."""
+    s = RT.full_size_summary(full, targets[["key", "target", "material"]])
+    out = {}
+    for _, r in s.loc[s["group"].eq("All")].iterrows():
+        out[r["configuration"]] = {
+            "n": int(r["targets"]),
+            "pinball": float(r["median pinball change, %"]),
+            "lower": int(r["targets with lower pinball"]),
+            "up": int(r[f"targets with pinball up more than {RT.HAZARD_ABOVE}%"]),
+            "big": int(r[f"targets with pinball up {RT.LARGE_HAZARD}% or more"]),
+            "coverage": float(r["median change in coverage gap"]),
+            "gap": float(r["median change in gap to reported total"]),
+            "effect": float(r["median effect on the total (absolute)"])}
+    for group, name in (("US outside the PUF chain", "outside"), ("PUF chain", "puf")):
+        for _, r in s.loc[s["group"].eq(group)].iterrows():
+            out[r["configuration"]][f"prod_{name}"] = float(
+                r["median effect on production recipients (absolute)"])
+    return out
+
+
+def full_size_hazards(full: pd.DataFrame, targets: pd.DataFrame, config: str) -> pd.DataFrame:
+    """Material targets on which ``config`` raises pinball by more than the hazard threshold."""
+    material = targets.loc[targets["material"].astype(str).str.lower().eq("true"),
+                           ["key", "target", "n_train_nonzero"]]
+    df = full.loc[full["config"].eq(config)].merge(material, on=["key", "target"],
+                                                   suffixes=("_full", ""))
+    return df.loc[df["pinball_change"] > RT.HAZARD_ABOVE].sort_values("pinball_change",
+                                                                      ascending=False)
+
+
 def draw_rows(draws: pd.DataFrame) -> list[str]:
+    """Section 2's draw table: expected draws against each honest fill's pooled means."""
     d = RT.draw_summary_row(draws)
-    return [f"| {d['fits']} | {d['targets']} | {d['same sign']} | "
-            f"{d['median selection in means']:.2f} | {d['median selection in draws']:.2f} | "
-            f"{d['median shift']:.2f} | {d['largest shift']:.2f} | "
-            f"{signed(d['median draw gap'])} | {signed(d['smallest draw gap'])} |"]
+    n = d["targets"]
+    return [f"| the honest fill at integer masses, as production builds in-bag ones | {d['same sign']} of {n} | "
+            f"{d['median contrast in means']:.2f} | {d['median contrast in draws']:.2f} | "
+            f"{d['median shift']:.2f} | {d['largest shift']:.2f} |",
+            f"| the honest fill at survey-weight masses, as in the rest of this report | "
+            f"{d['same sign as survey-weight means']} of {n} | "
+            f"{d['median contrast at survey-weight mass']:.2f} | "
+            f"{d['median contrast in draws']:.2f} | "
+            f"{d['median shift from survey-weight means']:.2f} | "
+            f"{d['largest shift from survey-weight means']:.2f} |"]
 
 
 def _true(s: pd.Series) -> pd.Series:
@@ -287,17 +424,27 @@ def load(public: Path = PUBLIC) -> dict[str, pd.DataFrame]:
             "coverage": pd.read_csv(public / "coverage.csv"),
             "known": pd.read_csv(public / "known_answer.csv"),
             "draws": pd.read_csv(public / "draw_means.csv"),
-            "coverage_by_tau": pd.read_csv(public / "coverage_by_tau.csv")}
+            "full_size": pd.read_csv(public / "full_size.csv"),
+            "smoothing": _optional(public / "smoothing.csv"),
+            "check": _optional(public / "smoothing_check.csv")}
+
+
+def _optional(path: Path) -> pd.DataFrame:
+    return pd.read_csv(path) if path.exists() else pd.DataFrame(
+        columns=["key", "target", "estimated", "process", "mode", "trees grown on"])
 
 
 def all_rows(public: Path = PUBLIC) -> dict[str, list[str]]:
     d = load(public)
-    return {"selection": selection_rows(d["targets"]), "closer": closer_rows(d["targets"]),
+    return {"selection": selection_rows(d["targets"], d["smoothing"]),
+            "closer": closer_rows(d["targets"]),
+            "smoothing_check": smoothing_check_rows(d["check"]),
             "remedies": remedy_rows(d["compact"], d["targets"]),
             "lcfs": lcfs_rows(d["compact"]), "coverage": coverage_rows(d["coverage"]),
             "known_answer": known_answer_rows(d["known"]),
             "draws": draw_rows(d["draws"]),
-            "distribution": distribution_rows(d["coverage_by_tau"])}
+            "distribution": distribution_rows(d["full_size"]),
+            "full_size": full_size_rows(d["full_size"], d["targets"])}
 
 
 def main() -> None:
@@ -305,7 +452,11 @@ def main() -> None:
         print(f"\n## {name}\n")
         print("\n".join(rows))
     print("\n## headline\n")
-    for k, v in headline(load()["targets"]).items():
+    d = load()
+    for k, v in headline(d["targets"]).items():
+        print(k, v)
+    print("\n## smoothing\n")
+    for k, v in smoothing_numbers(d["targets"], d["smoothing"]).items():
         print(k, v)
 
 

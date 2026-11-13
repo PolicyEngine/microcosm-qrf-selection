@@ -47,7 +47,7 @@ def test_summary_uses_only_material_targets_and_splits_by_country():
 def test_summary_counts_and_medians():
     out = RT.remedy_summary(compact_rows(), targets_rows())
     row = out.loc[out["group"].eq("All") & out["remedy"].eq("min_samples_leaf=20")].iloc[0]
-    assert row["median selection (absolute)"] == 4.0
+    assert row["median contrast (absolute)"] == 4.0
     assert row["median residual (absolute)"] == 1.0
     assert row["targets with a smaller residual"] == 2  # 1 < 10 and 0.2 < 2, not 5 < 4
     assert row[f"targets with residual below {RT.REMOVED_BELOW}%"] == 1

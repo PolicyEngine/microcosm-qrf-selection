@@ -10,6 +10,8 @@ writes ``results/selection_<key><tag>.json`` plus a summary CSV.
 Usage:
   python run_selection.py scf_net_worth
   python run_selection.py scf_net_worth --variants 1 5 20 --quantiles --tag _remedies
+  python run_selection.py scf_net_worth --quantiles --full-variants 1 5 20 --tag _fullsize
+  python run_selection.py scf_net_worth --smoothing --tag _smoothing
 """
 
 from __future__ import annotations
@@ -62,6 +64,10 @@ def main() -> None:
                     help="thin each fold's training donors to this share first")
     ap.add_argument("--draw-means", action="store_true",
                     help="also compute each fill's expected total under production's draw")
+    ap.add_argument("--full-variants", type=int, nargs="+", default=(),
+                    help="also grow each fold's production-size forest at these leaf floors")
+    ap.add_argument("--smoothing", action="store_true",
+                    help="split each contrast into selection and smoothing (skips own forests)")
     args = ap.parse_args()
 
     table, meta, groups, prod = load_inputs(args.key, not args.no_production)
@@ -81,7 +87,8 @@ def main() -> None:
         quantiles=args.quantiles, only=args.only,
         max_samples_leaf=meta.get("max_samples_leaf"), meta=run_meta, production=prod,
         train_fraction=args.train_fraction,
-        draw_grid=S._qrf_module()._QUANTILE_GRID if args.draw_means else None)
+        draw_grid=S._qrf_module()._QUANTILE_GRID if args.draw_means else None,
+        full_variants=tuple(args.full_variants), smoothing=args.smoothing)
     for v in args.variants:
         summary = S.summarize(doc, variant=str(v))
         summary.to_csv(out.with_name(out.stem + f"_v{v}.csv"), index=False)

@@ -159,9 +159,9 @@ def salary_sacrifice():
     income, frame-wide, drawn with uniforms keyed on the build ``person_id``.
 
     After the fit the stage limits amounts to pay and converts the employee
-    contributions of a random 24.5% of people with contributions and no salary
-    sacrifice (``salary_sacrifice.py:654-689``; rate from the stage's receipt
-    in the build record). A converted record's pay falls by the amount moved,
+    contributions of a random share of people with contributions and no salary
+    sacrifice (``salary_sacrifice.py:654-689``; the rebuild reads that share
+    from the stage's receipt in the build record). A converted record's pay falls by the amount moved,
     so the release shows converted rows with salary sacrifice and lower pay.
     The rebuild undoes the conversion:
 

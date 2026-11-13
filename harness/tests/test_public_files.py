@@ -10,8 +10,10 @@ every public file:
   households);
 - every target whose sign forests grew on fewer than 50 nonzero training
   donors carries no result, and says so;
-- a UK target appears in the remedy files only when its held-out selection
+- a UK target appears in the remedy files only when its held-out contrast
   is material;
+- no suppressed target appears in a supplemental file, whose rows exist only
+  for targets whose results passed a test;
 - every target the coverage table does not report gives a reason.
 """
 
@@ -25,11 +27,14 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 PUBLIC = ROOT / "results/public"
 SPI_DONOR_KEYS = {"uk_spi_stage1", "uk_property_finance"}
-RESULT_FILES = ("all_targets.csv", "remedies.csv", "remedies_compact.csv", "scaling.csv")
+RESULT_FILES = ("all_targets.csv", "remedies.csv", "remedies_compact.csv", "scaling.csv",
+                "full_size.csv", "smoothing.csv")
+SUPPLEMENTS = ("remedies.csv", "remedies_compact.csv", "scaling.csv", "full_size.csv",
+               "draw_means.csv", "coverage_by_tau.csv")
 RESULT_PREFIXES = ("sel_", "prod_", "own_", "adaptive_", "honest_", "effect",
                    "residual_", "vs_reported", "pinball", "coverage", "material",
                    "selection", "ratio", "honest fills", "min_samples_leaf",
-                   "weighted_leaves")
+                   "weighted_leaves", "smoothing", "contrast", "n_fit")
 SUPPRESS_BELOW = 50
 
 
@@ -75,16 +80,26 @@ def test_rare_targets_show_no_exact_count(name):
     assert df.loc[flagged, "n_train_nonzero"].isna().all()
 
 
-@pytest.mark.parametrize("name", ("remedies.csv", "remedies_compact.csv"))
+@pytest.mark.parametrize("name", ("remedies.csv", "remedies_compact.csv", "full_size.csv"))
 def test_uk_remedies_only_on_held_out_material_targets(name):
     """A UK target that entered through production alone would reveal that result."""
     df = load(name)
     uk = df.loc[df["key"].str.startswith("uk_"), ["key", "target"]]
     targets = load("all_targets.csv")
-    flagged = targets["suppressed"].fillna("").str.startswith("fewer than")
     material = targets["material"].astype(str).str.lower().eq("true")
-    allowed = set(map(tuple, targets.loc[material | flagged, ["key", "target"]].to_numpy()))
+    allowed = set(map(tuple, targets.loc[material, ["key", "target"]].to_numpy()))
     assert set(map(tuple, uk.to_numpy())) <= allowed
+
+
+@pytest.mark.parametrize("name", SUPPLEMENTS)
+def test_no_suppressed_target_appears_in_a_supplement(name):
+    """Membership in a supplement says a result passed a test; a suppressed one must not show."""
+    df = load(name)
+    targets = load("all_targets.csv")
+    suppressed = set(map(tuple, targets.loc[targets["suppressed"].fillna("").ne(""),
+                                            ["key", "target"]].to_numpy()))
+    assert suppressed, "expected some suppressed targets"
+    assert not set(map(tuple, df[["key", "target"]].to_numpy())) & suppressed
 
 
 def test_reported_targets_carry_results():

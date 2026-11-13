@@ -317,12 +317,6 @@ puf_support_child_support,child_support_received,adaptive,5,5,0.1680724687553497
 puf_support_child_support,child_support_received,honest,5,5,0.3215376717966855,0.321538419833716,0.5440008855129895,0.7889951593728932,0.8647352266302912,62.0,
 puf_support_child_support,child_support_received,adaptive,20,5,0.2208048869913355,0.4456905305177713,0.6035279685587929,0.8097065514581147,0.8647413003795528,62.0,
 puf_support_child_support,child_support_received,honest,20,5,0.3215374982735225,0.4244861681579103,0.5804781033302951,0.7684777981522448,0.8951845225136408,62.0,
-puf_support_child_support,child_support_expense,adaptive,,3,,,,,,,fewer than 50 nonzero training donors
-puf_support_child_support,child_support_expense,honest,,3,,,,,,,fewer than 50 nonzero training donors
-puf_support_child_support,child_support_expense,adaptive,,3,,,,,,,fewer than 50 nonzero training donors
-puf_support_child_support,child_support_expense,honest,,3,,,,,,,fewer than 50 nonzero training donors
-puf_support_child_support,child_support_expense,adaptive,,3,,,,,,,fewer than 50 nonzero training donors
-puf_support_child_support,child_support_expense,honest,,3,,,,,,,fewer than 50 nonzero training donors
 puf_support_childcare,spm_unit_pre_subsidy_childcare_expenses,adaptive,1,5,0.2745351712999199,0.4080768462646595,0.5162846818830648,0.6241752780130685,0.6960092405353331,428.0,
 puf_support_childcare,spm_unit_pre_subsidy_childcare_expenses,honest,1,5,0.2490557416181447,0.3461812583418326,0.5091185274653597,0.6726845793877857,0.8169041116678363,428.0,
 puf_support_childcare,spm_unit_pre_subsidy_childcare_expenses,adaptive,5,5,0.2047774908764212,0.334561264846592,0.5468908015698737,0.6528324168556934,0.7297058246143332,428.0,
@@ -371,12 +365,6 @@ puf_support_retirement_contributions,roth_ira_contributions_desired,adaptive,5,5
 puf_support_retirement_contributions,roth_ira_contributions_desired,honest,5,5,0.2868960245154234,0.4187078364571907,0.599164709615559,0.7084825910148436,0.8275051622119968,620.0,
 puf_support_retirement_contributions,roth_ira_contributions_desired,adaptive,20,5,0.070926804990317,0.1918382901115747,0.465981673041912,0.758762574974037,0.9032750825338492,620.0,
 puf_support_retirement_contributions,roth_ira_contributions_desired,honest,20,5,0.1116766710080746,0.240670175686526,0.5281621074662689,0.760031511090588,0.9069532252803528,620.0,
-puf_support_retirement_contributions,self_employed_pension_contributions_desired,adaptive,,5,,,,,,,fewer than 50 nonzero training donors
-puf_support_retirement_contributions,self_employed_pension_contributions_desired,honest,,5,,,,,,,fewer than 50 nonzero training donors
-puf_support_retirement_contributions,self_employed_pension_contributions_desired,adaptive,,5,,,,,,,fewer than 50 nonzero training donors
-puf_support_retirement_contributions,self_employed_pension_contributions_desired,honest,,5,,,,,,,fewer than 50 nonzero training donors
-puf_support_retirement_contributions,self_employed_pension_contributions_desired,adaptive,,5,,,,,,,fewer than 50 nonzero training donors
-puf_support_retirement_contributions,self_employed_pension_contributions_desired,honest,,5,,,,,,,fewer than 50 nonzero training donors
 puf_support_weeks_unemployed,weeks_unemployed,adaptive,1,5,0.3313166598125436,0.4238828210741137,0.4790249326576076,0.5453690097338937,0.6495508168545727,196.0,
 puf_support_weeks_unemployed,weeks_unemployed,honest,1,5,0.2220734204189144,0.2951349387887606,0.5383998989441248,0.6332681820332524,0.7187311769899447,196.0,
 puf_support_weeks_unemployed,weeks_unemployed,adaptive,5,5,0.2408674615351433,0.3670477062012586,0.5314443247617672,0.6588733448409605,0.6952504206372143,196.0,
@@ -419,12 +407,6 @@ sipp_financial_assets__1,stock_assets,adaptive,5,5,0.1305445643390398,0.29029389
 sipp_financial_assets__1,stock_assets,honest,5,5,0.1005769351350004,0.2378636442686021,0.5055118432133894,0.764455667865241,0.91059890189455,1772.0,
 sipp_financial_assets__1,stock_assets,adaptive,20,5,0.1008500216644153,0.2476949375713188,0.5187759384827991,0.7677741754975004,0.8940972738739783,1772.0,
 sipp_financial_assets__1,stock_assets,honest,20,5,0.096937451501429,0.2363908316646594,0.5080211254311296,0.7718905410390318,0.9133824497777676,1772.0,
-sipp_tips,tip_income,adaptive,,5,,,,,,,fewer than 50 nonzero training donors
-sipp_tips,tip_income,honest,,5,,,,,,,fewer than 50 nonzero training donors
-sipp_tips,tip_income,adaptive,,5,,,,,,,fewer than 50 nonzero training donors
-sipp_tips,tip_income,honest,,5,,,,,,,fewer than 50 nonzero training donors
-sipp_tips,tip_income,adaptive,,5,,,,,,,fewer than 50 nonzero training donors
-sipp_tips,tip_income,honest,,5,,,,,,,fewer than 50 nonzero training donors
 sipp_vehicles,household_vehicles_value,adaptive,1,5,0.1588726105949464,0.2975418357886534,0.5080648035231456,0.7108838818384838,0.839358781613161,4795.0,
 sipp_vehicles,household_vehicles_value,honest,1,5,0.1161137271125086,0.2614440779796979,0.499295709715397,0.7435460556953511,0.8893333031209544,4795.0,
 sipp_vehicles,household_vehicles_value,adaptive,5,5,0.1300255362682575,0.2824762579851121,0.5047153568575806,0.7223713577742412,0.8583625290872373,4795.0,
@@ -617,12 +599,6 @@ uk_spi_stage2,child_benefit_reported,adaptive,5,5,0.4305760694226755,0.524393819
 uk_spi_stage2,child_benefit_reported,honest,5,5,0.4111374855681823,0.4552166063370932,0.7525393949931092,0.8649303066100688,0.9419543569080862,2387.0,
 uk_spi_stage2,child_benefit_reported,adaptive,20,5,0.4165800386957082,0.4981188610267762,0.7448994102369986,0.8610055108432689,0.9327523067045748,2387.0,
 uk_spi_stage2,child_benefit_reported,honest,20,5,0.4085414191403275,0.4502613142828531,0.7598136349190521,0.8648061790749656,0.9470136511846816,2387.0,
-uk_spi_stage2,income_support_reported,adaptive,,4,,,,,,,fewer than 50 nonzero training donors
-uk_spi_stage2,income_support_reported,honest,,4,,,,,,,fewer than 50 nonzero training donors
-uk_spi_stage2,income_support_reported,adaptive,,4,,,,,,,fewer than 50 nonzero training donors
-uk_spi_stage2,income_support_reported,honest,,4,,,,,,,fewer than 50 nonzero training donors
-uk_spi_stage2,income_support_reported,adaptive,,4,,,,,,,fewer than 50 nonzero training donors
-uk_spi_stage2,income_support_reported,honest,,4,,,,,,,fewer than 50 nonzero training donors
 uk_spi_stage2,attendance_allowance_reported,adaptive,1,5,0.6372486640905198,0.7825528477414184,0.8871686606657063,0.9504818364687546,0.9862314375270694,807.0,
 uk_spi_stage2,attendance_allowance_reported,honest,1,5,0.3766506650286949,0.3890108589687461,0.9773176531079162,0.999476465728631,1.0,807.0,
 uk_spi_stage2,attendance_allowance_reported,adaptive,5,5,0.4623610711454084,0.6806438230526287,0.8778055457230023,0.9774759741290324,0.9970248399411192,807.0,
@@ -653,12 +629,6 @@ uk_spi_stage2,iidb_reported,adaptive,5,5,0.4561259387713204,0.5773214852406494,0
 uk_spi_stage2,iidb_reported,honest,5,5,0.4312419606577347,0.5760535786045649,0.60316743393905,0.8184784769180455,0.9193278314637954,91.0,
 uk_spi_stage2,iidb_reported,adaptive,20,5,0.4904003220406957,0.5760535786045649,0.6152173726510237,0.8388481552489949,0.9094400673229288,91.0,
 uk_spi_stage2,iidb_reported,honest,20,5,0.5144086830964245,0.5760535786045649,0.5760535786045649,0.8256472274211667,0.9041527517100608,91.0,
-uk_spi_stage2,bsp_reported,adaptive,,3,,,,,,,fewer than 50 nonzero training donors
-uk_spi_stage2,bsp_reported,honest,,3,,,,,,,fewer than 50 nonzero training donors
-uk_spi_stage2,bsp_reported,adaptive,,3,,,,,,,fewer than 50 nonzero training donors
-uk_spi_stage2,bsp_reported,honest,,3,,,,,,,fewer than 50 nonzero training donors
-uk_spi_stage2,bsp_reported,adaptive,,3,,,,,,,fewer than 50 nonzero training donors
-uk_spi_stage2,bsp_reported,honest,,3,,,,,,,fewer than 50 nonzero training donors
 uk_spi_stage2,winter_fuel_allowance_reported,adaptive,1,5,0.90368320263444,0.9311422502919876,0.9768875803531356,0.9903943008939744,0.9938032247184754,738.0,
 uk_spi_stage2,winter_fuel_allowance_reported,honest,1,5,0.7185794642385355,0.9706907583536524,0.9930740267260432,0.99504469727087,0.9966150814408362,738.0,
 uk_spi_stage2,winter_fuel_allowance_reported,adaptive,5,5,0.8526477090589845,0.9099758235753684,0.9680400265993712,0.991104898899298,0.99504469727087,738.0,
@@ -689,12 +659,6 @@ uk_spi_stage2,owned_company_income_share,adaptive,5,5,0.1331448002108743,0.28041
 uk_spi_stage2,owned_company_income_share,honest,5,5,0.1106856821191261,0.264026075746942,0.5266707550981102,0.7256270028632661,0.882370992540521,183.0,
 uk_spi_stage2,owned_company_income_share,adaptive,20,5,0.1140661932660296,0.2588075972838771,0.4675673623020235,0.725687418608109,0.8657226625012797,183.0,
 uk_spi_stage2,owned_company_income_share,honest,20,5,0.1139784691523811,0.2526934459944226,0.5014108633307518,0.7461240478699186,0.881936043027982,183.0,
-uk_was__10,non_residential_property_secured_debt,adaptive,,4,,,,,,,fewer than 50 nonzero training donors
-uk_was__10,non_residential_property_secured_debt,honest,,4,,,,,,,fewer than 50 nonzero training donors
-uk_was__10,non_residential_property_secured_debt,adaptive,,4,,,,,,,fewer than 50 nonzero training donors
-uk_was__10,non_residential_property_secured_debt,honest,,4,,,,,,,fewer than 50 nonzero training donors
-uk_was__10,non_residential_property_secured_debt,adaptive,,4,,,,,,,fewer than 50 nonzero training donors
-uk_was__10,non_residential_property_secured_debt,honest,,4,,,,,,,fewer than 50 nonzero training donors
 uk_was__2,other_residential_property_value,adaptive,1,5,0.1842309400162899,0.3320591143393891,0.5338361190647364,0.7162258593510238,0.8217866003608579,1686.0,
 uk_was__2,other_residential_property_value,honest,1,5,0.1230695009932942,0.2669503203925383,0.5189580158921824,0.7648227891026809,0.8909766168212869,1686.0,
 uk_was__2,other_residential_property_value,adaptive,5,5,0.1449303458625591,0.2981689041855054,0.5228425579428765,0.7358941450416043,0.8547590781717629,1686.0,

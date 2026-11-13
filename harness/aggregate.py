@@ -28,7 +28,7 @@ sys.path.insert(0, str(HERE))
 import selection as S  # noqa: E402
 
 ROOT = HERE.parent
-SKIP_TAGS = ("_trace", "_remedies", "_traceprod", "_trace_scorp", "_rest", "_halved", "_rerun", "_draws", "_check")
+SKIP_TAGS = ("_trace", "_remedies", "_traceprod", "_trace_scorp", "_rest", "_halved", "_rerun", "_draws", "_check", "_fullsize", "_smoothing")
 THRESHOLD = 0.5  # percent of total
 #: A fit measured again with better recipients: the newer key replaces the
 #: older one once it has every fold, and stays out of the table until then.

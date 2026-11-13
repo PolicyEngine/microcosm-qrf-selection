@@ -53,6 +53,7 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 from quantile_forest import RandomForestQuantileRegressor
+from sklearn.ensemble import HistGradientBoostingRegressor
 
 PRIOR = Path(__file__).resolve().parent / "vendor"  # qrf-moop-shortfall@dba3940
 sys.path.insert(0, str(PRIOR))
@@ -63,6 +64,9 @@ from forest_bias import fill_catchments, recipient_estimates  # noqa: E402
 N_JOBS = 4
 POOL_CHECK_MAX_ROWS = 50_000
 TAUS = (0.1, 0.25, 0.5, 0.75, 0.9)
+#: ``mean_model`` needs this many held-out donors of a sign; with fewer the
+#: smoothing estimate is not made.
+MEAN_FIT_MIN_ROWS = 100
 MODES = ("pooled", "tree")
 FILLS = ("adaptive", "honest")
 
@@ -372,6 +376,61 @@ def recipient_totals(model, X_fill, mass, y_fill, X_rec, scale_rec):
     return out
 
 
+def contrast_parts(model, X_a, mass_a, y_a, m_a, X_b, mass_b, y_b, m_b, X_rec, scale_rec):
+    """Split one forest's adaptive-minus-honest total into selection and smoothing.
+
+    ``a`` is the adaptive fill (in-bag rows, bootstrap counts), ``b`` the honest
+    fill; ``m_a`` and ``m_b`` give each filling row's conditional mean, or an
+    estimate of it (two-dimensional, one column per candidate mean, to split
+    against several at once). Every estimate weights donor values, so a fill's total is
+    ``sum_j c_j y_j`` with catchments ``c`` that depend on where the rows sit
+    and on their masses, never on their values. Over the recipients both fills
+    reach (``complete_honest`` gives the others zero contrast):
+
+        contrast  = sum c_a y_a - sum c_b y_b
+        selection = sum c_a (y_a - m_a) - sum c_b (y_b - m_b)
+        smoothing = sum c_a m_a - sum c_b m_b
+
+    so contrast = selection + smoothing for any ``m``. With the true
+    conditional mean, smoothing is the two fills' different averaging of it,
+    and selection is zero in expectation unless the catchments depend on the
+    donors' own noise, which only the adaptive splits make them do (the method
+    of ``forest_bias.py`` in PolicyEngine/qrf-moop-shortfall, which splits one
+    fill's error against the truth). Returns, per mode, the three sums and
+    ``reached``, the recipients both fills reach.
+    """
+    nodes = [e.tree_.node_count for e in model.estimators_]
+    la, lb, lr = model.apply(X_a), model.apply(X_b), model.apply(X_rec)
+    out = {}
+    for mode in MODES:
+        with np.errstate(invalid="ignore", divide="ignore"):
+            reach = np.isfinite(recipient_estimates(lb, mass_b, y_b, lr, nodes, mode))
+        c_a = fill_catchments(la, mass_a, lr[reach], scale_rec[reach], nodes, mode)
+        c_b = fill_catchments(lb, mass_b, lr[reach], scale_rec[reach], nodes, mode)
+        contrast = float(c_a @ y_a - c_b @ y_b)
+        smoothing = c_a @ m_a - c_b @ m_b
+        if np.ndim(smoothing) == 0:
+            smoothing = float(smoothing)
+        out[mode] = {"contrast": contrast, "smoothing": smoothing,
+                     "selection": contrast - smoothing, "reached": int(reach.sum())}
+    return out
+
+
+def mean_model(X, y, w, seed):
+    """An estimate of E[y | x] for one sign's amounts, fitted on donors no tree sees.
+
+    Gradient-boosted trees with a Poisson loss, which fits the mean on a log
+    scale and suits skewed positive amounts; a negative sign's amounts enter
+    as their absolute values (``same_tree_sign`` flips them back). Early
+    stopping holds out a tenth of the rows.
+    """
+    model = HistGradientBoostingRegressor(loss="poisson", learning_rate=0.05, max_iter=400,
+                                          early_stopping=True, validation_fraction=0.1,
+                                          n_iter_no_change=20, random_state=int(seed))
+    return model.fit(np.asarray(X, dtype=np.float64), np.abs(np.asarray(y, dtype=np.float64)),
+                     sample_weight=np.asarray(w, dtype=np.float64))
+
+
 def honest_resample(weights, n_trees, rng):
     """Integer masses for an honest half, built as production builds in-bag ones.
 
@@ -423,8 +482,45 @@ def halves(n, groups, rng):
     return (rng.random(len(codes)) < 0.5)[inverse]
 
 
+def full_size_forests(X_s, y_s, record, X_rec, scale, leaves, *, eval_set=None, keeps=(),
+                      extra=None):
+    """The fold's forest at production's size, at each leaf floor.
+
+    The same-tree test grows half-size forests so that an honest half remains,
+    so ``remedies.py`` compares every remedy with a half-size adaptive forest.
+    This grows the forest production would grow on the fold's training donors:
+    every donor of the sign, through the captured bootstrap rows and seed,
+    filled as production fills it (in-bag rows, bootstrap counts), with
+    ``min_samples_leaf`` at each of ``leaves``. Quantile metrics score the rows
+    each half's honest fill reached (``keeps``) and average over the halves, so
+    a half-size fill and a full-size forest score the same rows. Tree mode on
+    the leaf-1 forest is ``predict(weighted_leaves=True)``.
+    """
+    rows = record.selected
+    n = len(y_s)
+    out = {}
+    for leaf in leaves:
+        model = grow(X_s[rows], y_s[rows], record.seed, record.n_estimators, leaf)
+        cnt = qd.bootstrap_counts(model, n)
+        runs = [fill_forest(model, X_s[rows], cnt, y_s[rows], X_rec, scale, rows, n,
+                            eval_set=eval_set, eval_keep=keep)
+                for keep in (keeps or [None])]
+        res = {"totals": {m: runs[0][m]["total"] for m in MODES}}
+        if eval_set is not None:
+            res["quantile"] = {m: _average_metrics([r[m]["quantile"] for r in runs])
+                               for m in MODES}
+        if extra:
+            res["extra"] = {}
+            for e, (X_e, scale_e) in extra.items():
+                tots = recipient_totals(model, X_s[rows], cnt, y_s[rows], X_e, scale_e)
+                res["extra"][e] = {m: tots[m] for m in MODES}
+        out[str(leaf)] = res
+    return out
+
+
 def same_tree_sign(X_s, y_s, w_s, X_rec, scale, *, seed, n_estimators, variants=(1,),
-                   groups=None, eval_set=None, full_record=None, extra=None, draw_grid=None):
+                   groups=None, eval_set=None, full_record=None, extra=None, draw_grid=None,
+                   full_variants=(), mean_fit=None):
     """Adaptive and honest totals of half-sample forests for one sign.
 
     Seeds follow ``microcosm_cps.analyse_fold``: halves from
@@ -443,9 +539,18 @@ def same_tree_sign(X_s, y_s, w_s, X_rec, scale, *, seed, n_estimators, variants=
     frequencies, so the curve depends on their scale; bootstrap counts are the
     masses it sees in production, and a fractional survey-weight mass has no
     such scale. A recipient a fill does not reach keeps the adaptive estimate.
+    ``full_variants`` adds ``full_size``, the fold's forest at production's size
+    at each of those leaf floors (``full_size_forests``).
+    ``mean_fit`` = (X, y, w): held-out donors of this sign, which no tree sees.
+    It adds ``smoothing``: the first variant's adaptive-minus-honest contrast
+    split by ``contrast_parts`` into selection and smoothing, with each filling
+    row's conditional mean estimated by ``mean_model`` fitted on those donors
+    (``None`` when they number fewer than ``MEAN_FIT_MIN_ROWS``), over the
+    held-out recipients and each ``extra`` set.
     """
     n = len(y_s)
     extra = extra or {}
+    keeps = []  # per half: the rows its first variant's honest fill reached
     out = {"n": int(n), "variants": {}}
     totals = {v: {f: {m: 0.0 for m in MODES} for f in FILLS} for v in variants}
     xtot = {e: {v: {f: {m: 0.0 for m in MODES} for f in FILLS} for v in variants}
@@ -458,6 +563,12 @@ def same_tree_sign(X_s, y_s, w_s, X_rec, scale, *, seed, n_estimators, variants=
     gap_share = {m: 0.0 for m in MODES}
     draw_totals = {f: 0.0 for f in ("adaptive", "honest", "honest_mean", "honest_weight")}
     half = halves(n, groups, np.random.default_rng([seed, 31]))
+    m_s, parts = None, None
+    if mean_fit is not None and len(mean_fit[1]) >= MEAN_FIT_MIN_ROWS:
+        sign = 1.0 if np.mean(mean_fit[1]) > 0 else -1.0
+        m_s = sign * mean_model(*mean_fit, seed).predict(X_s)
+        parts = {e: {m: {"contrast": 0.0, "selection": 0.0, "smoothing": 0.0} for m in MODES}
+                 for e in ("held_out", *extra)}
     for k, grow_mask in enumerate((half, ~half)):
         idx_g, idx_f = np.flatnonzero(grow_mask), np.flatnonzero(~grow_mask)
         if len(idx_g) == 0 or len(idx_f) == 0:
@@ -479,6 +590,14 @@ def same_tree_sign(X_s, y_s, w_s, X_rec, scale, *, seed, n_estimators, variants=
                                    pick_g, n, eval_set=eval_set, eval_keep=eval_keep,
                                    draw_grid=grid_v)
             fills = {"adaptive": adaptive, "honest": honest}
+            if m_s is not None and v == variants[0]:
+                sets = {"held_out": (X_rec, scale), **extra}
+                for e, (X_e, scale_e) in sets.items():
+                    split = contrast_parts(model, X_s[pick_g], cnt, y_s[pick_g], m_s[pick_g],
+                                           X_s[idx_f], mass_f, y_s[idx_f], m_s[idx_f], X_e, scale_e)
+                    for m in MODES:
+                        for part in ("contrast", "selection", "smoothing"):
+                            parts[e][m][part] += 0.5 * split[m][part]
             if grid_v is not None:
                 picks, counts = honest_resample(w_s[idx_f], model.n_estimators,
                                                 np.random.default_rng([seed, 17, k]))
@@ -515,6 +634,8 @@ def same_tree_sign(X_s, y_s, w_s, X_rec, scale, *, seed, n_estimators, variants=
                     for f in FILLS:
                         xtot[e][v][f][m] += 0.5 * tots[f][m]
                         xempty[e] = max(xempty[e], tots[f][f"n_empty_{m}"])
+        if eval_keep is not None:
+            keeps.append(eval_keep)
     for v in variants:
         rec = {"totals": totals[v]}
         if eval_set is not None:
@@ -526,6 +647,9 @@ def same_tree_sign(X_s, y_s, w_s, X_rec, scale, *, seed, n_estimators, variants=
     out["max_empty_adaptive_share"] = gap_share
     if draw_grid is not None:
         out["draw_totals"] = draw_totals
+    if mean_fit is not None:
+        out["smoothing"] = (None if parts is None else
+                            {"n_fit": int(len(mean_fit[1])), **parts})
     if full_record is not None:
         # The pooled-mean cross-check calls quantile-forest's own ``predict``,
         # which reads stored leaf samples; it runs where storing them is cheap.
@@ -545,6 +669,9 @@ def same_tree_sign(X_s, y_s, w_s, X_rec, scale, *, seed, n_estimators, variants=
         own_extra = {e: recipient_totals(model, X_s[full_record.selected], cnt,
                                          y_s[full_record.selected], X_e, scale_e)
                      for e, (X_e, scale_e) in extra.items()}
+        if full_variants:
+            out["full_size"] = full_size_forests(X_s, y_s, full_record, X_rec, scale, full_variants,
+                                                 eval_set=eval_set, keeps=keeps, extra=extra)
     else:
         own_extra = {}
     if extra:
@@ -589,13 +716,17 @@ def sign_probability(gate, X, sign):
 
 def analyse_fold(table, predictors, targets, weights, *, train, rec, seed, n_estimators,
                  groups=None, variants=(1,), quantiles=False, only=None, zero_atol=None,
-                 max_samples_leaf=None, log=print, production=None, draw_grid=None):
+                 max_samples_leaf=None, log=print, production=None, draw_grid=None,
+                 full_variants=(), smoothing=False):
     """One fold: capture Microcosm's fit on ``train``; test every target on ``rec``.
 
     ``production`` = (table, weights): the stage's production recipients, with
     the predictor columns and each target's production draw (the values a
     chained target conditions on). The same forests then also give totals over
     them, with each recipient's amount weighted by the fold gate's probability.
+    ``smoothing`` fits ``mean_model`` on each sign's held-out donors and splits
+    every contrast into selection and smoothing (``same_tree_sign``); it skips
+    the fold's own forest, which the split does not need.
     """
     Q = _qrf_module()
     zero_atol = Q.DEFAULT_ZERO_ATOL if zero_atol is None else zero_atol
@@ -692,6 +823,10 @@ def analyse_fold(table, predictors, targets, weights, *, train, rec, seed, n_est
                 emask = y_rec > zero_atol if sign == 1 else y_rec < -zero_atol
                 if emask.sum() >= 5:
                     eval_set = (X_rec[emask], y_rec[emask], w_rec[emask])
+            mean_fit = None
+            if smoothing:
+                fmask = y_rec > zero_atol if sign == 1 else y_rec < -zero_atol
+                mean_fit = (X_rec[fmask], y_rec[fmask], w_rec[fmask])
             unique_y = len(np.unique(y_s))
             res = {"n_unique": int(unique_y), "p_weighted_share": float(np.average(p, weights=w_rec))}
             if unique_y == 1:
@@ -707,13 +842,24 @@ def analyse_fold(table, predictors, targets, weights, *, train, rec, seed, n_est
                         "variants": {str(v): {"totals": {f: {m: pt for m in MODES}
                                                          for f in FILLS}} for v in variants},
                         "own_forest": {m: pt for m in MODES}, "max_empty": 0}}
+                if full_variants:
+                    res["full_size"] = {str(v): {"totals": dict(res["own_forest"])}
+                                        for v in full_variants}
+                    if extra:
+                        for entry in res["full_size"].values():
+                            entry["extra"] = {"production": {m: pt for m in MODES}}
+                if smoothing:
+                    zero = {m: {"contrast": 0.0, "selection": 0.0, "smoothing": 0.0} for m in MODES}
+                    res["smoothing"] = {"n_fit": int(len(mean_fit[1])), "held_out": zero,
+                                        **{e: zero for e in extra}}
             else:
                 try:
                     res.update(same_tree_sign(
                         X_s, y_s, w_s, X_rec, scale, seed=seed, n_estimators=n_estimators,
                         variants=variants, groups=None if g_train is None else g_train[mask],
-                        eval_set=eval_set, full_record=record, extra=extra,
-                        draw_grid=draw_grid))
+                        eval_set=eval_set, full_record=None if smoothing else record,
+                        extra=extra, draw_grid=draw_grid, full_variants=full_variants,
+                        mean_fit=mean_fit))
                 except RuntimeError as exc:
                     # Too few donors of this sign to split into two non-empty
                     # halves: the test cannot run, and the target is reported
@@ -759,7 +905,8 @@ def thin_train(train, groups, fraction, seed, fold):
 def run_stage(name, table, predictors, targets, weights, *, seed, n_estimators, out_path,
               groups=None, folds=5, variants=(1,), quantiles=False, only=None,
               fold_ids=None, fold_seeds=None, max_samples_leaf=None, meta=None,
-              production=None, train_fraction=1.0, draw_grid=None):
+              production=None, train_fraction=1.0, draw_grid=None, full_variants=(),
+              smoothing=False):
     """All folds of one stage; resumable (finished folds are kept).
 
     ``train_fraction`` below 1 thins each fold's training donors first. The
@@ -789,7 +936,8 @@ def run_stage(name, table, predictors, targets, weights, *, seed, n_estimators, 
                            groups=groups, variants=variants, quantiles=quantiles, only=only,
                            max_samples_leaf=max_samples_leaf,
                            log=lambda s: print(s, flush=True), production=production,
-                           draw_grid=draw_grid)
+                           draw_grid=draw_grid, full_variants=full_variants,
+                           smoothing=smoothing)
         res["fold"] = k
         res["seed"] = fold_seed
         doc["folds"].append(res)
