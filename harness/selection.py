@@ -416,19 +416,38 @@ def contrast_parts(model, X_a, mass_a, y_a, m_a, X_b, mass_b, y_b, m_b, X_rec, s
     return out
 
 
+class ClippedMean:
+    """A fitted regression whose predictions are held to ``[low, high]``."""
+
+    def __init__(self, model, low, high):
+        self.model, self.low, self.high = model, float(low), float(high)
+
+    def predict(self, X):
+        return np.clip(self.model.predict(np.asarray(X, dtype=np.float64)), self.low, self.high)
+
+
 def mean_model(X, y, w, seed):
     """An estimate of E[y | x] for one sign's amounts, fitted on donors no tree sees.
 
-    Gradient-boosted trees with a Poisson loss, which fits the mean on a log
-    scale and suits skewed positive amounts; a negative sign's amounts enter
-    as their absolute values (``same_tree_sign`` flips them back). Early
-    stopping holds out a tenth of the rows.
+    Gradient-boosted trees with a squared-error loss, early stopping on a
+    tenth of the rows, and predictions held between zero and the largest
+    fitted amount, the range a conditional mean of one sign's amounts lies
+    in. A negative sign's amounts enter as their absolute values
+    (``same_tree_sign`` flips them back).
+
+    An earlier version used a Poisson loss. Its Newton step in a leaf is the
+    learning rate times (the leaf's amounts over its predicted means, minus
+    one), so a leaf of amounts hundreds of times the current mean steps tens
+    of units on the log scale. On the PUF chain and SCF fits its estimates
+    overflowed. A squared-error step is a share of the leaf's mean residual,
+    so it cannot run past the amounts it fits.
     """
-    model = HistGradientBoostingRegressor(loss="poisson", learning_rate=0.05, max_iter=400,
+    y_abs = np.abs(np.asarray(y, dtype=np.float64))
+    model = HistGradientBoostingRegressor(loss="squared_error", learning_rate=0.05, max_iter=400,
                                           early_stopping=True, validation_fraction=0.1,
                                           n_iter_no_change=20, random_state=int(seed))
-    return model.fit(np.asarray(X, dtype=np.float64), np.abs(np.asarray(y, dtype=np.float64)),
-                     sample_weight=np.asarray(w, dtype=np.float64))
+    model.fit(np.asarray(X, dtype=np.float64), y_abs, sample_weight=np.asarray(w, dtype=np.float64))
+    return ClippedMean(model, 0.0, y_abs.max())
 
 
 def honest_resample(weights, n_trees, rng):
@@ -567,6 +586,8 @@ def same_tree_sign(X_s, y_s, w_s, X_rec, scale, *, seed, n_estimators, variants=
     if mean_fit is not None and len(mean_fit[1]) >= MEAN_FIT_MIN_ROWS:
         sign = 1.0 if np.mean(mean_fit[1]) > 0 else -1.0
         m_s = sign * mean_model(*mean_fit, seed).predict(X_s)
+        if not np.all(np.isfinite(m_s)):
+            raise RuntimeError("mean_model gave a non-finite conditional mean")
         parts = {e: {m: {"contrast": 0.0, "selection": 0.0, "smoothing": 0.0} for m in MODES}
                  for e in ("held_out", *extra)}
     for k, grow_mask in enumerate((half, ~half)):

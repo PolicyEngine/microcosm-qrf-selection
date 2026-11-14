@@ -3,9 +3,20 @@
 Status: 2026-11-13, awaiting independent review. Every measurement comes from
 this repository's harness, on five folds per fit. The harness's later additions
 left earlier numbers unchanged: two fits rerun on the final code match their
-base runs number for number (`harness/compare_runs.py`). The split of each contrast into selection and smoothing (sections 2 and 4)
-covers 12 of the 39 public fits so far; the rest are running, and every split
-count below covers only the fits done.
+base runs number for number (`harness/compare_runs.py`).
+
+**Update 2026-11-14: this version withdraws every estimated-split number.**
+That covers the third bullet below, the fitted-mean column of
+section 2's synthetic table and the estimated split in section 4. The
+fitted mean behind them (`selection.mean_model`, then a Poisson-loss
+gradient-boosted fit) overflowed on the PUF chain and SCF fits once the
+pass reached them: a leaf of amounts hundreds of times the mean makes its
+Newton step run away. `mean_model` now uses squared-error loss, with its
+predictions held between zero and the largest fitted amount
+(`test_the_mean_model_stays_within_the_amounts_it_fits`). The synthetic check
+and all 45 real-data fits are rerunning with it. The exact split on synthetic
+processes, which uses the true conditional mean, and every contrast and remedy
+number are unaffected.
 
 This public version leaves out every number derived from the HMRC Survey of
 Personal Incomes (SPI) public use tape and every UK production-recipient

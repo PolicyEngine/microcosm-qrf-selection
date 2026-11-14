@@ -9,7 +9,8 @@ Invariants checked:
 - smoothing is exactly zero when the conditional mean is constant, since both
   fills' catchments sum to the same recipients' total;
 - smoothing is linear in the conditional mean;
-- a sign with too few held-out donors gets no estimate.
+- a sign with too few held-out donors gets no estimate;
+- the fitted mean stays between zero and the largest amount it fits.
 """
 
 from __future__ import annotations
@@ -132,3 +133,29 @@ def test_too_few_held_out_donors_give_no_estimate():
     out = S.same_tree_sign(X, y, np.ones(300), X[:50], np.ones(50), seed=1, n_estimators=5,
                            mean_fit=few)
     assert out["smoothing"] is None
+
+
+def test_the_mean_model_stays_within_the_amounts_it_fits():
+    """A few amounts far above the rest cannot push the fitted mean past them.
+
+    The cases behind this test are the PUF chain's and SCF's top amounts, on
+    which a Poisson-loss fit overflowed: here 40 of 8,000 rows sit at 1e8 to
+    1e9 among lognormal incomes, and one predictor equals the target.
+    """
+    for seed in range(3):
+        rng = np.random.default_rng(seed)
+        n = 8000
+        inc = np.round(rng.lognormal(10.5, 1.6, n))
+        inc[:40] = rng.uniform(1e8, 1e9, 40)
+        X = np.column_stack([inc, rng.integers(18, 85, n), rng.integers(0, 4, n)])
+        w = rng.uniform(1, 3000, n)
+        X_new = np.column_stack([inc * rng.uniform(0.5, 2.0, n), rng.integers(18, 85, n),
+                                 rng.integers(0, 4, n)])
+        for sign in (1.0, -1.0):
+            model = S.mean_model(X, sign * inc, w, seed)
+            for Z in (X, X_new):
+                m = model.predict(Z)
+                assert np.all(np.isfinite(m))
+                assert m.min() >= 0.0 and m.max() <= inc.max()
+            fitted, actual = w @ model.predict(X), w @ inc
+            assert 0.5 < fitted / actual < 2.0
