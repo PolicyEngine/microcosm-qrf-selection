@@ -1,0 +1,16 @@
+{
+ "all_targets.csv": "9372d69efcb695baf9b953f79785ff0b095038d83975c6b3593074b860dc1420",
+ "coverage.csv": "e0e63638c5d7aee7f41ed8cc72f75cc3f0d19fedaa865c1d92ce95f1051cb7fd",
+ "coverage_by_tau.csv": "5c4740954c49b5eda2375322f7f0a4045eb14f42b4ee0efb1743dad9529a4c4f",
+ "draw_means.csv": "980442eaf06dc6edd0a5b6b52a9d9d21587b4ed562620937e7111a8abbb99d0e",
+ "full_size.csv": "70f0f696ad854bd20beb4f30e6e37e02ffe08fc0ba68ff82c6f0f216bec0fcf8",
+ "inventory_totals.csv": "89d20f2e8c8037d17c0deb366087b306930570aba010135e7523a501a1f23476",
+ "known_answer.csv": "9881e9eb75fe01dccf163d4c5a6f44e721d9e933caa74237525252b203fad042",
+ "puf_twin_coverage.csv": "5d09ff8b404cb10a514a0134bc2328d146de4fd79f4c8476a582ecb9900fe46a",
+ "remedies.csv": "390cae2e7adb597d0221695b721be046bae9bbacef7db77d209cc2830ce08c35",
+ "remedies_compact.csv": "188cc20817198b532096b36fb8e029ce7eb42fd46a6714efb2d76852b3d6732c",
+ "scaling.csv": "c56052f18b234cb1e80aa912aaa1b99b2abcbdaee6a6105b622a7db473920268",
+ "smoothing.csv": "a5665f21d71de5c97418f28314c1c7fa85c3f5068c076cafaa05f5976d5263ee",
+ "smoothing_check.csv": "6c1443db896ef16b67bca40264d83bd92dc4437b6aa9b59de7243e17dc7bab11",
+ "smoothing_check_more_seeds.csv": "572833245eef6445cdc4d061597db1503886db2b978f89f9e2f620573099cf1c"
+}

@@ -1,0 +1,28 @@
+name: check
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  public-files:
+    name: Public files meet the disclosure rules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - run: python -m pip install --quiet pandas==3.0.3 pytest==9.2.0
+      - run: python -m pytest -q harness/tests/test_public_files.py
+  harness:
+    name: Harness compiles and passes its tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - run: python -m compileall -q harness
+      - run: python -m pip install --quiet -r requirements.txt
+      - run: python -m pytest -q harness/tests

@@ -1,0 +1,75 @@
+kind,name,value
+units,share of PUF tax units,0.2837452568967285
+units,share of PUF tax units' weight,0.3294593509556103
+target: share of released total,employment_income_before_lsr,0.30291702468743914
+target: share of released total,self_employment_income_before_lsr,0.3458334842562549
+target: share of released total,taxable_interest_income,0.4244231220395977
+target: share of released total,qualified_dividend_income,0.6086639413826109
+target: share of released total,non_qualified_dividend_income,0.48305488412721875
+target: share of released total,tax_exempt_interest_income,0.523057337325463
+target: share of released total,short_term_capital_gains,0.7893611898687647
+target: share of released total,long_term_capital_gains_before_response,0.789743291475621
+target: share of released total,long_term_capital_gains_on_collectibles,0.9042177927458486
+target: share of released total,non_sch_d_capital_gains,0.3690183718446397
+target: share of released total,taxable_private_pension_income,0.30004599505856033
+target: share of released total,taxable_ira_distributions,0.3987744571635037
+target: share of released total,social_security_retirement,0.3112976158100665
+target: share of released total,social_security_disability,0.3379427120676592
+target: share of released total,social_security_dependents,0.3254246386569754
+target: share of released total,social_security_survivors,0.33463777301725817
+target: share of released total,alimony_income,0.1579362991367123
+target: share of released total,alimony_expense,0.19522526558410047
+target: share of released total,salt_refund_income,0.4390139964770483
+target: share of released total,charitable_cash_donations,0.3599659642799064
+target: share of released total,charitable_non_cash_donations,0.6386983037023524
+target: share of released total,real_estate_taxes,0.3155158651221278
+target: share of released total,home_mortgage_interest,0.33928535759774286
+target: share of released total,investment_income_elected_form_4952,0.43774848515072734
+target: share of released total,student_loan_interest,0.3580153935644931
+target: share of released total,educator_expense,0.288234857924675
+target: share of released total,qualified_tuition_expenses,0.30218002053207393
+target: share of released total,casualty_loss,0.8449228109850264
+target: share of released total,unreimbursed_business_employee_expenses,0.395872582263468
+target: share of released total,traditional_ira_contributions_desired,0.229308773860167
+target: share of released total,self_employed_pension_contributions_desired,0.3685872483629798
+target: share of released total,rental_income,0.3271442362078349
+target: share of released total,estate_income,0.6061692219038649
+target: share of released total,farm_income,0.1184872308734687
+target: share of released total,farm_operations_income,1.0549084145568908
+target: share of released total,farm_rent_income,0.4600602429027706
+target: share of released total,miscellaneous_income,0.6254096823464503
+target: share of released total,partnership_income,0.4567494544749426
+target: share of released total,s_corp_income,
+target: share of released total,partnership_self_employment_net_earnings,0.49104740121413015
+target: share of released total,estate_income_would_be_qualified,0.33387508960513984
+target: share of released total,farm_operations_income_would_be_qualified,0.33512543012050344
+target: share of released total,farm_rent_income_would_be_qualified,0.3296791107950152
+target: share of released total,partnership_s_corp_income_would_be_qualified,0.3347589246736661
+target: share of released total,rental_income_would_be_qualified,0.3287034866059255
+target: share of released total,self_employment_income_would_be_qualified,0.3330416968811744
+target: share of released total,sstb_self_employment_income_would_be_qualified,0.3489150427963028
+target: share of released total,business_is_sstb,0.3490540388472614
+target: share of released total,qualified_bdc_income,0.4263441259353489
+target: share of released total,qualified_reit_and_ptp_income,0.29020342434807644
+target: share of released total,sstb_self_employment_income_before_lsr,0.41143272745361836
+target: share of released total,sstb_unadjusted_basis_qualified_property,0.5265042520980227
+target: share of released total,sstb_w2_wages_from_qualified_business,0.607918880800596
+target: share of released total,unadjusted_basis_qualified_property,0.5070317785549057
+target: share of released total,w2_wages_from_qualified_business,0.6483046101791178
+target: share of released total,domestic_production_ald,0.527712859242776
+target: share of released total,unrecaptured_section_1250_gain,0.8273304180857776
+target: share of released total,first_home_mortgage_balance,0.3042777750585604
+target: share of released total,second_home_mortgage_balance,
+target: share of released total,first_home_mortgage_interest,0.3545297371975816
+target: share of released total,second_home_mortgage_interest,
+target: share of released total,first_home_mortgage_origination_year,0.28795941262692054
+target: share of released total,second_home_mortgage_origination_year,
+target: share of released total,health_savings_account_ald,0.25717759817431796
+predictor: twin mean over released mean,puf_predictor_filing_status_code,1.0
+predictor: twin mean over released mean,puf_predictor_tax_unit_person_count,1.0
+predictor: twin mean over released mean,puf_predictor_employment_income,0.9992606150542049
+predictor: twin mean over released mean,puf_predictor_self_employment_income,1.4785216181552758
+predictor: twin mean over released mean,puf_predictor_taxable_interest_income,0.9995020840974764
+predictor: twin mean over released mean,puf_predictor_dividend_income,1.0158064149259918
+predictor: twin mean over released mean,puf_predictor_short_term_capital_gains,1.0043838325991248
+predictor: twin mean over released mean,puf_predictor_long_term_capital_gains,1.00097948761682
