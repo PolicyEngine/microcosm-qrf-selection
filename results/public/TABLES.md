@@ -485,77 +485,211 @@ Held-out donors, % of the held-out reported total. The honest fill here takes in
 
 | process | donors | trees grown on | averaging | seeds | contrast | selection | smoothing | smoothing from the fitted mean | estimate's error |
 |---|---|---|---|---|---|---|---|---|---|
-| deterministic | 1200 | target | pooled | 40 | -1.20 ± 0.26 | +0.00 ± 0.00 | -1.20 ± 0.26 | -0.43 ± 0.14 | +0.77 ± 0.29 |
-| deterministic | 1200 | target | tree | 40 | -1.29 ± 0.23 | +0.00 ± 0.00 | -1.29 ± 0.23 | -0.44 ± 0.12 | +0.85 ± 0.25 |
-| deterministic | 1200 | noise | pooled | 40 | -3.48 ± 0.37 | +0.00 ± 0.00 | -3.48 ± 0.37 | -2.25 ± 0.25 | +1.22 ± 0.29 |
-| deterministic | 1200 | noise | tree | 40 | -3.86 ± 0.29 | -0.00 ± 0.00 | -3.86 ± 0.29 | -2.42 ± 0.22 | +1.45 ± 0.23 |
-| deterministic | 1200 | permuted target | pooled | 40 | -3.38 ± 0.39 | +0.00 ± 0.00 | -3.38 ± 0.39 | -2.20 ± 0.28 | +1.18 ± 0.30 |
-| deterministic | 1200 | permuted target | tree | 40 | -3.85 ± 0.34 | +0.00 ± 0.00 | -3.85 ± 0.34 | -2.40 ± 0.27 | +1.45 ± 0.26 |
-| deterministic | 4800 | target | pooled | 40 | -0.42 ± 0.08 | +0.00 ± 0.00 | -0.42 ± 0.08 | -0.00 ± 0.05 | +0.41 ± 0.10 |
-| deterministic | 4800 | target | tree | 40 | -0.39 ± 0.08 | +0.00 ± 0.00 | -0.39 ± 0.08 | -0.01 ± 0.04 | +0.38 ± 0.09 |
-| deterministic | 4800 | noise | pooled | 40 | -2.67 ± 0.17 | +0.00 ± 0.00 | -2.67 ± 0.17 | -2.01 ± 0.15 | +0.66 ± 0.10 |
-| deterministic | 4800 | noise | tree | 40 | -2.83 ± 0.14 | -0.00 ± 0.00 | -2.83 ± 0.14 | -2.19 ± 0.13 | +0.64 ± 0.09 |
-| deterministic | 4800 | permuted target | pooled | 40 | -2.42 ± 0.16 | +0.00 ± 0.00 | -2.42 ± 0.16 | -1.80 ± 0.13 | +0.62 ± 0.10 |
-| deterministic | 4800 | permuted target | tree | 40 | -2.65 ± 0.12 | -0.00 ± 0.00 | -2.65 ± 0.12 | -2.04 ± 0.09 | +0.61 ± 0.09 |
-| lognormal | 1200 | target | pooled | 40 | +6.07 ± 1.26 | +7.01 ± 1.24 | -0.93 ± 0.32 | -0.69 ± 0.33 | +0.25 ± 0.31 |
-| lognormal | 1200 | target | tree | 40 | +7.12 ± 1.24 | +8.35 ± 1.22 | -1.23 ± 0.26 | -0.56 ± 0.31 | +0.67 ± 0.25 |
-| lognormal | 1200 | noise | pooled | 40 | +0.80 ± 1.04 | +3.20 ± 0.94 | -2.41 ± 0.43 | -2.00 ± 0.48 | +0.40 ± 0.42 |
-| lognormal | 1200 | noise | tree | 40 | +0.17 ± 0.85 | +2.98 ± 0.79 | -2.81 ± 0.29 | -2.11 ± 0.40 | +0.70 ± 0.34 |
-| lognormal | 1200 | permuted target | pooled | 40 | -0.96 ± 1.01 | +1.69 ± 0.90 | -2.65 ± 0.46 | -2.13 ± 0.57 | +0.52 ± 0.40 |
-| lognormal | 1200 | permuted target | tree | 40 | -1.50 ± 0.81 | +1.73 ± 0.77 | -3.22 ± 0.32 | -2.39 ± 0.45 | +0.84 ± 0.32 |
-| lognormal | 4800 | target | pooled | 40 | +5.73 ± 0.67 | +6.24 ± 0.69 | -0.51 ± 0.14 | -0.44 ± 0.15 | +0.07 ± 0.14 |
-| lognormal | 4800 | target | tree | 40 | +6.02 ± 0.58 | +6.75 ± 0.59 | -0.72 ± 0.10 | -0.58 ± 0.13 | +0.14 ± 0.12 |
-| lognormal | 4800 | noise | pooled | 40 | -1.80 ± 0.62 | +0.09 ± 0.61 | -1.89 ± 0.15 | -1.46 ± 0.17 | +0.43 ± 0.15 |
-| lognormal | 4800 | noise | tree | 40 | -2.23 ± 0.56 | +0.03 ± 0.52 | -2.25 ± 0.13 | -1.69 ± 0.15 | +0.56 ± 0.13 |
-| lognormal | 4800 | permuted target | pooled | 40 | -2.37 ± 0.63 | -0.12 ± 0.58 | -2.25 ± 0.16 | -1.71 ± 0.15 | +0.54 ± 0.16 |
-| lognormal | 4800 | permuted target | tree | 40 | -2.45 ± 0.55 | +0.01 ± 0.52 | -2.46 ± 0.13 | -1.82 ± 0.14 | +0.64 ± 0.14 |
-| lognormal, heavy tail | 1200 | target | pooled | 40 | +12.19 ± 2.32 | +13.10 ± 2.34 | -0.91 ± 0.35 | -1.02 ± 0.48 | -0.11 ± 0.52 |
-| lognormal, heavy tail | 1200 | target | tree | 40 | +14.41 ± 2.39 | +15.54 ± 2.38 | -1.13 ± 0.30 | -1.06 ± 0.38 | +0.07 ± 0.41 |
-| lognormal, heavy tail | 1200 | noise | pooled | 40 | +3.72 ± 1.87 | +6.13 ± 1.82 | -2.41 ± 0.43 | -2.26 ± 0.59 | +0.14 ± 0.55 |
-| lognormal, heavy tail | 1200 | noise | tree | 40 | +2.75 ± 1.55 | +5.56 ± 1.51 | -2.81 ± 0.29 | -2.37 ± 0.49 | +0.44 ± 0.48 |
-| lognormal, heavy tail | 1200 | permuted target | pooled | 40 | -0.33 ± 1.66 | +1.80 ± 1.57 | -2.13 ± 0.46 | -2.40 ± 0.70 | -0.27 ± 0.60 |
-| lognormal, heavy tail | 1200 | permuted target | tree | 40 | -0.29 ± 1.26 | +2.38 ± 1.21 | -2.67 ± 0.33 | -2.59 ± 0.55 | +0.08 ± 0.50 |
-| lognormal, heavy tail | 4800 | target | pooled | 40 | +10.68 ± 1.69 | +11.07 ± 1.69 | -0.39 ± 0.12 | -0.79 ± 0.18 | -0.40 ± 0.16 |
-| lognormal, heavy tail | 4800 | target | tree | 40 | +11.40 ± 1.52 | +12.05 ± 1.55 | -0.65 ± 0.11 | -0.90 ± 0.16 | -0.25 ± 0.14 |
-| lognormal, heavy tail | 4800 | noise | pooled | 40 | -1.22 ± 1.33 | +0.67 ± 1.33 | -1.89 ± 0.15 | -1.37 ± 0.18 | +0.52 ± 0.17 |
-| lognormal, heavy tail | 4800 | noise | tree | 40 | -1.96 ± 1.12 | +0.29 ± 1.10 | -2.25 ± 0.13 | -1.57 ± 0.18 | +0.68 ± 0.17 |
-| lognormal, heavy tail | 4800 | permuted target | pooled | 40 | -1.09 ± 1.12 | +1.16 ± 1.12 | -2.24 ± 0.18 | -1.79 ± 0.19 | +0.46 ± 0.19 |
-| lognormal, heavy tail | 4800 | permuted target | tree | 40 | -1.05 ± 1.01 | +1.43 ± 1.02 | -2.48 ± 0.12 | -1.87 ± 0.17 | +0.61 ± 0.18 |
-| lognormal, discrete predictors | 1200 | target | pooled | 40 | +6.98 ± 1.34 | +8.12 ± 1.32 | -1.14 ± 0.43 | -0.47 ± 0.28 | +0.66 ± 0.35 |
-| lognormal, discrete predictors | 1200 | target | tree | 40 | +7.85 ± 1.26 | +9.22 ± 1.20 | -1.36 ± 0.34 | -0.67 ± 0.23 | +0.69 ± 0.29 |
-| lognormal, discrete predictors | 1200 | noise | pooled | 40 | -2.95 ± 1.11 | -0.42 ± 1.13 | -2.54 ± 0.38 | -1.05 ± 0.25 | +1.49 ± 0.34 |
-| lognormal, discrete predictors | 1200 | noise | tree | 40 | -2.92 ± 0.81 | -0.26 ± 0.82 | -2.66 ± 0.30 | -1.12 ± 0.20 | +1.54 ± 0.28 |
-| lognormal, discrete predictors | 1200 | permuted target | pooled | 40 | -3.53 ± 1.08 | -0.89 ± 1.14 | -2.64 ± 0.40 | -1.23 ± 0.32 | +1.41 ± 0.34 |
-| lognormal, discrete predictors | 1200 | permuted target | tree | 40 | -3.23 ± 0.86 | -0.38 ± 0.91 | -2.84 ± 0.30 | -1.37 ± 0.25 | +1.47 ± 0.26 |
-| lognormal, discrete predictors | 4800 | target | pooled | 40 | +7.54 ± 0.69 | +7.96 ± 0.65 | -0.41 ± 0.14 | -0.34 ± 0.15 | +0.07 ± 0.14 |
-| lognormal, discrete predictors | 4800 | target | tree | 40 | +8.04 ± 0.62 | +8.52 ± 0.59 | -0.49 ± 0.13 | -0.46 ± 0.12 | +0.03 ± 0.11 |
-| lognormal, discrete predictors | 4800 | noise | pooled | 40 | -1.41 ± 0.49 | +0.17 ± 0.48 | -1.58 ± 0.13 | -1.09 ± 0.17 | +0.49 ± 0.15 |
-| lognormal, discrete predictors | 4800 | noise | tree | 40 | -1.70 ± 0.38 | -0.12 ± 0.38 | -1.58 ± 0.10 | -1.25 ± 0.12 | +0.33 ± 0.12 |
-| lognormal, discrete predictors | 4800 | permuted target | pooled | 40 | -1.38 ± 0.48 | +0.36 ± 0.46 | -1.74 ± 0.13 | -1.15 ± 0.19 | +0.59 ± 0.14 |
-| lognormal, discrete predictors | 4800 | permuted target | tree | 40 | -1.73 ± 0.38 | +0.06 ± 0.36 | -1.79 ± 0.11 | -1.33 ± 0.13 | +0.46 ± 0.10 |
-| no signal | 1200 | target | pooled | 40 | +3.50 ± 0.69 | +3.50 ± 0.69 | +0.00 ± 0.00 | -0.21 ± 0.10 | -0.21 ± 0.10 |
-| no signal | 1200 | target | tree | 40 | +4.84 ± 0.64 | +4.84 ± 0.64 | -0.00 ± 0.00 | -0.25 ± 0.09 | -0.25 ± 0.09 |
-| no signal | 1200 | noise | pooled | 40 | -0.29 ± 0.64 | -0.29 ± 0.64 | -0.00 ± 0.00 | -0.02 ± 0.11 | -0.02 ± 0.11 |
-| no signal | 1200 | noise | tree | 40 | -0.06 ± 0.62 | -0.06 ± 0.62 | +0.00 ± 0.00 | -0.07 ± 0.09 | -0.07 ± 0.09 |
-| no signal | 1200 | permuted target | pooled | 40 | -0.37 ± 0.63 | -0.37 ± 0.63 | -0.00 ± 0.00 | -0.05 ± 0.11 | -0.05 ± 0.11 |
-| no signal | 1200 | permuted target | tree | 40 | +0.10 ± 0.62 | +0.10 ± 0.62 | -0.00 ± 0.00 | -0.08 ± 0.09 | -0.08 ± 0.09 |
-| no signal | 4800 | target | pooled | 40 | +5.29 ± 0.42 | +5.29 ± 0.42 | +0.00 ± 0.00 | -0.16 ± 0.06 | -0.16 ± 0.06 |
-| no signal | 4800 | target | tree | 40 | +5.44 ± 0.38 | +5.44 ± 0.38 | -0.00 ± 0.00 | -0.12 ± 0.06 | -0.12 ± 0.06 |
-| no signal | 4800 | noise | pooled | 40 | +0.60 ± 0.38 | +0.60 ± 0.38 | -0.00 ± 0.00 | -0.14 ± 0.05 | -0.14 ± 0.05 |
-| no signal | 4800 | noise | tree | 40 | +0.28 ± 0.32 | +0.28 ± 0.32 | +0.00 ± 0.00 | -0.12 ± 0.05 | -0.12 ± 0.05 |
-| no signal | 4800 | permuted target | pooled | 40 | +0.65 ± 0.42 | +0.65 ± 0.42 | +0.00 ± 0.00 | -0.08 ± 0.05 | -0.08 ± 0.05 |
-| no signal | 4800 | permuted target | tree | 40 | +0.22 ± 0.36 | +0.22 ± 0.36 | +0.00 ± 0.00 | -0.04 ± 0.05 | -0.04 ± 0.05 |
+| deterministic | 1200 | target | pooled | 40 | -1.20 ± 0.26 | +0.00 ± 0.00 | -1.20 ± 0.26 | -0.28 ± 0.10 | +0.93 ± 0.27 |
+| deterministic | 1200 | target | tree | 40 | -1.29 ± 0.23 | +0.00 ± 0.00 | -1.29 ± 0.23 | -0.26 ± 0.09 | +1.03 ± 0.24 |
+| deterministic | 1200 | noise | pooled | 40 | -3.48 ± 0.37 | +0.00 ± 0.00 | -3.48 ± 0.37 | -2.23 ± 0.24 | +1.25 ± 0.27 |
+| deterministic | 1200 | noise | tree | 40 | -3.86 ± 0.29 | -0.00 ± 0.00 | -3.86 ± 0.29 | -2.39 ± 0.20 | +1.48 ± 0.22 |
+| deterministic | 1200 | permuted target | pooled | 40 | -3.38 ± 0.39 | +0.00 ± 0.00 | -3.38 ± 0.39 | -2.25 ± 0.27 | +1.13 ± 0.29 |
+| deterministic | 1200 | permuted target | tree | 40 | -3.85 ± 0.34 | +0.00 ± 0.00 | -3.85 ± 0.34 | -2.44 ± 0.25 | +1.41 ± 0.26 |
+| deterministic | 4800 | target | pooled | 40 | -0.42 ± 0.08 | +0.00 ± 0.00 | -0.42 ± 0.08 | +0.01 ± 0.03 | +0.43 ± 0.09 |
+| deterministic | 4800 | target | tree | 40 | -0.39 ± 0.08 | +0.00 ± 0.00 | -0.39 ± 0.08 | +0.03 ± 0.03 | +0.42 ± 0.08 |
+| deterministic | 4800 | noise | pooled | 40 | -2.67 ± 0.17 | +0.00 ± 0.00 | -2.67 ± 0.17 | -1.98 ± 0.15 | +0.69 ± 0.10 |
+| deterministic | 4800 | noise | tree | 40 | -2.83 ± 0.14 | -0.00 ± 0.00 | -2.83 ± 0.14 | -2.14 ± 0.13 | +0.69 ± 0.09 |
+| deterministic | 4800 | permuted target | pooled | 40 | -2.42 ± 0.16 | +0.00 ± 0.00 | -2.42 ± 0.16 | -1.83 ± 0.13 | +0.60 ± 0.10 |
+| deterministic | 4800 | permuted target | tree | 40 | -2.65 ± 0.12 | -0.00 ± 0.00 | -2.65 ± 0.12 | -2.03 ± 0.08 | +0.62 ± 0.09 |
+| lognormal | 1200 | target | pooled | 40 | +6.07 ± 1.26 | +7.01 ± 1.24 | -0.93 ± 0.32 | -0.76 ± 0.27 | +0.18 ± 0.27 |
+| lognormal | 1200 | target | tree | 40 | +7.12 ± 1.24 | +8.35 ± 1.22 | -1.23 ± 0.26 | -0.81 ± 0.25 | +0.42 ± 0.22 |
+| lognormal | 1200 | noise | pooled | 40 | +0.80 ± 1.04 | +3.20 ± 0.94 | -2.41 ± 0.43 | -2.08 ± 0.39 | +0.33 ± 0.36 |
+| lognormal | 1200 | noise | tree | 40 | +0.17 ± 0.85 | +2.98 ± 0.79 | -2.81 ± 0.29 | -2.35 ± 0.34 | +0.46 ± 0.30 |
+| lognormal | 1200 | permuted target | pooled | 40 | -0.96 ± 1.01 | +1.69 ± 0.90 | -2.65 ± 0.46 | -2.28 ± 0.43 | +0.37 ± 0.36 |
+| lognormal | 1200 | permuted target | tree | 40 | -1.50 ± 0.81 | +1.73 ± 0.77 | -3.22 ± 0.32 | -2.64 ± 0.37 | +0.58 ± 0.29 |
+| lognormal | 4800 | target | pooled | 40 | +5.73 ± 0.67 | +6.24 ± 0.69 | -0.51 ± 0.14 | -0.61 ± 0.16 | -0.10 ± 0.14 |
+| lognormal | 4800 | target | tree | 40 | +6.02 ± 0.58 | +6.75 ± 0.59 | -0.72 ± 0.10 | -0.75 ± 0.13 | -0.02 ± 0.12 |
+| lognormal | 4800 | noise | pooled | 40 | -1.80 ± 0.62 | +0.09 ± 0.61 | -1.89 ± 0.15 | -1.73 ± 0.15 | +0.16 ± 0.14 |
+| lognormal | 4800 | noise | tree | 40 | -2.23 ± 0.56 | +0.03 ± 0.52 | -2.25 ± 0.13 | -1.99 ± 0.13 | +0.26 ± 0.12 |
+| lognormal | 4800 | permuted target | pooled | 40 | -2.37 ± 0.63 | -0.12 ± 0.58 | -2.25 ± 0.16 | -2.05 ± 0.16 | +0.20 ± 0.14 |
+| lognormal | 4800 | permuted target | tree | 40 | -2.45 ± 0.55 | +0.01 ± 0.52 | -2.46 ± 0.13 | -2.17 ± 0.15 | +0.29 ± 0.12 |
+| lognormal, heavy tail | 1200 | target | pooled | 40 | +12.19 ± 2.32 | +13.10 ± 2.34 | -0.91 ± 0.35 | -1.27 ± 0.40 | -0.36 ± 0.45 |
+| lognormal, heavy tail | 1200 | target | tree | 40 | +14.41 ± 2.39 | +15.54 ± 2.38 | -1.13 ± 0.30 | -1.68 ± 0.35 | -0.55 ± 0.40 |
+| lognormal, heavy tail | 1200 | noise | pooled | 40 | +3.72 ± 1.87 | +6.13 ± 1.82 | -2.41 ± 0.43 | -2.74 ± 0.53 | -0.34 ± 0.51 |
+| lognormal, heavy tail | 1200 | noise | tree | 40 | +2.75 ± 1.55 | +5.56 ± 1.51 | -2.81 ± 0.29 | -3.16 ± 0.46 | -0.35 ± 0.43 |
+| lognormal, heavy tail | 1200 | permuted target | pooled | 40 | -0.33 ± 1.66 | +1.80 ± 1.57 | -2.13 ± 0.46 | -2.89 ± 0.62 | -0.76 ± 0.59 |
+| lognormal, heavy tail | 1200 | permuted target | tree | 40 | -0.29 ± 1.26 | +2.38 ± 1.21 | -2.67 ± 0.33 | -3.44 ± 0.54 | -0.77 ± 0.52 |
+| lognormal, heavy tail | 4800 | target | pooled | 40 | +10.68 ± 1.69 | +11.07 ± 1.69 | -0.39 ± 0.12 | -0.87 ± 0.16 | -0.49 ± 0.14 |
+| lognormal, heavy tail | 4800 | target | tree | 40 | +11.40 ± 1.52 | +12.05 ± 1.55 | -0.65 ± 0.11 | -1.05 ± 0.15 | -0.40 ± 0.13 |
+| lognormal, heavy tail | 4800 | noise | pooled | 40 | -1.22 ± 1.33 | +0.67 ± 1.33 | -1.89 ± 0.15 | -1.84 ± 0.17 | +0.05 ± 0.17 |
+| lognormal, heavy tail | 4800 | noise | tree | 40 | -1.96 ± 1.12 | +0.29 ± 1.10 | -2.25 ± 0.13 | -2.12 ± 0.16 | +0.13 ± 0.15 |
+| lognormal, heavy tail | 4800 | permuted target | pooled | 40 | -1.09 ± 1.12 | +1.16 ± 1.12 | -2.24 ± 0.18 | -2.18 ± 0.22 | +0.06 ± 0.17 |
+| lognormal, heavy tail | 4800 | permuted target | tree | 40 | -1.05 ± 1.01 | +1.43 ± 1.02 | -2.48 ± 0.12 | -2.35 ± 0.16 | +0.12 ± 0.14 |
+| lognormal, discrete predictors | 1200 | target | pooled | 40 | +6.98 ± 1.34 | +8.12 ± 1.32 | -1.14 ± 0.43 | -0.62 ± 0.21 | +0.52 ± 0.35 |
+| lognormal, discrete predictors | 1200 | target | tree | 40 | +7.85 ± 1.26 | +9.22 ± 1.20 | -1.36 ± 0.34 | -0.67 ± 0.16 | +0.69 ± 0.30 |
+| lognormal, discrete predictors | 1200 | noise | pooled | 40 | -2.95 ± 1.11 | -0.42 ± 1.13 | -2.54 ± 0.38 | -1.28 ± 0.20 | +1.25 ± 0.33 |
+| lognormal, discrete predictors | 1200 | noise | tree | 40 | -2.92 ± 0.81 | -0.26 ± 0.82 | -2.66 ± 0.30 | -1.18 ± 0.17 | +1.48 ± 0.28 |
+| lognormal, discrete predictors | 1200 | permuted target | pooled | 40 | -3.53 ± 1.08 | -0.89 ± 1.14 | -2.64 ± 0.40 | -1.53 ± 0.26 | +1.11 ± 0.36 |
+| lognormal, discrete predictors | 1200 | permuted target | tree | 40 | -3.23 ± 0.86 | -0.38 ± 0.91 | -2.84 ± 0.30 | -1.52 ± 0.20 | +1.33 ± 0.27 |
+| lognormal, discrete predictors | 4800 | target | pooled | 40 | +7.54 ± 0.69 | +7.96 ± 0.65 | -0.41 ± 0.14 | -0.41 ± 0.13 | +0.01 ± 0.15 |
+| lognormal, discrete predictors | 4800 | target | tree | 40 | +8.04 ± 0.62 | +8.52 ± 0.59 | -0.49 ± 0.13 | -0.50 ± 0.11 | -0.01 ± 0.13 |
+| lognormal, discrete predictors | 4800 | noise | pooled | 40 | -1.41 ± 0.49 | +0.17 ± 0.48 | -1.58 ± 0.13 | -1.17 ± 0.13 | +0.41 ± 0.14 |
+| lognormal, discrete predictors | 4800 | noise | tree | 40 | -1.70 ± 0.38 | -0.12 ± 0.38 | -1.58 ± 0.10 | -1.29 ± 0.12 | +0.29 ± 0.13 |
+| lognormal, discrete predictors | 4800 | permuted target | pooled | 40 | -1.38 ± 0.48 | +0.36 ± 0.46 | -1.74 ± 0.13 | -1.31 ± 0.15 | +0.43 ± 0.12 |
+| lognormal, discrete predictors | 4800 | permuted target | tree | 40 | -1.73 ± 0.38 | +0.06 ± 0.36 | -1.79 ± 0.11 | -1.48 ± 0.12 | +0.31 ± 0.11 |
+| no signal | 1200 | target | pooled | 40 | +3.50 ± 0.69 | +3.50 ± 0.69 | +0.00 ± 0.00 | -0.25 ± 0.10 | -0.25 ± 0.10 |
+| no signal | 1200 | target | tree | 40 | +4.84 ± 0.64 | +4.84 ± 0.64 | -0.00 ± 0.00 | -0.30 ± 0.10 | -0.30 ± 0.10 |
+| no signal | 1200 | noise | pooled | 40 | -0.29 ± 0.64 | -0.29 ± 0.64 | -0.00 ± 0.00 | -0.04 ± 0.11 | -0.04 ± 0.11 |
+| no signal | 1200 | noise | tree | 40 | -0.06 ± 0.62 | -0.06 ± 0.62 | +0.00 ± 0.00 | -0.10 ± 0.09 | -0.10 ± 0.09 |
+| no signal | 1200 | permuted target | pooled | 40 | -0.37 ± 0.63 | -0.37 ± 0.63 | -0.00 ± 0.00 | -0.07 ± 0.11 | -0.07 ± 0.11 |
+| no signal | 1200 | permuted target | tree | 40 | +0.10 ± 0.62 | +0.10 ± 0.62 | -0.00 ± 0.00 | -0.14 ± 0.09 | -0.14 ± 0.09 |
+| no signal | 4800 | target | pooled | 40 | +5.29 ± 0.42 | +5.29 ± 0.42 | +0.00 ± 0.00 | -0.19 ± 0.06 | -0.19 ± 0.06 |
+| no signal | 4800 | target | tree | 40 | +5.44 ± 0.38 | +5.44 ± 0.38 | -0.00 ± 0.00 | -0.13 ± 0.05 | -0.13 ± 0.05 |
+| no signal | 4800 | noise | pooled | 40 | +0.60 ± 0.38 | +0.60 ± 0.38 | -0.00 ± 0.00 | -0.17 ± 0.05 | -0.17 ± 0.05 |
+| no signal | 4800 | noise | tree | 40 | +0.28 ± 0.32 | +0.28 ± 0.32 | +0.00 ± 0.00 | -0.14 ± 0.05 | -0.14 ± 0.05 |
+| no signal | 4800 | permuted target | pooled | 40 | +0.65 ± 0.42 | +0.65 ± 0.42 | +0.00 ± 0.00 | -0.12 ± 0.05 | -0.12 ± 0.05 |
+| no signal | 4800 | permuted target | tree | 40 | +0.22 ± 0.36 | +0.22 ± 0.36 | +0.00 ± 0.00 | -0.08 ± 0.05 | -0.08 ± 0.05 |
 
 ## The contrast split into selection and smoothing
 
-`harness/smoothing.py`: held-out donors, % of the held-out reported total, mean over 5 folds ± its standard error. Estimated smoothing evaluates a conditional mean fitted on each sign's held-out donors (which fill no tree) at the filling rows; estimated selection is the contrast minus it. Estimated selection is material when it exceeds its fold standard error and 0.5%. 9 targets lack an estimate, because some fold left fewer than 100 held-out donors of a sign or the target rests on too few donors to report.
+`harness/smoothing.py`: held-out donors, % of the held-out reported total, mean over 5 folds ± its standard error. Estimated smoothing evaluates a conditional mean fitted on each sign's held-out donors (which fill no tree) at the filling rows; estimated selection is the contrast minus it. Estimated selection is material when it exceeds its fold standard error and 0.5%. 42 targets lack an estimate, because some fold left fewer than 100 held-out donors of a sign or the target rests on too few donors to report.
 
 | fit | target | contrast | estimated smoothing | estimated selection | per-tree contrast | per-tree estimated smoothing | production: contrast / estimated smoothing, % of drawn | estimated selection material |
 |---|---|---|---|---|---|---|---|---|
-| acs_rent | rent | +2.03 ± 1.46 | +0.02 ± 0.14 | +2.01 ± 1.41 | +0.58 ± 1.55 | -0.33 ± 0.15 | +4.71 ± 0.89 / +0.26 ± 0.05 | yes |
-| sipp_financial_assets__2 | bond_assets | -5.77 ± 7.27 | +1.35 ± 2.07 | -7.12 ± 8.60 | -7.79 ± 5.78 | +0.11 ± 2.18 | -5.33 ± 8.08 / +0.34 ± 2.07 |  |
-| uk_etb_vat | full_rate_vat_expenditure_rate | +0.31 ± 0.35 | -0.10 ± 0.05 | +0.41 ± 0.36 | -0.16 ± 0.41 | -0.01 ± 0.05 | — |  |
-| uk_uc_reporter_redraw | universal_credit_reported_amount | +0.66 ± 1.07 | +0.42 ± 0.36 | +0.24 ± 1.16 | +1.04 ± 0.76 | +0.65 ± 0.31 | — |  |
+| acs_rent | rent | +2.03 ± 1.46 | -0.14 ± 0.22 | +2.17 ± 1.34 | +0.58 ± 1.55 | -0.46 ± 0.19 | +4.71 ± 0.89 / +0.13 ± 0.14 | yes |
+| org_wages | hourly_wage | +0.70 ± 0.05 | -0.02 ± 0.03 | +0.72 ± 0.04 | -0.47 ± 0.06 | +0.01 ± 0.03 | +0.54 ± 0.15 / +0.03 ± 0.10 | yes |
+| puf_chain_twin | employment_income_before_lsr | -0.41 ± 0.13 | -0.30 ± 0.19 | -0.11 ± 0.07 | -0.41 ± 0.15 | -0.26 ± 0.25 | -0.02 ± 0.04 / -0.01 ± 0.02 |  |
+| puf_chain_twin | self_employment_income_before_lsr | -0.68 ± 0.56 | -1.83 ± 1.14 | +1.14 ± 1.10 | -0.60 ± 0.56 | -2.78 ± 1.53 | -0.75 ± 0.14 / -0.79 ± 0.15 | yes |
+| puf_chain_twin | taxable_interest_income | -7.70 ± 0.80 | -7.12 ± 1.25 | -0.59 ± 0.56 | -9.94 ± 0.57 | -9.02 ± 1.15 | -0.06 ± 0.02 / -0.03 ± 0.05 | yes |
+| puf_chain_twin | qualified_dividend_income | -6.88 ± 1.41 | -6.78 ± 1.91 | -0.10 ± 0.58 | -8.49 ± 1.14 | -8.31 ± 1.77 | +0.24 ± 0.63 / +0.18 ± 0.19 |  |
+| puf_chain_twin | non_qualified_dividend_income | -8.38 ± 0.66 | -47.28 ± 27.64 | +38.89 ± 27.43 | -11.21 ± 0.57 | -47.75 ± 25.82 | -7.05 ± 1.13 / -40.13 ± 28.11 | yes |
+| puf_chain_twin | tax_exempt_interest_income | +6.70 ± 1.88 | -2.66 ± 0.37 | +9.36 ± 1.70 | -4.98 ± 2.85 | -4.89 ± 0.60 | +9.87 ± 5.32 / -1.27 ± 1.11 | yes |
+| puf_chain_twin | short_term_capital_gains | -3.25 ± 3.18 | +1.58 ± 2.15 | -4.83 ± 1.44 | -0.86 ± 3.00 | +18.75 ± 10.12 | -0.16 ± 0.12 / -1.02 ± 0.26 | yes |
+| puf_chain_twin | long_term_capital_gains_before_response | -8.70 ± 0.92 | -7.62 ± 1.52 | -1.09 ± 0.77 | -10.57 ± 0.69 | -9.12 ± 1.42 | -0.03 ± 0.03 / -0.04 ± 0.07 | yes |
+| puf_chain_twin | long_term_capital_gains_on_collectibles | +20.07 ± 12.20 | -6.11 ± 6.00 | +26.18 ± 12.20 | -7.70 ± 6.60 | -38.28 ± 23.20 | -8.66 ± 7.89 / +6.62 ± 6.33 | yes |
+| puf_chain_twin | non_sch_d_capital_gains | +7.14 ± 1.13 | -0.98 ± 0.60 | +8.12 ± 1.07 | +4.48 ± 1.73 | -3.83 ± 1.25 | +145.44 ± 32.18 / -7.69 ± 4.07 | yes |
+| puf_chain_twin | taxable_private_pension_income | +1.52 ± 0.71 | -1.02 ± 0.08 | +2.55 ± 0.65 | -5.57 ± 1.02 | -1.38 ± 0.08 | +4.50 ± 1.62 / -0.96 ± 0.17 | yes |
+| puf_chain_twin | taxable_ira_distributions | +6.50 ± 0.63 | -1.59 ± 0.24 | +8.08 ± 0.60 | -4.04 ± 0.96 | -3.37 ± 0.45 | +12.37 ± 1.40 / -1.01 ± 0.23 | yes |
+| puf_chain_twin | social_security_retirement | -0.19 ± 0.07 | -0.46 ± 0.05 | +0.27 ± 0.11 | -1.35 ± 0.09 | -0.73 ± 0.08 | +0.67 ± 0.24 / -0.82 ± 0.14 |  |
+| puf_chain_twin | alimony_expense | +3.34 ± 1.49 | +0.16 ± 1.07 | +3.18 ± 1.50 | -0.48 ± 2.35 | -0.86 ± 0.94 | +9.31 ± 3.50 / +0.75 ± 1.49 | yes |
+| puf_chain_twin | salt_refund_income | +2.80 ± 1.78 | -3.67 ± 0.37 | +6.47 ± 1.56 | -68.42 ± 7.91 | -6.72 ± 0.26 | +4.14 ± 7.33 / -8.13 ± 2.00 | yes |
+| puf_chain_twin | charitable_cash_donations | +4.00 ± 1.52 | -2.80 ± 1.34 | +6.80 ± 1.04 | -16.36 ± 4.41 | -5.19 ± 1.25 | -2.96 ± 1.60 / -7.24 ± 3.10 | yes |
+| puf_chain_twin | charitable_non_cash_donations | -28.79 ± 3.58 | -16.77 ± 4.35 | -12.01 ± 5.05 | -62.16 ± 12.07 | -26.23 ± 4.56 | -41.70 ± 9.54 / -28.47 ± 5.23 | yes |
+| puf_chain_twin | real_estate_taxes | +1.72 ± 0.14 | -1.69 ± 0.07 | +3.41 ± 0.14 | -3.33 ± 0.18 | -3.65 ± 0.12 | +6.83 ± 0.33 / -2.79 ± 0.23 | yes |
+| puf_chain_twin | home_mortgage_interest | -58.17 ± 6.68 | -56.99 ± 13.93 | -1.18 ± 14.77 | -80.19 ± 7.65 | -80.56 ± 16.27 | -542.51 ± 83.61 / -760.82 ± 140.35 |  |
+| puf_chain_twin | investment_income_elected_form_4952 | -13.29 ± 5.96 | -13.82 ± 4.88 | +0.53 ± 5.16 | -42.76 ± 10.46 | -28.02 ± 7.17 | -6.52 ± 4.56 / -6.59 ± 3.30 |  |
+| puf_chain_twin | student_loan_interest | +9.36 ± 0.35 | +0.44 ± 0.10 | +8.92 ± 0.34 | +1.65 ± 0.18 | +0.26 ± 0.16 | +9.63 ± 0.98 / +0.42 ± 0.10 | yes |
+| puf_chain_twin | educator_expense | -0.42 ± 0.06 | +0.17 ± 0.07 | -0.59 ± 0.05 | +0.14 ± 0.31 | +0.12 ± 0.05 | +0.44 ± 0.18 / +0.18 ± 0.05 | yes |
+| puf_chain_twin | qualified_tuition_expenses | +14.26 ± 1.29 | -0.03 ± 0.17 | +14.29 ± 1.24 | +0.95 ± 0.82 | +0.44 ± 0.27 | +13.06 ± 1.52 / +0.03 ± 0.14 | yes |
+| puf_chain_twin | unreimbursed_business_employee_expenses | +1.35 ± 0.61 | -1.35 ± 0.50 | +2.70 ± 0.19 | -3.55 ± 1.12 | -6.24 ± 0.69 | +5.48 ± 1.11 / -5.19 ± 0.49 | yes |
+| puf_chain_twin | traditional_ira_contributions_desired | +6.76 ± 1.19 | -0.83 ± 0.15 | +7.59 ± 1.06 | -2.96 ± 0.62 | -3.54 ± 0.34 | +28.44 ± 2.00 / -1.59 ± 0.46 | yes |
+| puf_chain_twin | self_employed_pension_contributions_desired | +6.52 ± 0.65 | +0.60 ± 0.45 | +5.92 ± 0.23 | +1.06 ± 0.96 | -3.39 ± 0.46 | +579.86 ± 85.25 / -14.10 ± 46.76 | yes |
+| puf_chain_twin | rental_income | +7.06 ± 1.72 | -3.18 ± 1.60 | +10.24 ± 2.08 | -31.49 ± 4.37 | -7.78 ± 2.86 | +7.65 ± 22.28 / -10.66 ± 9.51 | yes |
+| puf_chain_twin | estate_income | +21.50 ± 5.68 | -7.77 ± 14.70 | +29.28 ± 10.22 | -5.10 ± 12.06 | +0.68 ± 15.22 | +0.90 ± 5.19 / -18.66 ± 20.09 | yes |
+| puf_chain_twin | farm_income | +35.85 ± 23.47 | -21.22 ± 5.86 | +57.07 ± 27.63 | -50.33 ± 26.40 | -62.95 ± 10.97 | +65.35 ± 53.79 / -55.13 ± 47.50 | yes |
+| puf_chain_twin | farm_operations_income | +1.57 ± 6.44 | -6.93 ± 1.49 | +8.50 ± 6.44 | -33.82 ± 9.09 | -16.38 ± 3.94 | -20.93 ± 8.30 / -10.58 ± 6.57 | yes |
+| puf_chain_twin | miscellaneous_income | +18.33 ± 71.01 | +2.32 ± 43.49 | +16.01 ± 29.88 | +5.73 ± 81.13 | -23.87 ± 46.97 | +41.20 ± 40.73 / +83.76 ± 42.57 |  |
+| puf_chain_twin | partnership_income | +3.30 ± 1.27 | -4.49 ± 0.43 | +7.79 ± 1.03 | -13.22 ± 1.36 | -7.61 ± 0.42 | -4.99 ± 2.86 / -9.98 ± 1.96 | yes |
+| puf_chain_twin | partnership_self_employment_net_earnings | -19.07 ± 11.66 | +0.74 ± 4.62 | -19.81 ± 8.15 | +8.17 ± 10.20 | +10.51 ± 4.36 | -5.74 ± 2.79 / +1.89 ± 0.85 | yes |
+| puf_chain_twin | estate_income_would_be_qualified | -1.41 ± 0.06 | +0.01 ± 0.01 | -1.42 ± 0.06 | +0.00 ± 0.04 | -0.01 ± 0.01 | -1.51 ± 0.16 / +0.03 ± 0.02 | yes |
+| puf_chain_twin | farm_operations_income_would_be_qualified | +1.36 ± 0.01 | -0.00 ± 0.00 | +1.36 ± 0.01 | -0.20 ± 0.02 | +0.00 ± 0.00 | +1.42 ± 0.01 / -0.00 ± 0.00 | yes |
+| puf_chain_twin | farm_rent_income_would_be_qualified | +4.43 ± 0.02 | +0.00 ± 0.00 | +4.42 ± 0.02 | -0.31 ± 0.03 | +0.02 ± 0.00 | +4.68 ± 0.05 / -0.00 ± 0.01 | yes |
+| puf_chain_twin | partnership_s_corp_income_would_be_qualified | +4.76 ± 0.01 | -0.00 ± 0.00 | +4.77 ± 0.01 | -0.50 ± 0.01 | +0.01 ± 0.00 | +4.78 ± 0.03 / +0.00 ± 0.00 | yes |
+| puf_chain_twin | rental_income_would_be_qualified | +2.05 ± 0.10 | -0.00 ± 0.01 | +2.06 ± 0.10 | -0.14 ± 0.04 | +0.01 ± 0.01 | +1.76 ± 0.07 / -0.01 ± 0.01 | yes |
+| puf_chain_twin | self_employment_income_would_be_qualified | +3.18 ± 0.03 | -0.00 ± 0.01 | +3.18 ± 0.03 | -0.49 ± 0.02 | +0.01 ± 0.01 | +3.23 ± 0.07 / -0.00 ± 0.01 | yes |
+| puf_chain_twin | sstb_self_employment_income_would_be_qualified | -0.09 ± 0.07 | -0.06 ± 0.04 | -0.04 ± 0.04 | +0.09 ± 0.05 | +0.06 ± 0.04 | +0.14 ± 0.28 / -0.06 ± 0.11 |  |
+| puf_chain_twin | business_is_sstb | -0.16 ± 0.02 | +0.00 ± 0.00 | -0.16 ± 0.02 | +0.00 ± 0.01 | +0.00 ± 0.00 | -0.21 ± 0.01 / -0.00 ± 0.00 |  |
+| puf_chain_twin | qualified_bdc_income | -12.41 ± 4.00 | -16.27 ± 2.35 | +3.86 ± 2.82 | -16.81 ± 5.07 | -28.60 ± 2.56 | -9.41 ± 3.93 / -14.26 ± 4.03 | yes |
+| puf_chain_twin | qualified_reit_and_ptp_income | +1.12 ± 2.77 | -6.79 ± 1.18 | +7.91 ± 2.56 | -1.96 ± 2.89 | -11.85 ± 1.94 | +11.42 ± 15.31 / -17.22 ± 4.73 | yes |
+| puf_chain_twin | sstb_self_employment_income_before_lsr | +3.26 ± 1.23 | -3.86 ± 0.53 | +7.12 ± 1.19 | -16.94 ± 1.61 | -8.79 ± 1.47 | +10.76 ± 1.82 / -2.41 ± 0.31 | yes |
+| puf_chain_twin | sstb_unadjusted_basis_qualified_property | -3.27 ± 1.94 | -4.42 ± 2.13 | +1.14 ± 3.24 | -10.12 ± 2.24 | -12.10 ± 2.23 | +0.32 ± 1.24 / -1.13 ± 1.02 |  |
+| puf_chain_twin | sstb_w2_wages_from_qualified_business | -0.45 ± 1.24 | -2.66 ± 1.26 | +2.21 ± 2.41 | -17.11 ± 3.78 | -8.65 ± 2.13 | +5.19 ± 1.56 / -2.92 ± 0.32 |  |
+| puf_chain_twin | unadjusted_basis_qualified_property | -3.58 ± 1.49 | -3.02 ± 0.71 | -0.56 ± 1.32 | -7.22 ± 1.43 | -5.85 ± 0.61 | +3.85 ± 2.98 / -6.83 ± 1.74 |  |
+| puf_chain_twin | w2_wages_from_qualified_business | -0.66 ± 0.72 | -2.60 ± 0.82 | +1.94 ± 0.52 | -2.83 ± 0.89 | -4.17 ± 0.67 | +1.16 ± 1.10 / -3.14 ± 1.27 | yes |
+| puf_chain_twin | domestic_production_ald | -3.29 ± 2.22 | -5.27 ± 1.33 | +1.98 ± 1.98 | -12.15 ± 2.68 | -8.93 ± 1.21 | -1.07 ± 2.48 / -1.96 ± 1.33 | yes |
+| puf_chain_twin | unrecaptured_section_1250_gain | +3.76 ± 4.97 | -5.85 ± 4.41 | +9.61 ± 2.57 | -14.05 ± 8.01 | -23.86 ± 7.13 | -7.03 ± 5.40 / -2.72 ± 3.27 | yes |
+| puf_chain_twin | first_home_mortgage_balance | -0.86 ± 0.12 | -0.86 ± 0.14 | -0.00 ± 0.02 | -1.06 ± 0.13 | -1.05 ± 0.13 | -0.39 ± 0.26 / -0.46 ± 0.27 |  |
+| puf_chain_twin | first_home_mortgage_interest | -59.76 ± 4.81 | -60.72 ± 5.99 | +0.96 ± 2.81 | -76.24 ± 4.25 | -77.15 ± 4.56 | -72.10 ± 26.77 / -89.18 ± 26.69 |  |
+| puf_chain_twin | first_home_mortgage_origination_year | +0.08 ± 0.00 | +0.00 ± 0.00 | +0.08 ± 0.00 | -0.00 ± 0.00 | +0.00 ± 0.00 | +0.06 ± 0.00 / +0.00 ± 0.00 |  |
+| puf_chain_twin | health_savings_account_ald | +6.40 ± 0.38 | -1.78 ± 0.18 | +8.19 ± 0.32 | -6.09 ± 0.35 | -5.11 ± 0.16 | +11.31 ± 3.35 / -0.78 ± 0.09 | yes |
+| puf_support_other_health_insurance | health_insurance_premiums_without_medicare_part_b | +1.96 ± 2.54 | -1.13 ± 1.20 | +3.09 ± 2.91 | +2.27 ± 1.93 | -2.07 ± 0.82 | +5.31 ± 2.07 / -0.31 ± 1.18 | yes |
+| puf_support_other_health_insurance | other_health_insurance_premiums | -0.95 ± 1.43 | -1.87 ± 0.84 | +0.93 ± 1.70 | -2.05 ± 1.17 | -0.95 ± 0.64 | -1.11 ± 0.90 / -1.26 ± 0.70 |  |
+| puf_support_retirement_contributions | traditional_401k_contributions_desired | -2.78 ± 9.17 | -1.88 ± 2.54 | -0.90 ± 9.37 | -1.68 ± 7.34 | -2.25 ± 2.68 | -2.81 ± 2.59 / -0.52 ± 0.85 |  |
+| puf_support_retirement_contributions | roth_401k_contributions_desired | -2.85 ± 1.67 | -3.18 ± 0.63 | +0.33 ± 1.13 | -0.81 ± 0.51 | -1.75 ± 0.62 | -0.11 ± 2.11 / -1.01 ± 1.12 |  |
+| puf_support_retirement_contributions | traditional_ira_contributions_desired | -8.36 ± 4.34 | -4.19 ± 1.40 | -4.17 ± 4.06 | -8.38 ± 3.22 | -2.75 ± 0.61 | -4.49 ± 4.06 / -1.19 ± 0.99 | yes |
+| puf_support_retirement_contributions | roth_ira_contributions_desired | -18.14 ± 18.76 | -5.92 ± 4.49 | -12.22 ± 14.57 | -12.18 ± 7.43 | -4.65 ± 2.01 | -13.91 ± 8.47 / -2.02 ± 2.23 |  |
+| scf_auto_loans | auto_loan_balance | +1.14 ± 0.38 | -0.39 ± 0.45 | +1.54 ± 0.78 | +0.17 ± 0.44 | -0.77 ± 0.36 | +6.26 ± 0.95 / -0.85 ± 0.64 | yes |
+| scf_auto_loans | auto_loan_interest | +1.35 ± 0.40 | -1.40 ± 0.62 | +2.75 ± 0.72 | +2.87 ± 1.25 | -0.56 ± 0.61 | +4.35 ± 1.22 / -0.52 ± 0.61 | yes |
+| scf_financial_assets | bank_account_assets | +5.77 ± 1.18 | -6.55 ± 2.12 | +12.32 ± 3.10 | -8.33 ± 3.40 | -12.31 ± 1.97 | +5.15 ± 2.22 / -1.75 ± 2.63 | yes |
+| scf_financial_assets | stock_assets | -0.60 ± 6.75 | -6.90 ± 2.79 | +6.30 ± 5.56 | -9.60 ± 5.47 | -15.31 ± 4.14 | +1.54 ± 3.42 / -2.49 ± 1.47 | yes |
+| scf_financial_assets | bond_assets | -8.57 ± 10.08 | -7.71 ± 3.53 | -0.86 ± 10.72 | -42.94 ± 14.45 | -23.66 ± 4.72 | -5.92 ± 18.58 / -23.66 ± 10.05 |  |
+| scf_net_worth | net_worth | +6.86 ± 2.76 | -6.12 ± 1.81 | +12.98 ± 2.53 | -19.34 ± 4.56 | -9.93 ± 2.16 | +11.05 ± 2.67 / -0.47 ± 1.80 | yes |
+| sipp_financial_assets__0 | bank_account_assets | +5.56 ± 1.13 | -2.16 ± 0.39 | +7.71 ± 1.31 | +7.14 ± 1.33 | -2.74 ± 0.37 | +11.67 ± 1.35 / -1.95 ± 0.49 | yes |
+| sipp_financial_assets__1 | stock_assets | -3.09 ± 2.45 | -2.27 ± 0.74 | -0.81 ± 2.92 | -3.54 ± 2.20 | -2.94 ± 0.61 | +10.46 ± 6.16 / -2.66 ± 0.64 |  |
+| sipp_financial_assets__2 | bond_assets | -5.77 ± 7.27 | +0.55 ± 1.89 | -6.32 ± 7.46 | -7.79 ± 5.78 | -0.84 ± 1.51 | -5.33 ± 8.08 / -1.79 ± 2.72 |  |
+| sipp_vehicles | household_vehicles_value | +1.63 ± 0.81 | -0.93 ± 0.24 | +2.56 ± 0.70 | +1.63 ± 0.73 | -1.12 ± 0.29 | +5.48 ± 1.37 / +0.10 ± 0.53 | yes |
+| uk_etb_services | dfe_education_spending | -2.75 ± 1.07 | -0.24 ± 0.28 | -2.52 ± 1.27 | -0.61 ± 1.00 | -0.38 ± 0.20 | — | yes |
+| uk_etb_services | rail_subsidy_spending | +6.21 ± 1.75 | -0.85 ± 0.72 | +7.07 ± 2.09 | +5.23 ± 2.80 | -0.79 ± 0.61 | — | yes |
+| uk_etb_services | bus_subsidy_spending | -2.02 ± 2.69 | -1.46 ± 0.27 | -0.55 ± 2.87 | +1.00 ± 2.56 | -1.80 ± 0.33 | — |  |
+| uk_etb_vat | full_rate_vat_expenditure_rate | +0.31 ± 0.35 | -0.10 ± 0.06 | +0.41 ± 0.37 | -0.16 ± 0.41 | -0.00 ± 0.05 | — |  |
+| uk_lcfs_road_fuel | road_fuel_total | +0.01 ± 0.46 | -0.12 ± 0.25 | +0.14 ± 0.59 | -0.26 ± 0.90 | -0.18 ± 0.13 | — |  |
+| uk_lcfs_road_fuel | petrol_share_of_road_fuel | +5.21 ± 0.49 | +0.05 ± 0.07 | +5.16 ± 0.49 | -0.27 ± 0.54 | -0.13 ± 0.04 | — | yes |
+| uk_lcfs | food_and_non_alcoholic_beverages_consumption | +0.25 ± 0.33 | -0.18 ± 0.24 | +0.43 ± 0.14 | +0.35 ± 0.48 | -0.16 ± 0.21 | — |  |
+| uk_lcfs | alcohol_and_tobacco_consumption | +4.92 ± 0.82 | -0.36 ± 0.13 | +5.27 ± 0.88 | +5.53 ± 1.25 | -0.52 ± 0.20 | — | yes |
+| uk_lcfs | clothing_and_footwear_consumption | +3.53 ± 1.26 | -1.06 ± 0.64 | +4.59 ± 1.57 | +4.34 ± 1.50 | -1.00 ± 0.38 | — | yes |
+| uk_lcfs | housing_water_and_electricity_consumption | +2.29 ± 0.46 | -0.86 ± 0.23 | +3.15 ± 0.56 | +2.32 ± 0.39 | -0.83 ± 0.18 | — | yes |
+| uk_lcfs | household_furnishings_consumption | +17.43 ± 3.13 | -0.68 ± 0.33 | +18.11 ± 3.46 | +16.93 ± 2.27 | -1.11 ± 0.31 | — | yes |
+| uk_lcfs | health_consumption | +15.57 ± 2.89 | -0.17 ± 0.51 | +15.74 ± 3.17 | +21.03 ± 3.26 | -0.66 ± 0.52 | — | yes |
+| uk_lcfs | transport_consumption | +9.44 ± 1.98 | -0.54 ± 0.29 | +9.98 ± 2.00 | +9.23 ± 1.50 | -1.04 ± 0.11 | — | yes |
+| uk_lcfs | communication_consumption | +2.43 ± 1.38 | -0.86 ± 0.38 | +3.30 ± 1.39 | +4.34 ± 1.06 | -1.11 ± 0.41 | — | yes |
+| uk_lcfs | recreation_consumption | +12.00 ± 2.21 | -0.11 ± 0.37 | +12.12 ± 2.37 | +10.11 ± 2.22 | -1.23 ± 0.35 | — | yes |
+| uk_lcfs | restaurants_and_hotels_consumption | +6.41 ± 1.11 | -0.64 ± 0.35 | +7.05 ± 1.14 | +5.94 ± 0.65 | -0.99 ± 0.22 | — | yes |
+| uk_lcfs | miscellaneous_consumption | +4.68 ± 1.87 | -1.07 ± 0.31 | +5.76 ± 2.11 | +4.18 ± 1.54 | -1.82 ± 0.38 | — | yes |
+| uk_lcfs | petrol_spending | +4.06 ± 1.02 | -0.11 ± 0.15 | +4.17 ± 1.02 | +4.17 ± 0.91 | -0.13 ± 0.10 | — | yes |
+| uk_lcfs | diesel_spending | +1.61 ± 1.86 | -0.22 ± 0.27 | +1.83 ± 1.87 | +2.41 ± 1.75 | -0.03 ± 0.19 | — |  |
+| uk_lcfs | bus_fare_spending | +6.14 ± 5.74 | +0.30 ± 0.48 | +5.85 ± 5.42 | +10.70 ± 5.53 | +0.26 ± 0.47 | — | yes |
+| uk_lcfs | domestic_energy_consumption | +1.11 ± 0.65 | -0.59 ± 0.17 | +1.70 ± 0.58 | +1.21 ± 0.33 | -0.64 ± 0.13 | — | yes |
+| uk_lcfs | electricity_consumption | +1.14 ± 0.38 | -0.24 ± 0.21 | +1.39 ± 0.38 | +1.36 ± 0.41 | -0.35 ± 0.18 | — | yes |
+| uk_lcfs | gas_consumption | -0.24 ± 0.49 | -0.15 ± 0.20 | -0.09 ± 0.42 | -0.24 ± 0.35 | -0.14 ± 0.09 | — |  |
+| uk_nts_bus_band | local_bus_use_band | +0.55 ± 0.22 | -0.17 ± 0.08 | +0.72 ± 0.26 | -0.37 ± 0.20 | -0.15 ± 0.07 | — | yes |
+| uk_spi_housing_shell | council_tax | -0.01 ± 0.04 | +0.02 ± 0.04 | -0.03 ± 0.05 | -0.06 ± 0.05 | +0.04 ± 0.02 | — |  |
+| uk_spi_housing_shell | council_tax_reported | +0.21 ± 0.04 | +0.10 ± 0.02 | +0.11 ± 0.03 | -0.15 ± 0.04 | +0.06 ± 0.02 | — |  |
+| uk_spi_housing_shell | rent | +0.33 ± 0.45 | -0.53 ± 0.22 | +0.86 ± 0.31 | +0.33 ± 0.42 | -0.65 ± 0.17 | — | yes |
+| uk_spi_housing_shell | mortgage_interest_repayment | +2.02 ± 0.31 | -0.05 ± 0.21 | +2.07 ± 0.24 | +1.39 ± 0.41 | -0.44 ± 0.10 | — | yes |
+| uk_spi_housing_shell | mortgage_capital_repayment | +5.24 ± 2.82 | -0.55 ± 0.41 | +5.79 ± 2.78 | +6.25 ± 2.35 | -0.98 ± 0.22 | — | yes |
+| uk_spi_housing_shell | structural_insurance_payments | +4.32 ± 1.20 | -0.75 ± 0.26 | +5.07 ± 1.30 | +5.27 ± 1.07 | -0.95 ± 0.26 | — | yes |
+| uk_spi_housing_shell | housing_service_charges | +1.95 ± 1.45 | +1.13 ± 0.56 | +0.82 ± 1.49 | +3.26 ± 1.27 | +1.17 ± 0.40 | — |  |
+| uk_spi_housing_shell | water_and_sewerage_charges | +0.41 ± 0.37 | -0.28 ± 0.13 | +0.70 ± 0.44 | +1.29 ± 0.49 | -0.39 ± 0.09 | — | yes |
+| uk_spi_housing_shell | domestic_rates | -1.17 ± 0.15 | -0.43 ± 0.22 | -0.74 ± 0.29 | -0.70 ± 0.13 | -0.58 ± 0.29 | — | yes |
+| uk_spi_housing_shell | housing_benefit_head_unit | -0.46 ± 0.71 | -0.14 ± 0.21 | -0.32 ± 0.64 | +0.28 ± 0.53 | +0.18 ± 0.21 | — |  |
+| uk_spi_housing_shell | council_tax_benefit_hrp | -0.42 ± 0.39 | -0.33 ± 0.19 | -0.09 ± 0.22 | -0.15 ± 0.29 | -0.37 ± 0.10 | — |  |
+| uk_spi_stage2 | employee_pension_contributions | +0.70 ± 0.67 | -0.23 ± 0.07 | +0.92 ± 0.66 | +0.61 ± 0.67 | -0.45 ± 0.08 | — | yes |
+| uk_spi_stage2 | employer_pension_contributions | +2.15 ± 1.03 | -0.42 ± 0.15 | +2.57 ± 0.99 | +2.10 ± 0.94 | -0.54 ± 0.18 | — | yes |
+| uk_spi_stage2 | personal_pension_contributions | -2.04 ± 6.54 | -2.10 ± 0.33 | +0.07 ± 6.52 | +2.01 ± 3.46 | -2.91 ± 0.64 | — |  |
+| uk_spi_stage2 | tax_free_savings_income | +4.47 ± 1.82 | +0.50 ± 0.51 | +3.97 ± 1.78 | +0.15 ± 1.60 | +0.36 ± 0.50 | — | yes |
+| uk_spi_stage2 | universal_credit_reported | +0.22 ± 0.78 | +0.96 ± 0.31 | -0.74 ± 0.80 | +1.02 ± 0.78 | +0.87 ± 0.32 | — |  |
+| uk_spi_stage2 | pension_credit_reported | +1.49 ± 1.14 | +0.69 ± 0.61 | +0.80 ± 1.64 | +0.85 ± 0.94 | +0.38 ± 0.43 | — |  |
+| uk_spi_stage2 | child_benefit_reported | -6.21 ± 0.62 | -0.11 ± 0.15 | -6.10 ± 0.69 | +0.26 ± 0.40 | +0.02 ± 0.12 | — | yes |
+| uk_spi_stage2 | housing_benefit_reported | -0.51 ± 0.92 | +0.00 ± 0.16 | -0.51 ± 0.94 | -0.29 ± 0.69 | -0.12 ± 0.10 | — |  |
+| uk_spi_stage2 | attendance_allowance_reported | +3.71 ± 0.46 | -0.10 ± 0.11 | +3.81 ± 0.45 | -0.19 ± 0.27 | -0.04 ± 0.04 | — | yes |
+| uk_spi_stage2 | state_pension_reported | +0.31 ± 0.17 | -0.05 ± 0.04 | +0.35 ± 0.17 | +0.14 ± 0.13 | -0.06 ± 0.05 | — |  |
+| uk_spi_stage2 | dla_sc_reported | -1.90 ± 0.82 | +0.25 ± 0.08 | -2.15 ± 0.82 | -0.95 ± 0.50 | +0.06 ± 0.07 | — | yes |
+| uk_spi_stage2 | pip_m_reported | +5.02 ± 0.65 | -0.02 ± 0.15 | +5.04 ± 0.67 | -2.03 ± 0.38 | +0.12 ± 0.02 | — | yes |
+| uk_spi_stage2 | pip_dl_reported | +0.57 ± 0.55 | +0.04 ± 0.13 | +0.53 ± 0.49 | +0.19 ± 0.27 | +0.15 ± 0.07 | — | yes |
+| uk_spi_stage2 | winter_fuel_allowance_reported | +2.20 ± 0.34 | +0.36 ± 0.14 | +1.84 ± 0.30 | -1.18 ± 0.46 | +0.10 ± 0.15 | — | yes |
+| uk_spi_stage2 | council_tax_benefit_reported | -2.94 ± 0.83 | -0.28 ± 0.12 | -2.66 ± 0.87 | +2.05 ± 0.70 | -0.09 ± 0.24 | — | yes |
+| uk_uc_reporter_redraw | universal_credit_reported_amount | +0.66 ± 1.07 | +0.32 ± 0.28 | +0.34 ± 1.17 | +1.04 ± 0.76 | +0.56 ± 0.25 | — |  |
+| uk_was__1 | main_residence_value | +0.48 ± 0.38 | -0.67 ± 0.30 | +1.15 ± 0.34 | -0.14 ± 0.39 | -1.41 ± 0.18 | — | yes |
+| uk_was__2 | other_residential_property_value | -3.87 ± 1.87 | -1.63 ± 0.63 | -2.24 ± 2.16 | -1.05 ± 1.72 | -2.41 ± 0.68 | — | yes |
+| uk_was__3 | private_pension_wealth | +2.82 ± 1.57 | -1.74 ± 0.52 | +4.56 ± 1.42 | +1.75 ± 1.20 | -2.51 ± 0.40 | — | yes |
+| uk_was__3 | corporate_wealth_excl_isa | +11.18 ± 2.71 | -0.90 ± 1.05 | +12.07 ± 2.30 | +11.90 ± 1.80 | -4.66 ± 1.68 | — | yes |
+| uk_was__3 | stocks_and_shares_isa | -0.51 ± 1.79 | -2.40 ± 0.49 | +1.89 ± 2.14 | -1.04 ± 2.10 | -3.78 ± 0.42 | — |  |
+| uk_was__4 | savings | +4.51 ± 3.10 | -1.62 ± 0.53 | +6.13 ± 3.00 | +5.38 ± 3.25 | -3.03 ± 0.58 | — | yes |
+| uk_was__4 | cash_isa | +6.38 ± 1.50 | -0.86 ± 0.63 | +7.25 ± 0.95 | +6.78 ± 1.89 | -1.74 ± 0.37 | — | yes |
+| uk_was__4 | other_financial_assets | +6.22 ± 1.97 | -3.24 ± 0.47 | +9.46 ± 2.12 | +4.77 ± 1.71 | -4.13 ± 0.60 | — | yes |
+| uk_was__4 | num_vehicles | -9.03 ± 0.34 | -0.02 ± 0.19 | -9.01 ± 0.27 | +1.81 ± 0.63 | -0.12 ± 0.15 | — | yes |
+| uk_was__4 | student_loan_balance | +2.19 ± 2.42 | -1.12 ± 0.32 | +3.30 ± 2.23 | +3.38 ± 1.75 | -1.15 ± 0.53 | — | yes |
+| uk_was__5 | main_residence_mortgage | -0.15 ± 0.62 | +0.03 ± 0.09 | -0.17 ± 0.69 | +0.76 ± 0.43 | +0.54 ± 0.22 | — |  |
+| uk_was__6 | other_mortgage | -7.48 ± 3.51 | -2.41 ± 1.71 | -5.08 ± 3.53 | -3.57 ± 1.86 | -1.61 ± 1.19 | — | yes |
+| uk_was__7 | consumer_debt | +4.00 ± 1.63 | -0.86 ± 0.43 | +4.86 ± 1.59 | +7.84 ± 1.78 | -1.16 ± 0.44 | — | yes |
+| uk_was__8 | directly_held_share_fraction | +5.76 ± 0.30 | +0.07 ± 0.10 | +5.69 ± 0.34 | -0.54 ± 0.12 | -0.10 ± 0.07 | — | yes |
+| uk_was__9 | other_residential_property_secured_debt | -8.11 ± 2.83 | -0.02 ± 0.69 | -8.10 ± 2.56 | -6.67 ± 2.09 | +0.15 ± 0.69 | — | yes |
 
 ## Reproduction checks (US)
 

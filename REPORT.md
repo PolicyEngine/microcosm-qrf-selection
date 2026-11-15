@@ -1,22 +1,9 @@
 # Adaptive-split selection in Microcosm's QRF imputations
 
-Status: 2026-11-13, awaiting independent review. Every measurement comes from
+Status: 2026-11-14, awaiting independent review. Every measurement comes from
 this repository's harness, on five folds per fit. The harness's later additions
 left earlier numbers unchanged: two fits rerun on the final code match their
 base runs number for number (`harness/compare_runs.py`).
-
-**Update 2026-11-14: this version withdraws every estimated-split number.**
-That covers the third bullet below, the fitted-mean column of
-section 2's synthetic table and the estimated split in section 4. The
-fitted mean behind them (`selection.mean_model`, then a Poisson-loss
-gradient-boosted fit) overflowed on the PUF chain and SCF fits once the
-pass reached them: a leaf of amounts hundreds of times the mean makes its
-Newton step run away. `mean_model` now uses squared-error loss, with its
-predictions held between zero and the largest fitted amount
-(`test_the_mean_model_stays_within_the_amounts_it_fits`). The synthetic check
-and all 45 real-data fits are rerunning with it. The exact split on synthetic
-processes, which uses the true conditional mean, and every contrast and remedy
-number are unaffected.
 
 This public version leaves out every number derived from the HMRC Survey of
 Personal Incomes (SPI) public use tape and every UK production-recipient
@@ -41,11 +28,13 @@ repository holds those numbers.
   the trees held fixed, so it doesn't measure selection by itself (section 2).
 - Splitting each contrast with a conditional mean fitted on held-out donors, who
   fill no tree, leaves estimated selection above its fold standard error and
-  0.5% of the total on 1 of the 4 US targets and 0 of the 2 UK targets with an
-  estimate. Over those 6 targets the median absolute contrast is 1.35 points,
-  estimated smoothing 0.26 and estimated selection 1.21. On synthetic
-  processes with a known conditional mean, the fitted mean's smoothing misses
-  the true smoothing by at most 0.77 points (section 2).
+  0.5% of the total on 51 of the 75 US targets and 47 of the 73 UK targets
+  with an estimate. Over those 148 targets the median absolute contrast is
+  3.22 points, estimated smoothing 0.84 and estimated selection 2.92. On
+  synthetic processes with a known conditional mean, the fitted mean's
+  smoothing misses the true smoothing by at most 0.93 points (section 2); on
+  the five PUF targets whose selection is zero, estimated selection reads
+  −4.83 to +1.14 points (section 4).
 - The sign differs by target. Against honest fills, adaptive fills raise UK
   consumption (LCFS furnishings +17.4% of the held-out total, health +15.6%,
   recreation +12.0%, transport +9.4%) and US liquid assets and net worth (SCF
@@ -68,8 +57,11 @@ repository holds those numbers.
   qualified and non-qualified), so on held-out donors those forests split on
   the value they impute; on production recipients those predictors hold CPS
   values instead (section 4). Taxable interest shows −7.7% on held-out donors
-  and −0.06% on the chain's ASEC-twin recipients. Targets without such a
-  predictor go both ways: charitable non-cash donations show −28.8% on
+  and −0.06% on the chain's ASEC-twin recipients. Both are smoothing alone:
+  where a predictor equals the target, every donor's value is a function of
+  its predictors, so the contrast carries no selection, and smoothing reaches
+  8.7 points of the held-out total on long-term capital gains. Targets
+  without such a predictor go both ways: charitable non-cash donations show −28.8% on
   held-out donors and adaptive over honest minus one of −37.8% on the twins,
   and taxable IRA distributions +6.5% and +18.0%, while charitable cash
   donations go from +4.0% to −3.4% and partnership income from +3.3% to
@@ -284,26 +276,26 @@ seeds ± its standard error:
 
 | Process | Trees grown on | Donors | Contrast | Selection | Smoothing | Smoothing from the fitted mean |
 |---|---|---|---|---|---|---|
-| y = exp(x1), no noise | the target | 1,200 | −1.20 ± 0.26 | +0.00 ± 0.00 | −1.20 ± 0.26 | −0.43 ± 0.14 |
-| y = exp(x1), no noise | the target | 4,800 | −0.42 ± 0.08 | +0.00 ± 0.00 | −0.42 ± 0.08 | −0.00 ± 0.05 |
-| y = exp(x1), no noise | separate noise | 1,200 | −3.48 ± 0.37 | +0.00 ± 0.00 | −3.48 ± 0.37 | −2.25 ± 0.25 |
-| y = exp(x1), no noise | separate noise | 4,800 | −2.67 ± 0.17 | +0.00 ± 0.00 | −2.67 ± 0.17 | −2.01 ± 0.15 |
-| lognormal | the target | 1,200 | +6.07 ± 1.26 | +7.01 ± 1.24 | −0.93 ± 0.32 | −0.69 ± 0.33 |
-| lognormal | the target | 4,800 | +5.73 ± 0.67 | +6.24 ± 0.69 | −0.51 ± 0.14 | −0.44 ± 0.15 |
-| lognormal | separate noise | 1,200 | +0.80 ± 1.04 | +3.20 ± 0.94 | −2.41 ± 0.43 | −2.00 ± 0.48 |
-| lognormal | separate noise | 4,800 | −1.80 ± 0.62 | +0.09 ± 0.61 | −1.89 ± 0.15 | −1.46 ± 0.17 |
-| lognormal, heavy tail | the target | 1,200 | +12.19 ± 2.32 | +13.10 ± 2.34 | −0.91 ± 0.35 | −1.02 ± 0.48 |
-| lognormal, heavy tail | the target | 4,800 | +10.68 ± 1.69 | +11.07 ± 1.69 | −0.39 ± 0.12 | −0.79 ± 0.18 |
-| lognormal, heavy tail | separate noise | 1,200 | +3.72 ± 1.87 | +6.13 ± 1.82 | −2.41 ± 0.43 | −2.26 ± 0.59 |
-| lognormal, heavy tail | separate noise | 4,800 | −1.22 ± 1.33 | +0.67 ± 1.33 | −1.89 ± 0.15 | −1.37 ± 0.18 |
-| lognormal, discrete predictors | the target | 1,200 | +6.98 ± 1.34 | +8.12 ± 1.32 | −1.14 ± 0.43 | −0.47 ± 0.28 |
-| lognormal, discrete predictors | the target | 4,800 | +7.54 ± 0.69 | +7.96 ± 0.65 | −0.41 ± 0.14 | −0.34 ± 0.15 |
-| lognormal, discrete predictors | separate noise | 1,200 | −2.95 ± 1.11 | −0.42 ± 1.13 | −2.54 ± 0.38 | −1.05 ± 0.25 |
-| lognormal, discrete predictors | separate noise | 4,800 | −1.41 ± 0.49 | +0.17 ± 0.48 | −1.58 ± 0.13 | −1.09 ± 0.17 |
-| no signal (the known-answer process) | the target | 1,200 | +3.50 ± 0.69 | +3.50 ± 0.69 | +0.00 ± 0.00 | −0.21 ± 0.10 |
-| no signal (the known-answer process) | the target | 4,800 | +5.29 ± 0.42 | +5.29 ± 0.42 | +0.00 ± 0.00 | −0.16 ± 0.06 |
-| no signal (the known-answer process) | separate noise | 1,200 | −0.29 ± 0.64 | −0.29 ± 0.64 | −0.00 ± 0.00 | −0.02 ± 0.11 |
-| no signal (the known-answer process) | separate noise | 4,800 | +0.60 ± 0.38 | +0.60 ± 0.38 | −0.00 ± 0.00 | −0.14 ± 0.05 |
+| y = exp(x1), no noise | the target | 1,200 | −1.20 ± 0.26 | +0.00 ± 0.00 | −1.20 ± 0.26 | −0.28 ± 0.10 |
+| y = exp(x1), no noise | the target | 4,800 | −0.42 ± 0.08 | +0.00 ± 0.00 | −0.42 ± 0.08 | +0.01 ± 0.03 |
+| y = exp(x1), no noise | separate noise | 1,200 | −3.48 ± 0.37 | +0.00 ± 0.00 | −3.48 ± 0.37 | −2.23 ± 0.24 |
+| y = exp(x1), no noise | separate noise | 4,800 | −2.67 ± 0.17 | +0.00 ± 0.00 | −2.67 ± 0.17 | −1.98 ± 0.15 |
+| lognormal | the target | 1,200 | +6.07 ± 1.26 | +7.01 ± 1.24 | −0.93 ± 0.32 | −0.76 ± 0.27 |
+| lognormal | the target | 4,800 | +5.73 ± 0.67 | +6.24 ± 0.69 | −0.51 ± 0.14 | −0.61 ± 0.16 |
+| lognormal | separate noise | 1,200 | +0.80 ± 1.04 | +3.20 ± 0.94 | −2.41 ± 0.43 | −2.08 ± 0.39 |
+| lognormal | separate noise | 4,800 | −1.80 ± 0.62 | +0.09 ± 0.61 | −1.89 ± 0.15 | −1.73 ± 0.15 |
+| lognormal, heavy tail | the target | 1,200 | +12.19 ± 2.32 | +13.10 ± 2.34 | −0.91 ± 0.35 | −1.27 ± 0.40 |
+| lognormal, heavy tail | the target | 4,800 | +10.68 ± 1.69 | +11.07 ± 1.69 | −0.39 ± 0.12 | −0.87 ± 0.16 |
+| lognormal, heavy tail | separate noise | 1,200 | +3.72 ± 1.87 | +6.13 ± 1.82 | −2.41 ± 0.43 | −2.74 ± 0.53 |
+| lognormal, heavy tail | separate noise | 4,800 | −1.22 ± 1.33 | +0.67 ± 1.33 | −1.89 ± 0.15 | −1.84 ± 0.17 |
+| lognormal, discrete predictors | the target | 1,200 | +6.98 ± 1.34 | +8.12 ± 1.32 | −1.14 ± 0.43 | −0.62 ± 0.21 |
+| lognormal, discrete predictors | the target | 4,800 | +7.54 ± 0.69 | +7.96 ± 0.65 | −0.41 ± 0.14 | −0.41 ± 0.13 |
+| lognormal, discrete predictors | separate noise | 1,200 | −2.95 ± 1.11 | −0.42 ± 1.13 | −2.54 ± 0.38 | −1.28 ± 0.20 |
+| lognormal, discrete predictors | separate noise | 4,800 | −1.41 ± 0.49 | +0.17 ± 0.48 | −1.58 ± 0.13 | −1.17 ± 0.13 |
+| no signal (the known-answer process) | the target | 1,200 | +3.50 ± 0.69 | +3.50 ± 0.69 | +0.00 ± 0.00 | −0.25 ± 0.10 |
+| no signal (the known-answer process) | the target | 4,800 | +5.29 ± 0.42 | +5.29 ± 0.42 | +0.00 ± 0.00 | −0.19 ± 0.06 |
+| no signal (the known-answer process) | separate noise | 1,200 | −0.29 ± 0.64 | −0.29 ± 0.64 | −0.00 ± 0.00 | −0.04 ± 0.11 |
+| no signal (the known-answer process) | separate noise | 4,800 | +0.60 ± 0.38 | +0.60 ± 0.38 | −0.00 ± 0.00 | −0.17 ± 0.05 |
 
 On y = exp(x1), where selection is zero, trees grown on the target carry −1.20
 points of smoothing at 1,200 donors and trees grown on noise −3.48. Splits
@@ -326,8 +318,8 @@ the first 40 as sampling noise in a skewed process.
 
 The last column fits the conditional mean as the real-data split fits it. On
 trees grown on the target its smoothing misses the true smoothing by at most
-0.77 points across these processes and donor counts, and it understates the
-size of smoothing on 6 of the 10 rows. Estimated selection is the contrast
+0.93 points across these processes and donor counts, and it understates the
+size of smoothing on 5 of the 10 rows. Estimated selection is the contrast
 minus estimated smoothing, so where the estimate understates negative
 smoothing, estimated selection runs low by the same amount (`TABLES.md` gives
 each error with its standard error).
@@ -340,15 +332,20 @@ target permuted across donors.
 On real data the conditional mean is unknown. `run_selection.py --smoothing`
 reruns each fit's test with the same seeds, halves, bootstraps and trees. For
 each fold and sign it fits `mean_model` (`HistGradientBoostingRegressor` with
-`loss="poisson"` and early stopping, in `harness/selection.py`) on that sign's
-held-out donors, who fill no tree, and evaluates it at the filling rows.
-Estimated smoothing is then Σ c_a m̂_a − Σ c_h m̂_h and estimated selection
+squared-error loss and early stopping, its predictions held between zero and
+the largest fitted amount, in `harness/selection.py`) on that sign's held-out
+donors, who fill no tree, and evaluates it at the filling rows. Estimated
+smoothing is then Σ c_a m̂_a − Σ c_h m̂_h and estimated selection
 the contrast minus it (`harness/smoothing.py`, which refuses a run whose
 contrast differs from the base run's). A sign with fewer than 100 held-out
 donors in some fold gets no estimate. Where the fitted mean errs, the error
 moves between the two parts and leaves the contrast unchanged; the table's
 last column, fitted the same way on a held-out sample, shows how far it moves
-on processes like these. Section 4 reports each target's split.
+on processes like these. Section 4 reports each target's split. A first pass
+used a Poisson loss, whose Newton steps run away on a leaf of amounts hundreds
+of times the mean; its estimates overflowed on the PUF chain and SCF fits, and
+this report uses none of them (`test_the_mean_model_stays_within_the_amounts_it_fits`
+reproduces the case).
 
 ### Totals under production's draw
 
@@ -429,28 +426,38 @@ carries smoothing as the held-out contrast does. Of the 171 targets this
 repository reports, 113 carry a material held-out contrast: 58 of 83 in the US
 (15 of 26 outside the PUF chain, 43 of its 57) and 55 of 88 in the UK.
 
-Of the 12 reported targets, 6 have an estimated split (4 US, 2 UK); the other
-6 had a fold with fewer than 100 held-out donors of a sign. Over those 6, the
-median absolute contrast is 1.35 points, estimated smoothing 0.26 and
-estimated selection 1.21, and estimated smoothing exceeds half the contrast on
-1. Estimated selection is material on 1 of them: 1 of 4 in the US (1 of 4
-outside the PUF chain, 0 of 0 on it) and 0 of 2 in the UK. Where both the
-contrast and estimated selection are material (1 targets), they share a sign
-on 1.
+Of the 171 reported targets, 148 have an estimated split (75 US, 73 UK); the
+other 23 had a fold with fewer than 100 held-out donors of a sign. Over those
+148, the median absolute contrast is 3.22 points, estimated smoothing 0.84 and
+estimated selection 2.92, and estimated smoothing exceeds half the contrast on
+59. Estimated selection is material on 98 of them: 51 of 75 in the US (11 of
+21 outside the PUF chain, 40 of 54 on it) and 47 of 73 in the UK. Where both
+the contrast and estimated selection are material (87 targets), they share a
+sign on 83.
+
+The PUF chain's five targets that a predictor equals give a check on real
+data: their selection is zero (the PUF chain below), so their estimated
+selection is the fitted mean's error alone. It reads −0.11 ± 0.07 on
+employment income, +1.14 ± 1.10 on self-employment income, −0.59 ± 0.56 on
+taxable interest, −4.83 ± 1.44 on short-term capital gains, −1.09 ± 0.77 on
+long-term capital gains, against contrasts of −8.70 to −0.41 points. The
+largest error, 4.83 points on short-term capital gains, sits 3.3 fold standard
+errors from zero, so one target's estimated split can miss by several points
+beyond its standard error.
 
 ### US
 
 | Fit | Target | Held-out contrast | Estimated smoothing | Estimated selection | Production recipients |
 |---|---|---|---|---|---|
-| SCF 2022 | net worth | +6.86 ± 2.76 | — | — | +11.05 ± 2.67 |
-| SCF 2022 | bank account assets | +5.77 ± 1.18 | — | — | +5.15 ± 2.22 |
-| SCF 2022 | auto loan balance | +1.14 ± 0.38 | — | — | +6.26 ± 0.95 |
-| SCF 2022 | auto loan interest | +1.35 ± 0.40 | — | — | +4.35 ± 1.22 |
-| SIPP | bank account assets | +5.56 ± 1.13 | — | — | +11.67 ± 1.35 |
-| SIPP | stock assets | −3.09 ± 2.45 | — | — | +10.46 ± 6.16 |
-| SIPP | household vehicles value | +1.63 ± 0.81 | — | — | +5.48 ± 1.37 |
-| ACS 2022 | rent | +2.03 ± 1.46 | +0.02 ± 0.14 | +2.01 ± 1.41 | +4.71 ± 0.89 |
-| CPS ORG | hourly wage | +0.70 ± 0.05 | — | — | +0.54 ± 0.15 |
+| SCF 2022 | net worth | +6.86 ± 2.76 | −6.12 ± 1.81 | +12.98 ± 2.53 | +11.05 ± 2.67 |
+| SCF 2022 | bank account assets | +5.77 ± 1.18 | −6.55 ± 2.12 | +12.32 ± 3.10 | +5.15 ± 2.22 |
+| SCF 2022 | auto loan balance | +1.14 ± 0.38 | −0.39 ± 0.45 | +1.54 ± 0.78 | +6.26 ± 0.95 |
+| SCF 2022 | auto loan interest | +1.35 ± 0.40 | −1.40 ± 0.62 | +2.75 ± 0.72 | +4.35 ± 1.22 |
+| SIPP | bank account assets | +5.56 ± 1.13 | −2.16 ± 0.39 | +7.71 ± 1.31 | +11.67 ± 1.35 |
+| SIPP | stock assets | −3.09 ± 2.45 | −2.27 ± 0.74 | −0.81 ± 2.92 | +10.46 ± 6.16 |
+| SIPP | household vehicles value | +1.63 ± 0.81 | −0.93 ± 0.24 | +2.56 ± 0.70 | +5.48 ± 1.37 |
+| ACS 2022 | rent | +2.03 ± 1.46 | −0.14 ± 0.22 | +2.17 ± 1.34 | +4.71 ± 0.89 |
+| CPS ORG | hourly wage | +0.70 ± 0.05 | −0.02 ± 0.03 | +0.72 ± 0.04 | +0.54 ± 0.15 |
 | CPS ASEC (PUF-support reconstruction) | childcare expenses | +15.19 ± 7.32 | — | — | +8.44 ± 5.32 |
 | CPS ASEC (PUF-support reconstruction) | weeks unemployed | +11.75 ± 4.59 | — | — | +7.34 ± 4.66 |
 
@@ -474,27 +481,31 @@ predictors equal the chain's targets: on every row,
 likewise for self-employment income, taxable interest and short- and long-term
 capital gains, while `puf_predictor_dividend_income` equals qualified plus
 non-qualified dividends. So on held-out donors those forests split on the
-value they impute. Production recipients carry CPS values of those predictors
+value they impute. On the five targets a predictor equals, every donor's
+value is a function of its predictors, so each donor's residual is zero and
+the contrast carries no selection, on held-out donors or on any recipients:
+their rows are smoothing alone, and their estimated selection measures the
+fitted mean's error on real amounts (the start of this section). Production recipients carry CPS values of those predictors
 (the ASEC twins' `_tax_unit_feature_frame` values), so the held-out and
 production-recipient columns can differ:
 
 | Target | Held-out contrast | Estimated smoothing | Estimated selection | Adaptive over honest − 1, ASEC-twin recipients |
 |---|---|---|---|---|
-| taxable interest income | −7.70 ± 0.80 | — | — | −0.06 ± 0.02 |
-| qualified dividend income | −6.88 ± 1.41 | — | — | +0.26 ± 0.67 |
-| non-qualified dividend income | −8.38 ± 0.66 | — | — | −6.21 ± 1.09 |
-| long-term capital gains | −8.70 ± 0.92 | — | — | −0.03 ± 0.03 |
-| tax-exempt interest income | +6.70 ± 1.88 | — | — | +8.52 ± 4.70 |
-| taxable private pension income | +1.52 ± 0.71 | — | — | +5.46 ± 1.96 |
-| taxable IRA distributions | +6.50 ± 0.63 | — | — | +17.97 ± 2.09 |
-| charitable cash donations | +4.00 ± 1.52 | — | — | −3.38 ± 1.78 |
-| charitable non-cash donations | −28.79 ± 3.58 | — | — | −37.80 ± 6.24 |
-| real estate taxes | +1.72 ± 0.14 | — | — | +6.91 ± 0.34 |
-| student loan interest | +9.36 ± 0.35 | — | — | +11.54 ± 1.17 |
-| qualified tuition expenses | +14.26 ± 1.29 | — | — | +15.83 ± 1.54 |
-| partnership income | +3.30 ± 1.27 | — | — | −4.89 ± 2.84 |
-| SSTB self-employment income | +3.26 ± 1.23 | — | — | +32.77 ± 5.45 |
-| health savings account deduction | +6.40 ± 0.38 | — | — | +8.82 ± 0.53 |
+| taxable interest income | −7.70 ± 0.80 | −7.12 ± 1.25 | −0.59 ± 0.56 | −0.06 ± 0.02 |
+| qualified dividend income | −6.88 ± 1.41 | −6.78 ± 1.91 | −0.10 ± 0.58 | +0.26 ± 0.67 |
+| non-qualified dividend income | −8.38 ± 0.66 | −47.28 ± 27.64 | +38.89 ± 27.43 | −6.21 ± 1.09 |
+| long-term capital gains | −8.70 ± 0.92 | −7.62 ± 1.52 | −1.09 ± 0.77 | −0.03 ± 0.03 |
+| tax-exempt interest income | +6.70 ± 1.88 | −2.66 ± 0.37 | +9.36 ± 1.70 | +8.52 ± 4.70 |
+| taxable private pension income | +1.52 ± 0.71 | −1.02 ± 0.08 | +2.55 ± 0.65 | +5.46 ± 1.96 |
+| taxable IRA distributions | +6.50 ± 0.63 | −1.59 ± 0.24 | +8.08 ± 0.60 | +17.97 ± 2.09 |
+| charitable cash donations | +4.00 ± 1.52 | −2.80 ± 1.34 | +6.80 ± 1.04 | −3.38 ± 1.78 |
+| charitable non-cash donations | −28.79 ± 3.58 | −16.77 ± 4.35 | −12.01 ± 5.05 | −37.80 ± 6.24 |
+| real estate taxes | +1.72 ± 0.14 | −1.69 ± 0.07 | +3.41 ± 0.14 | +6.91 ± 0.34 |
+| student loan interest | +9.36 ± 0.35 | +0.44 ± 0.10 | +8.92 ± 0.34 | +11.54 ± 1.17 |
+| qualified tuition expenses | +14.26 ± 1.29 | −0.03 ± 0.17 | +14.29 ± 1.24 | +15.83 ± 1.54 |
+| partnership income | +3.30 ± 1.27 | −4.49 ± 0.43 | +7.79 ± 1.03 | −4.89 ± 2.84 |
+| SSTB self-employment income | +3.26 ± 1.23 | −3.86 ± 0.53 | +7.12 ± 1.19 | +32.77 ± 5.45 |
+| health savings account deduction | +6.40 ± 0.38 | −1.78 ± 0.18 | +8.19 ± 0.32 | +8.82 ± 0.53 |
 
 The production column reports adaptive over honest minus one on the chain's
 ASEC-twin recipients (the PUF-half tax units whose ASEC twin the release kept:
@@ -509,12 +520,13 @@ production contrast as a percent of the drawn total and 37 on the ratio.
 
 These twin columns are a sensitivity on reconstructed features. Production
 draws the chain in order and conditions each later target on the raw draws of
-the earlier ones: `QRF.predict` appends each drawn target to the features
-before the next draw (`populace/fit/qrf.py:1524-1530` at 6d06410bb). The twin
-builder carries the PUF unit's released, finalized values of those targets
-instead (`harness/capture_us_puf_chain.py:121-127`), and the ratio changes
-only the denominator, so the conditioning values stay the twin builder's. The
-twins also hold 28.4% of the PUF tax units and 32.9% of their weight, and each
+the earlier ones: `RegimeGatedQRF.predict`, which the chain calls as `QRF`,
+appends each drawn target to the features before the next draw
+(`populace/fit/qrf.py:1524-1530` at 6d06410bb). The twin builder carries the
+PUF unit's released, finalized values of those targets instead
+(`harness/capture_us_puf_chain.py:121-127`), and the ratio changes only the
+denominator, so the conditioning values stay the twin builder's. The twins
+also hold 28.4% of the PUF tax units and 32.9% of their weight, and each
 target's released total on them runs from 11.8% (`farm_income`) to 105.5%
 (`farm_operations_income`) of its released total on all PUF units, median
 35.9% (`results/public/puf_twin_coverage.csv`). So these columns describe
@@ -537,37 +549,37 @@ describing ordinary returns.
 
 | Donors | Target | Held-out contrast | Estimated smoothing | Estimated selection |
 |---|---|---|---|---|
-| LCFS 2024-25 | household furnishings | +17.43 ± 3.13 | — | — |
-| LCFS 2024-25 | health | +15.57 ± 2.89 | — | — |
-| LCFS 2024-25 | recreation | +12.00 ± 2.21 | — | — |
-| LCFS 2024-25 | transport | +9.44 ± 1.98 | — | — |
+| LCFS 2024-25 | household furnishings | +17.43 ± 3.13 | −0.68 ± 0.33 | +18.11 ± 3.46 |
+| LCFS 2024-25 | health | +15.57 ± 2.89 | −0.17 ± 0.51 | +15.74 ± 3.17 |
+| LCFS 2024-25 | recreation | +12.00 ± 2.21 | −0.11 ± 0.37 | +12.12 ± 2.37 |
+| LCFS 2024-25 | transport | +9.44 ± 1.98 | −0.54 ± 0.29 | +9.98 ± 2.00 |
 | LCFS 2024-25 | education | +8.55 ± 2.57 | — | — |
-| LCFS 2024-25 | restaurants and hotels | +6.41 ± 1.11 | — | — |
-| LCFS 2024-25 | alcohol and tobacco | +4.92 ± 0.82 | — | — |
-| LCFS 2024-25 | food | +0.25 ± 0.33 | — | — |
-| LCFS 2024-25 | petrol share of road fuel (redraw) | +5.21 ± 0.49 | — | — |
-| WAS round 8 | corporate wealth excluding ISAs | +11.18 ± 2.71 | — | — |
+| LCFS 2024-25 | restaurants and hotels | +6.41 ± 1.11 | −0.64 ± 0.35 | +7.05 ± 1.14 |
+| LCFS 2024-25 | alcohol and tobacco | +4.92 ± 0.82 | −0.36 ± 0.13 | +5.27 ± 0.88 |
+| LCFS 2024-25 | food | +0.25 ± 0.33 | −0.18 ± 0.24 | +0.43 ± 0.14 |
+| LCFS 2024-25 | petrol share of road fuel (redraw) | +5.21 ± 0.49 | +0.05 ± 0.07 | +5.16 ± 0.49 |
+| WAS round 8 | corporate wealth excluding ISAs | +11.18 ± 2.71 | −0.90 ± 1.05 | +12.07 ± 2.30 |
 | WAS round 8 | other property value | −10.20 ± 3.79 | — | — |
 | WAS round 8 | non-residential property value | −9.92 ± 2.55 | — | — |
-| WAS round 8 | number of vehicles | −9.03 ± 0.34 | — | — |
-| WAS round 8 | other residential property secured debt | −8.11 ± 2.83 | — | — |
-| WAS round 8 | other mortgage | −7.48 ± 3.51 | — | — |
-| WAS round 8 | cash ISA | +6.38 ± 1.50 | — | — |
-| WAS round 8 | main residence value | +0.48 ± 0.38 | — | — |
-| WAS round 8 | main residence mortgage | −0.15 ± 0.62 | — | — |
+| WAS round 8 | number of vehicles | −9.03 ± 0.34 | −0.02 ± 0.19 | −9.01 ± 0.27 |
+| WAS round 8 | other residential property secured debt | −8.11 ± 2.83 | −0.02 ± 0.69 | −8.10 ± 2.56 |
+| WAS round 8 | other mortgage | −7.48 ± 3.51 | −2.41 ± 1.71 | −5.08 ± 3.53 |
+| WAS round 8 | cash ISA | +6.38 ± 1.50 | −0.86 ± 0.63 | +7.25 ± 0.95 |
+| WAS round 8 | main residence value | +0.48 ± 0.38 | −0.67 ± 0.30 | +1.15 ± 0.34 |
+| WAS round 8 | main residence mortgage | −0.15 ± 0.62 | +0.03 ± 0.09 | −0.17 ± 0.69 |
 | WAS round 8 (LISA holders) | lifetime ISA balance | −9.15 ± 2.77 | — | — |
-| ETB 1977-2024 | rail subsidy | +6.21 ± 1.75 | — | — |
-| ETB 1977-2024 | DfE education spending | −2.75 ± 1.07 | — | — |
-| NTS | local bus use band | +0.55 ± 0.22 | — | — |
-| FRS (SPI housing shell) | mortgage capital repayment | +5.24 ± 2.82 | — | — |
-| FRS (SPI housing shell) | structural insurance | +4.32 ± 1.20 | — | — |
-| FRS (SPI housing shell) | mortgage interest repayment | +2.02 ± 0.31 | — | — |
+| ETB 1977-2024 | rail subsidy | +6.21 ± 1.75 | −0.85 ± 0.72 | +7.07 ± 2.09 |
+| ETB 1977-2024 | DfE education spending | −2.75 ± 1.07 | −0.24 ± 0.28 | −2.52 ± 1.27 |
+| NTS | local bus use band | +0.55 ± 0.22 | −0.17 ± 0.08 | +0.72 ± 0.26 |
+| FRS (SPI housing shell) | mortgage capital repayment | +5.24 ± 2.82 | −0.55 ± 0.41 | +5.79 ± 2.78 |
+| FRS (SPI housing shell) | structural insurance | +4.32 ± 1.20 | −0.75 ± 0.26 | +5.07 ± 1.30 |
+| FRS (SPI housing shell) | mortgage interest repayment | +2.02 ± 0.31 | −0.05 ± 0.21 | +2.07 ± 0.24 |
 | FRS (SPI-channel stage 2) | pension contributions via salary sacrifice | +13.78 ± 4.47 | — | — |
-| FRS (SPI-channel stage 2) | child benefit | −6.21 ± 0.62 | — | — |
-| FRS (SPI-channel stage 2) | PIP mobility | +5.02 ± 0.65 | — | — |
-| FRS (SPI-channel stage 2) | tax-free savings income | +4.47 ± 1.82 | — | — |
-| FRS (SPI-channel stage 2) | attendance allowance | +3.71 ± 0.46 | — | — |
-| FRS (UC reporter redraw) | universal credit | +0.66 ± 1.07 | +0.42 ± 0.36 | +0.24 ± 1.16 |
+| FRS (SPI-channel stage 2) | child benefit | −6.21 ± 0.62 | −0.11 ± 0.15 | −6.10 ± 0.69 |
+| FRS (SPI-channel stage 2) | PIP mobility | +5.02 ± 0.65 | −0.02 ± 0.15 | +5.04 ± 0.67 |
+| FRS (SPI-channel stage 2) | tax-free savings income | +4.47 ± 1.82 | +0.50 ± 0.51 | +3.97 ± 1.78 |
+| FRS (SPI-channel stage 2) | attendance allowance | +3.71 ± 0.46 | −0.10 ± 0.11 | +3.81 ± 0.45 |
+| FRS (UC reporter redraw) | universal credit | +0.66 ± 1.07 | +0.32 ± 0.28 | +0.34 ± 1.17 |
 | FRS (salary sacrifice) | pension contributions via salary sacrifice | −1.12 ± 2.71 | — | — |
 
 Microcosm's build already pulls part of the LCFS over-draw back. It levels
@@ -876,7 +888,8 @@ target of the same joint QRF and conditions on the dropped first target.
   estimated smoothing, so a target's split carries that error even where its
   contrast is precise; section 2's synthetic processes bound it only for
   processes like theirs. On those processes the fitted mean's smoothing missed the true smoothing by at
-most 0.77 points on trees grown on the target.
+most 0.93 points on trees grown on the target. On real data, the five PUF
+targets whose selection is zero put its error at up to 4.83 points.
 - **Chained predictors.** A later target in a chain conditions on earlier
   ones. Held-out donors bring their own reported values of those columns;
   production recipients bring the chain's earlier draws. Held-out and
@@ -947,15 +960,15 @@ nothing that ships.
 |---|---|---|---|---|---|---|---|
 | 1. Keep adaptive fills and document them | none | 4.92% of the total | none | none | none | none | none |
 | 2. `min_samples_leaf=20` in `_fit_forest` | one argument (`qrf.py:675-683`) | 1.06% | −8.4% | −0.032 | −1.3 points | 15 | 4 |
-| 3. Cross-fitted honest fills | new fill code | 0 by construction | −8.5% | −0.035 | −1.4 points | 10 | 3 |
+| 3. Cross-fitted honest fills | new fill code | 0 by definition | −8.5% | −0.035 | −1.4 points | 10 | 3 |
 
 Every column but the contrast column compares the option with the forest
 production would grow on all of a fold's donors (section 6).
 
 - **Option 1** needs no rebuild. The contrast stays material on 113 of the 171
-  reported targets (estimated selection on 1 of the 6 with an estimate), and
-  the conditionals stay too narrow on held-out donors (section 5). The LCFS
-  division levelling (section 4) absorbs part of the over-draw on the
+  reported targets (estimated selection on 98 of the 148 with an estimate),
+  and the conditionals stay too narrow on held-out donors (section 5). The
+  LCFS division levelling (section 4) absorbs part of the over-draw on the
   divisions it cuts; this analysis did not audit the other chains' post-draw
   steps.
 - **Option 2** changes one argument. At that floor 4 targets' pinball rises

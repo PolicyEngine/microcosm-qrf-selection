@@ -92,7 +92,7 @@ def test_the_options_table_quotes_the_production_size_numbers():
     residual = all_rows.loc["min_samples_leaf=20", "median residual (absolute)"]
     assert (f"| 2. `min_samples_leaf=20` in `_fit_forest` | one argument (`qrf.py:675-683`) | "
             f"{residual:.2f}% | {cells(l20)}") in lines
-    assert f"| 3. Cross-fitted honest fills | new fill code | 0 by construction | {cells(hon)}" in lines
+    assert f"| 3. Cross-fitted honest fills | new fill code | 0 by definition | {cells(hon)}" in lines
 
 
 def test_report_states_each_hazard_count_and_every_large_one():
