@@ -26,15 +26,18 @@ repository holds those numbers.
   selection, the splits' use of the filling rows' own values, and the two
   fills' different smoothing of the conditional mean, which differs even with
   the trees held fixed, so it doesn't measure selection by itself (section 2).
-- Splitting each contrast with a conditional mean fitted on held-out donors, who
-  fill no tree, leaves estimated selection above its fold standard error and
-  0.5% of the total on 51 of the 75 US targets and 47 of the 73 UK targets
-  with an estimate. Over those 148 targets the median absolute contrast is
-  3.22 points, estimated smoothing 0.84 and estimated selection 2.92. On
-  synthetic processes with a known conditional mean, the fitted mean's
-  smoothing misses the true smoothing by at most 0.93 points (section 2); on
-  the five PUF targets whose selection is zero, estimated selection reads
-  −4.83 to +1.14 points (section 4).
+- The split of each contrast into selection and smoothing is not established on
+  real data. It needs the conditional mean, which this analysis fits on
+  held-out donors who fill no tree. On section 2's first five synthetic
+  processes that fit's smoothing misses the true smoothing by at most 0.93
+  points with trees grown on the target (1.25 across every pooled row of those
+  processes). On a synthetic target that two heavy-tailed predictors fix
+  exactly, a total less a share of it, it misses by 27.3 ± 17.9 points at
+  1,200 donors and 7.4 ± 2.3 at 4,800. On the ten real targets whose chained
+  features fix every donor's value, so that their selection is zero, estimated
+  selection runs −12.22 to +38.89 points and passes the materiality test on
+  five (section 4). So this report gives each target's estimated split but
+  doesn't read it as a measure of selection.
 - The sign differs by target. Against honest fills, adaptive fills raise UK
   consumption (LCFS furnishings +17.4% of the held-out total, health +15.6%,
   recreation +12.0%, transport +9.4%) and US liquid assets and net worth (SCF
@@ -58,16 +61,20 @@ repository holds those numbers.
   the value they impute; on production recipients those predictors hold CPS
   values instead (section 4). Taxable interest shows −7.7% on held-out donors
   and −0.06% on the chain's ASEC-twin recipients. Both are smoothing alone:
-  where a predictor equals the target, every donor's value is a function of
-  its predictors, so the contrast carries no selection, and smoothing reaches
-  8.7 points of the held-out total on long-term capital gains. Targets
-  without such a predictor go both ways: charitable non-cash donations show −28.8% on
-  held-out donors and adaptive over honest minus one of −37.8% on the twins,
-  and taxable IRA distributions +6.5% and +18.0%, while charitable cash
-  donations go from +4.0% to −3.4% and partnership income from +3.3% to
-  −4.9%. The twins hold 33% of the PUF units' weight and carry released values
-  of the chain's earlier targets where production conditions on raw draws, so
-  their column is a sensitivity on reconstructed features.
+  where the chained features fix the target (a predictor equals it, or
+  non-qualified dividends equal the dividend predictor less qualified
+  dividends), every donor's value is a function of its features, so the
+  contrast carries no selection. Smoothing reaches 8.7 points of the held-out
+  total on long-term capital gains and 59.8 on first-home mortgage interest,
+  which equals total home mortgage interest, an earlier target, on every donor
+  with any. Targets without such a predictor go both ways: charitable non-cash
+  donations show −28.8% on held-out donors and adaptive over honest minus one
+  of −37.8% on the twins, and taxable IRA distributions +6.5% and +18.0%,
+  while charitable cash donations go from +4.0% to −3.4% and partnership
+  income from +3.3% to −4.9%. The twins hold 33% of the PUF units' weight and
+  carry released values of the chain's earlier targets where production
+  conditions on raw draws, so their column is a sensitivity on reconstructed
+  features.
 - These totals compare conditional means, and production draws from quantile
   curves. On the 36 targets where this analysis computed both, reading
   production's quantile curve moves the contrast by a median 0.06 points and
@@ -76,12 +83,14 @@ repository holds those numbers.
   expected draws also carry a fresh resampling of the honest half: they keep
   the sign on 35 of 36 and move a median 0.70 points, up to 7.03 on SCF bank
   accounts (+5.77 in means, −1.26 in draws; section 2).
-- The forests' conditionals also run too narrow on held-out positive donors.
-  Across the 16 LCFS targets the remedies cover, 11-15% of held-out donors
-  fall at or below the production-size forest's 10th percentile and 85-91% at
-  or below its 90th; honest fills give 8-12% and 89-92%. Microcosm draws each
-  value at a uniform random quantile of its conditional, so conditionals too
-  narrow on average compress the imputed spread (section 5).
+- The forests' quantiles also miss on held-out positive donors. Across the 16
+  LCFS targets the remedies cover, 11-15% of held-out donors fall at or below
+  the production-size forest's 10th percentile and 85-91% at or below its
+  90th; honest fills give 8-12% and 89-92%. So the forest's central 80%
+  interval holds 70-79% of held-out donors on those targets and the honest
+  fill's 77-83%. Pooled coverage can't tell conditionals that run too narrow
+  from conditionals of the right width centred in the wrong places, so this
+  doesn't show what the forests do to the imputed spread (section 5).
 - On the 113 targets with a material held-out contrast, against the forest
   production would grow on all of a fold's donors (section 6), honest fills
   lower mean pinball loss by a median 8.5% (lower on 102 of the 113) and bring
@@ -249,17 +258,32 @@ adaptive − honest = [Σ c_a (y_a − m_a) − Σ c_h (y_h − m_h)]    selecti
                   + [Σ c_a m_a − Σ c_h m_h]                     smoothing
 ```
 
-With m the true conditional mean, the first bracket is selection. An honest
-fill's catchments don't depend on its donors' noise, so its term averages
-zero; the adaptive term measures how far the splits steer catchment toward
-donors whose values sit above or below their conditional mean. The second
-bracket is smoothing: the two fills put different donors behind each
-recipient, so they average the conditional mean differently even inside the
-same leaves. Both fills' catchments sum to the same recipient mass, so
-smoothing vanishes when m is constant. `harness/tests/test_contrast_parts.py`
-checks the identity against the fills' own totals on both averaging modes and
-both recipient sets, that selection vanishes when m equals y, and that
-smoothing vanishes for a constant m and scales linearly with m.
+Take m(x) = E[y | x, sign], the mean amount of one sign among people with
+predictors x, which the survey weights estimate: in donor terms it is the
+survey-weighted mean E[w y | x, sign] / E[w | x, sign], the quantity
+`mean_model` below fits. Write each filling row's residual as e = y − m. The
+first bracket is then selection. Its honest term Σ c_h e_h averages zero when the
+honest donors' residuals average zero given everything their catchments depend
+on: their predictors, their sign and their masses, which are survey weights.
+Leaving those donors out of split fitting keeps their catchments from
+depending on their own values; it doesn't make their residuals average zero
+given their weights. That holds when the weights carry no information about y
+beyond x and the sign. Under an informative design, where weights rise or fall
+with y given x, a weighted average over a few donors can sit off m on average
+(a ratio estimator's bias), and the first bracket carries that design
+component along with selection. Under the assumption, the adaptive term
+measures how far the splits steer catchment toward donors whose values sit
+above or below their conditional mean. A recipient no honest donor reaches in
+any tree keeps its adaptive estimate (`complete_honest`), so the contrast and
+both parts run over the recipients both fills reach; the others held at most
+0.63% of a target's adaptive total on held-out donors. The second bracket is
+smoothing: the two fills put different donors behind each recipient, so they
+average the conditional mean differently even inside the same leaves. Both
+fills' catchments sum to the same recipient mass, so smoothing vanishes when m
+is constant. `harness/tests/test_contrast_parts.py` checks the identity
+against the fills' own totals on both averaging modes and both recipient sets,
+that selection vanishes when m equals y, and that smoothing vanishes for a
+constant m and scales linearly with m.
 
 An independent reviewer of this report's previous version grew the trees on
 separate noise and filled them with y = exp(x1), which carries no noise
@@ -268,8 +292,9 @@ the true total pooled and −4.35 ± 0.35 per tree. There y equals its
 conditional mean, so selection is zero whatever the trees see, and the whole
 contrast is smoothing.
 
-`harness/smoothing_check.py` runs the split on five processes whose
-conditional mean the construction fixes: 40 seeds each, 30 trees, pooled as
+`harness/smoothing_check.py` runs the split on seven processes whose
+conditional mean the construction fixes, two of them a total less a share of
+it, with no noise: 40 seeds each, 30 trees, pooled as
 production pools, and a quarter as many held-out donors as training donors,
 as five folds give. Percentages of the recipients' true total, mean over
 seeds ± its standard error:
@@ -296,6 +321,14 @@ seeds ± its standard error:
 | no signal (the known-answer process) | the target | 4,800 | +5.29 ± 0.42 | +5.29 ± 0.42 | +0.00 ± 0.00 | −0.19 ± 0.06 |
 | no signal (the known-answer process) | separate noise | 1,200 | −0.29 ± 0.64 | −0.29 ± 0.64 | −0.00 ± 0.00 | −0.04 ± 0.11 |
 | no signal (the known-answer process) | separate noise | 4,800 | +0.60 ± 0.38 | +0.60 ± 0.38 | −0.00 ± 0.00 | −0.17 ± 0.05 |
+| total less a share of it, no noise | the target | 1,200 | −2.54 ± 0.78 | −0.00 ± 0.00 | −2.54 ± 0.78 | −0.98 ± 0.19 |
+| total less a share of it, no noise | the target | 4,800 | −0.82 ± 0.19 | +0.00 ± 0.00 | −0.82 ± 0.19 | −0.45 ± 0.10 |
+| total less a share of it, no noise | separate noise | 1,200 | −6.36 ± 0.76 | −0.00 ± 0.00 | −6.36 ± 0.76 | −4.21 ± 0.39 |
+| total less a share of it, no noise | separate noise | 4,800 | −5.11 ± 0.31 | +0.00 ± 0.00 | −5.11 ± 0.31 | −4.03 ± 0.23 |
+| total less a share of it, heavy tail, no noise | the target | 1,200 | −28.70 ± 17.75 | −0.00 ± 0.00 | −28.70 ± 17.75 | −1.38 ± 0.37 |
+| total less a share of it, heavy tail, no noise | the target | 4,800 | −8.21 ± 2.24 | +0.00 ± 0.00 | −8.21 ± 2.24 | −0.77 ± 0.21 |
+| total less a share of it, heavy tail, no noise | separate noise | 1,200 | −32.42 ± 11.38 | +0.00 ± 0.00 | −32.42 ± 11.38 | −8.35 ± 0.50 |
+| total less a share of it, heavy tail, no noise | separate noise | 4,800 | −15.82 ± 1.98 | −0.00 ± 0.00 | −15.82 ± 1.98 | −8.60 ± 0.46 |
 
 On y = exp(x1), where selection is zero, trees grown on the target carry −1.20
 points of smoothing at 1,200 donors and trees grown on noise −3.48. Splits
@@ -316,13 +349,26 @@ noise and half draws. Over 200 further seeds they read −0.13 ± 0.41 and −0.
 ± 0.82 (`results/public/smoothing_check_more_seeds.csv`), so this report reads
 the first 40 as sampling noise in a skewed process.
 
+On the two difference processes y is a total less a uniform share of it, and
+both are predictors, as the PUF chain's non-qualified dividends are its
+dividend predictor less qualified dividends. Selection is zero, so the
+contrast is smoothing alone: −2.54 ± 0.78 points at 1,200 donors with trees
+grown on the target when the total's log has standard deviation 1, and −28.70
+± 17.75 when it has 2.
+
 The last column fits the conditional mean as the real-data split fits it. On
-trees grown on the target its smoothing misses the true smoothing by at most
-0.93 points across these processes and donor counts, and it understates the
-size of smoothing on 5 of the 10 rows. Estimated selection is the contrast
-minus estimated smoothing, so where the estimate understates negative
-smoothing, estimated selection runs low by the same amount (`TABLES.md` gives
-each error with its standard error).
+the first five processes, with trees grown on the target, its smoothing misses
+the true smoothing by at most 0.93 points across processes and donor counts
+(1.25 across every pooled row of those processes), and it understates the size
+of smoothing on 5 of the 10 rows. On the difference processes it misses by
+1.56 ± 0.75 and 0.38 ± 0.19 points at 1,200 and 4,800 donors when the log
+standard deviation is 1, and by 27.32 ± 17.90 and 7.44 ± 2.25 when it is 2,
+where its smoothing comes to 5% and 9% of the true smoothing. Estimated
+selection is the contrast minus estimated smoothing, so where the estimate
+understates negative smoothing, estimated selection runs low by the same
+amount: on the heavy-tailed difference it reads −7.44 ± 2.25 points at 4,800
+donors where selection is zero (`TABLES.md` gives each error with its standard
+error).
 
 `results/public/TABLES.md` adds per-tree averaging and trees grown on the
 target permuted across donors.
@@ -332,9 +378,14 @@ target permuted across donors.
 On real data the conditional mean is unknown. `run_selection.py --smoothing`
 reruns each fit's test with the same seeds, halves, bootstraps and trees. For
 each fold and sign it fits `mean_model` (`HistGradientBoostingRegressor` with
-squared-error loss and early stopping, its predictions held between zero and
-the largest fitted amount, in `harness/selection.py`) on that sign's held-out
-donors, who fill no tree, and evaluates it at the filling rows. Estimated
+squared-error loss and early stopping, its predictions clipped to between zero
+and the largest fitted amount, in `harness/selection.py`) on that sign's held-out
+donors, who fill no tree, and evaluates it at the filling rows. With survey
+weights as sample weights it targets E[w y | x, sign] / E[w | x, sign],
+which equals m under the design assumption above. The clip is a stability
+choice: at a filling row beyond the held-out donors' support the true mean
+can exceed every fitted amount, so the clip can bias the estimate in the
+tail. Estimated
 smoothing is then Σ c_a m̂_a − Σ c_h m̂_h and estimated selection
 the contrast minus it (`harness/smoothing.py`, which refuses a run whose
 contrast differs from the base run's). A sign with fewer than 100 held-out
@@ -420,30 +471,67 @@ inputs and checked the result against the release.
 numbers. The contrast below is adaptive minus honest, as a percent of the
 held-out reported total, mean over 5 folds ± its standard error. Estimated
 smoothing and estimated selection split it as section 2 describes, with a
-dash where some fold left fewer than 100 held-out donors of a sign. The
+dash where some fold left fewer than 100 held-out donors of a sign. That
+split is not established on real data: on the ten targets whose selection is
+zero (below) its error reaches 38.9 points. The
 production column uses the release's drawn total as its denominator and
 carries smoothing as the held-out contrast does. Of the 171 targets this
 repository reports, 113 carry a material held-out contrast: 58 of 83 in the US
 (15 of 26 outside the PUF chain, 43 of its 57) and 55 of 88 in the UK.
 
 Of the 171 reported targets, 148 have an estimated split (75 US, 73 UK); the
-other 23 had a fold with fewer than 100 held-out donors of a sign. Over those
-148, the median absolute contrast is 3.22 points, estimated smoothing 0.84 and
-estimated selection 2.92, and estimated smoothing exceeds half the contrast on
-59. Estimated selection is material on 98 of them: 51 of 75 in the US (11 of
-21 outside the PUF chain, 40 of 54 on it) and 47 of 73 in the UK. Where both
-the contrast and estimated selection are material (87 targets), they share a
-sign on 83.
+other 23 had, in some fold, fewer than 100 held-out donors of a sign whose
+donors take more than one value. Ten of the 148 are constant targets,
+yes-or-no flags whose every donor of a sign takes one value: their contrast
+and both parts are zero by construction, with no fitted mean, whatever their
+held-out donor count. Over all 148, the median absolute contrast is 2.81
+points, estimated smoothing 0.67 and estimated selection 2.55; over the 138
+with a fitted mean, 3.22, 0.84 and 2.92. Estimated smoothing exceeds half the
+contrast on 59. Estimated selection is material on 98 of them: 51 of 75 in the
+US (11 of 21 outside the PUF chain, 40 of 54 on it) and 47 of 73 in the UK.
+Where both the contrast and estimated selection are material (87 targets),
+they share a sign on 83.
 
-The PUF chain's five targets that a predictor equals give a check on real
-data: their selection is zero (the PUF chain below), so their estimated
-selection is the fitted mean's error alone. It reads −0.11 ± 0.07 on
-employment income, +1.14 ± 1.10 on self-employment income, −0.59 ± 0.56 on
-taxable interest, −4.83 ± 1.44 on short-term capital gains, −1.09 ± 0.77 on
-long-term capital gains, against contrasts of −8.70 to −0.41 points. The
-largest error, 4.83 points on short-term capital gains, sits 3.3 fold standard
-errors from zero, so one target's estimated split can miss by several points
-beyond its standard error.
+Ten targets give a check on real data. On each, the chained features fix every
+donor's value exactly: a least-squares fit of each sign's donor amounts on
+that target's predictors and earlier targets, with at least 20 more donors
+than columns, leaves no residual above a hundred-millionth of the largest
+amount (`harness/determined.py`, `results/public/determined.csv`; no fit has a
+residual between a trillionth and a ten-thousandth of its largest amount, so
+the threshold decides no case). The scan covers linear functions, which on one
+sign's donors include a feature, a sum or difference of features and a
+positive or negative part of either; it doesn't search nonlinear ones. Every
+donor's residual about its conditional mean is then zero, so selection is zero
+whatever the trees see and whatever the design, and estimated selection is the
+fitted mean's error alone:
+
+| Fit | Target | Chained features fix it as | Held-out contrast | Estimated selection |
+|---|---|---|---|---|
+| puf_chain_twin | employment_income_before_lsr | `puf_predictor_employment_income`, positive donors | −0.41 ± 0.13 | −0.11 ± 0.07 |
+| puf_chain_twin | self_employment_income_before_lsr | `puf_predictor_self_employment_income`, both signs | −0.68 ± 0.56 | +1.14 ± 1.10 |
+| puf_chain_twin | taxable_interest_income | `puf_predictor_taxable_interest_income`, positive donors | −7.70 ± 0.80 | −0.59 ± 0.56 |
+| puf_chain_twin | non_qualified_dividend_income | `puf_predictor_dividend_income` − `qualified_dividend_income`, both signs | −8.38 ± 0.66 | +38.89 ± 27.43 |
+| puf_chain_twin | short_term_capital_gains | `puf_predictor_short_term_capital_gains`, both signs | −3.25 ± 3.18 | −4.83 ± 1.44 |
+| puf_chain_twin | long_term_capital_gains_before_response | `puf_predictor_long_term_capital_gains`, both signs | −8.70 ± 0.92 | −1.09 ± 0.77 |
+| puf_chain_twin | first_home_mortgage_interest | `home_mortgage_interest`, positive donors | −59.76 ± 4.81 | +0.96 ± 2.81 |
+| puf_support_retirement_contributions | roth_401k_contributions_desired | 0.176 × `traditional_401k_contributions_desired`, positive donors | −2.85 ± 1.67 | +0.33 ± 1.13 |
+| puf_support_retirement_contributions | roth_ira_contributions_desired | 1.551 × `traditional_ira_contributions_desired`, positive donors | −18.14 ± 18.76 | −12.22 ± 14.57 |
+| uk_lcfs | gas_consumption | `domestic_energy_consumption` − `electricity_consumption`, positive donors | −0.24 ± 0.49 | −0.09 ± 0.42 |
+
+Estimated selection on these targets runs −12.22 to +38.89 points, beyond 1
+point on five of the ten, and passes the materiality test on five. The largest
+error, on non-qualified dividends, comes mostly from the negative sign, to
+which the gate gives under 0.1% of recipients' weight in every fold and whose
+mean the split fits on 211-258 held-out donors per fold: two folds put 140 and
+56 points there, while the positive sign's error runs −0.3 to +2.6 points
+across folds. So the estimated split is not established on real data: the
+counts and medians above say where the estimate passes the test, not where
+selection does. Section 2's heavy-tailed difference process also defeats the
+fitted mean where the truth is known, in the other direction: there the
+estimate recovers too little of the smoothing, while on non-qualified
+dividends it puts −47.28 points of smoothing behind a −8.38-point contrast
+that is all smoothing. A split that held up would need a conditional-mean
+estimate that recovers these controls; this analysis has none.
 
 ### US
 
@@ -481,12 +569,16 @@ predictors equal the chain's targets: on every row,
 likewise for self-employment income, taxable interest and short- and long-term
 capital gains, while `puf_predictor_dividend_income` equals qualified plus
 non-qualified dividends. So on held-out donors those forests split on the
-value they impute. On the five targets a predictor equals, every donor's
-value is a function of its predictors, so each donor's residual is zero and
-the contrast carries no selection, on held-out donors or on any recipients:
-their rows are smoothing alone, and their estimated selection measures the
-fitted mean's error on real amounts (the start of this section). Production recipients carry CPS values of those predictors
-(the ASEC twins' `_tax_unit_feature_frame` values), so the held-out and
+value they impute. On the five targets a predictor equals, and on
+non-qualified dividends, which equal the dividend predictor less qualified
+dividends (an earlier target, so one of their features), every donor's value
+is a function of its features, so each donor's residual is zero and the
+contrast carries no selection, on held-out donors or on any recipients. So
+does first-home mortgage interest, which equals total home mortgage interest
+on every donor with any. Their rows are smoothing alone, and their estimated
+selection measures the fitted mean's error on real amounts (the start of this
+section). Production recipients carry CPS values of those predictors (the ASEC
+twins' `_tax_unit_feature_frame` values), so the held-out and
 production-recipient columns can differ:
 
 | Target | Held-out contrast | Estimated smoothing | Estimated selection | Adaptive over honest − 1, ASEC-twin recipients |
@@ -529,7 +621,7 @@ denominator, so the conditioning values stay the twin builder's. The twins
 also hold 28.4% of the PUF tax units and 32.9% of their weight, and each
 target's released total on them runs from 11.8% (`farm_income`) to 105.5%
 (`farm_operations_income`) of its released total on all PUF units, median
-35.9% (`results/public/puf_twin_coverage.csv`). So these columns describe
+36.9% (`results/public/puf_twin_coverage.csv`). So these columns describe
 adaptive over honest on the rebuilt twin subset; they don't establish what the
 adaptive fill does to production's PUF-half draws.
 
@@ -621,7 +713,7 @@ within a fit, so these counts describe the targets rather than independent
 trials. These gaps compare totals and don't depend on how the contrast
 splits.
 
-## 5. Distribution: conditionals too narrow on held-out donors
+## 5. Distribution: quantiles miscalibrated on held-out donors
 
 The remedy and production-size runs (section 6) also score each
 configuration's conditional quantiles on the held-out positive donors, at taus
@@ -651,12 +743,15 @@ honest fill lowers it on 15 of the 16 (to 0.009-0.045), and
 fills, −0.032 for `min_samples_leaf=20`, −0.013 for `min_samples_leaf=5` and
 −0.009 for `weighted_leaves=True` (section 6).
 
-These coverages pool the held-out positive donors, so they show the
-conditionals running too narrow on average over those donors; they don't
-order the spread recipient by recipient, and they leave out the sign gates
-and negative forests. Since `draw` reads each recipient's value at a uniform
-quantile of its conditional, conditionals too narrow on average give an
-imputed distribution with too little spread.
+These coverages pool the held-out positive donors, and they leave out the
+sign gates and negative forests. They show the pooled quantiles
+miscalibrated and the central 80% interval, q10 to q90, holding fewer than
+80% of held-out donors. They don't show the conditionals running too narrow
+or the imputed spread compressed: conditionals of the right width centred in
+the wrong places give the same pooled pattern, and drawing from them can
+spread the imputed distribution wider than the truth. Measuring the spread
+would mean comparing the imputed and held-out distributions directly, which
+this analysis did not do.
 
 ## 6. Remedies
 
@@ -677,7 +772,7 @@ The measures:
 - Residual contrast: adaptive minus honest left under the remedy, % of the
   held-out reported total. It carries smoothing as the contrast does. An
   honest fill's residual is zero by definition, and its catchments don't
-  depend on its donors' values, so it carries no selection.
+  depend on its donors' values, so its splits can't select on them.
 - Pinball: percent change in mean pinball loss across the five taus, on
   held-out positive donors (negative fits better).
 - Coverage gap: change in the mean absolute difference between each tau and
@@ -887,9 +982,14 @@ target of the same joint QRF and conditions on the dropped first target.
   fitted to held-out donors. Its error moves between estimated selection and
   estimated smoothing, so a target's split carries that error even where its
   contrast is precise; section 2's synthetic processes bound it only for
-  processes like theirs. On those processes the fitted mean's smoothing missed the true smoothing by at
-most 0.93 points on trees grown on the target. On real data, the five PUF
-targets whose selection is zero put its error at up to 4.83 points.
+  processes like theirs.
+  On the first five synthetic processes the fitted mean's smoothing missed the
+  true smoothing by at most 0.93 points with trees grown on the target, on a
+  heavy-tailed difference by 7.4 ± 2.3 at 4,800 donors, and on the ten real
+  targets whose selection is zero its estimated selection runs −12.22 to
+  +38.89 points. The split also assumes the survey weights carry no
+  information about a target beyond its predictors and sign (section 2). It is
+  not established on real data.
 - **Chained predictors.** A later target in a chain conditions on earlier
   ones. Held-out donors bring their own reported values of those columns;
   production recipients bring the chain's earlier draws. Held-out and
@@ -949,12 +1049,12 @@ release before switching.** Against the forest production would grow,
 `min_samples_leaf=20` matches honest fills on quantile fit (−8.4% against
 −8.5% on pinball, −0.032 against −0.035 on the coverage gap) and changes one
 argument, where honest fills need new fill code. Honest fills keep two
-advantages: they carry no selection, since their catchments don't depend on
-their donors' values, and they bring totals nearer the held-out totals (1.4
-points at the median against 1.3, a difference that sits in the PUF chain).
-Build them (option 3) if the shadow build shows the floor leaving a gap that
-matters. A setting keeps either change reversible, and a shadow build changes
-nothing that ships.
+advantages: their splits can't select on the donors that fill them, whose
+values their catchments don't depend on, and they bring totals nearer the
+held-out totals (1.4 points at the median against 1.3, a difference that sits
+in the PUF chain). Build them (option 3) if the shadow build shows the floor
+leaving a gap that matters. A setting keeps either change reversible, and a
+shadow build changes nothing that ships.
 
 | Option | Change | Median contrast left, 113 material targets (half-size test) | Median pinball change | Median coverage gap change | Median change in gap to reported total | Targets with pinball up more than 1% | Up 100% or more |
 |---|---|---|---|---|---|---|---|
@@ -966,11 +1066,10 @@ Every column but the contrast column compares the option with the forest
 production would grow on all of a fold's donors (section 6).
 
 - **Option 1** needs no rebuild. The contrast stays material on 113 of the 171
-  reported targets (estimated selection on 98 of the 148 with an estimate),
-  and the conditionals stay too narrow on held-out donors (section 5). The
-  LCFS division levelling (section 4) absorbs part of the over-draw on the
-  divisions it cuts; this analysis did not audit the other chains' post-draw
-  steps.
+  reported targets, and the pooled quantiles stay miscalibrated on held-out
+  donors (section 5). The LCFS division levelling (section 4) absorbs part of
+  the over-draw on the divisions it cuts; this analysis did not audit the
+  other chains' post-draw steps.
 - **Option 2** changes one argument. At that floor 4 targets' pinball rises
   100% or more and 15 rise by more than 1% (section 6); the half-size test
   leaves a median 1.06% of the total as residual contrast, below 0.5% on 35
@@ -979,17 +1078,18 @@ production would grow on all of a fold's donors (section 6).
   remedy runs covered only targets with a material contrast, and the quantile
   scores stop at the 90th percentile, so the shadow build has to check the
   other targets and the top shares.
-- **Option 3** carries no selection, since an honest fill's catchments don't
-  depend on its donors' values, and raises pinball on fewer targets (10
-  against 15). It needs new code: quantile-forest's `predict` reads the rows
-  `fit` stored from each tree's bootstrap (`_get_y_train_leaves`,
-  `quantile_forest/_quantile_forest.py:299`), so an honest fill needs its own
-  store or reader. It grows two half-size forests per sign, at a fit cost this
-  analysis did not measure. It needs a rule for combining the two
-  half-forests' conditionals (section 6), its fill needs integer masses or a
-  reader that does not depend on mass scale (section 2), and recipients no
-  honest donor reaches need a rule (they held at most 0.63% of a target's
-  adaptive total on held-out donors and 1.27% on production recipients).
+- **Option 3**'s splits can't select on the donors that fill them, since an
+  honest fill's catchments don't depend on their values, and it raises pinball
+  on fewer targets (10 against 15). It needs new code: quantile-forest's
+  `predict` reads the rows `fit` stored from each tree's bootstrap
+  (`_get_y_train_leaves`, `quantile_forest/_quantile_forest.py:299`), so an
+  honest fill needs its own store or reader. It grows two half-size forests
+  per sign, at a fit cost this analysis did not measure. It needs a rule for
+  combining the two half-forests' conditionals (section 6), its fill needs
+  integer masses or a reader that does not depend on mass scale (section 2),
+  and recipients no honest donor reaches need a rule (they held at most 0.63%
+  of a target's adaptive total on held-out donors and 1.27% on production
+  recipients).
 
 Flip conditions: if the shadow builds show the floor moving each country's
 calibrated aggregates and decile shares by less than the build's own

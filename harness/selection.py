@@ -22,8 +22,10 @@ on CPS MOOP, for every target and every sign forest:
    halves and average.
 3. Weight each held-out recipient's estimate by its survey weight times the
    fold gate's probability of that sign, and sum over signs. Adaptive minus
-   honest isolates what the splits' sight of the donors' own values does to
-   the total. A recipient no honest donor reaches in any tree keeps its
+   honest is a total contrast: it carries selection, the splits' use of the
+   filling rows' own values, and the two fills' different smoothing of the
+   conditional mean, which differs even with the trees held fixed
+   (``contrast_parts`` splits it). A recipient no honest donor reaches in any tree keeps its
    adaptive estimate (``complete_honest``), so the difference runs over the
    recipients both fills reach; ``max_empty_adaptive_share`` records how much
    of the adaptive total such recipients hold.
@@ -429,18 +431,34 @@ class ClippedMean:
 def mean_model(X, y, w, seed):
     """An estimate of E[y | x] for one sign's amounts, fitted on donors no tree sees.
 
-    Gradient-boosted trees with a squared-error loss, early stopping on a
-    tenth of the rows, and predictions held between zero and the largest
-    fitted amount, the range a conditional mean of one sign's amounts lies
-    in. A negative sign's amounts enter as their absolute values
+    Gradient-boosted trees with a squared-error loss, survey weights as sample
+    weights and early stopping on a tenth of the rows, so the fit targets the
+    weighted conditional mean E[w y | x] / E[w | x] among the held-out donors
+    of the sign. A negative sign's amounts enter as their absolute values
     (``same_tree_sign`` flips them back).
+
+    Predictions are clipped to between zero and the largest fitted amount.
+    That is a stability choice, not a property of the conditional mean: at a
+    filling row beyond the held-out donors' support the true mean can exceed
+    every fitted amount, so the clip can bias the estimate in the tail.
+    Squared-error boosting can itself overshoot the amounts it fits a little;
+    ``tests/test_contrast_parts.py`` checks, on synthetic data, that the
+    unclipped fit stays within twice the largest fitted amount. The real-data
+    runs don't record unclipped predictions, so nothing here shows how often
+    the clip binds on them.
 
     An earlier version used a Poisson loss. Its Newton step in a leaf is the
     learning rate times (the leaf's amounts over its predicted means, minus
     one), so a leaf of amounts hundreds of times the current mean steps tens
     of units on the log scale. On the PUF chain and SCF fits its estimates
-    overflowed. A squared-error step is a share of the leaf's mean residual,
-    so it cannot run past the amounts it fits.
+    overflowed.
+
+    This estimate misses badly on a heavy-tailed synthetic target that two
+    predictors fix exactly (``smoothing_check.py``'s heavy-tailed difference
+    process). On the real targets ``determined.py`` finds, whose selection is
+    zero, its estimated selection runs from near zero to tens of points, the
+    largest on a sign with a few hundred held-out donors. So its split of a
+    contrast is not established on real data.
     """
     y_abs = np.abs(np.asarray(y, dtype=np.float64))
     model = HistGradientBoostingRegressor(loss="squared_error", learning_rate=0.05, max_iter=400,

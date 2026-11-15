@@ -5,8 +5,9 @@ hundreds of survey variables onto the population frame. Each amount forest
 fills its leaves with the same rows that chose its splits. This repository
 compares that adaptive fill with an honest fill of the same trees on the
 targets the production build imputes, splits the contrast into selection and
-the fills' different smoothing, and measures how four remedies change the
-totals and the quantile fit.
+the fills' different smoothing (exactly on synthetic data; on real data the
+split's estimate fails its controls, so it is not established), and measures
+how four remedies change the totals and the quantile fit.
 
 Start with [REPORT.md](REPORT.md). `results/public/TABLES.md` lists every
 reported target, and the CSVs beside it hold the numbers.
@@ -24,6 +25,7 @@ reported target, and the CSVs beside it hold the numbers.
 | `harness/known_answer.py` | The test on synthetic data where the answer is known |
 | `harness/smoothing_check.py` | The contrast's split into selection and smoothing on synthetic processes with a known conditional mean |
 | `harness/smoothing_plan.py`, `run_smoothing.sh`, `smoothing.py` | The same split on every reported fit, with a conditional mean fitted on held-out donors |
+| `harness/determined.py` | The targets whose chained features fix every donor's value, whose selection is zero: the controls for that estimate |
 | `harness/run_draw_means.sh` | The contrast in production's expected draws on 13 fits |
 | `harness/run_full_size.sh`, `full_size.py` | Each remedy against the forest production would grow on all of a fold's donors |
 | `harness/report_rows.py` | Generates every table row `REPORT.md` quotes from the public files; `harness/tests/test_report_numbers.py` checks them |

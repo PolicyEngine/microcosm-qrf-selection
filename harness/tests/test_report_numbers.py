@@ -16,7 +16,7 @@ REPORT = Path(__file__).resolve().parents[2] / "REPORT.md"
 
 @pytest.mark.parametrize("table", ["selection", "closer", "remedies", "lcfs", "coverage",
                                    "known_answer", "draws", "distribution", "full_size",
-                                   "smoothing_check"])
+                                   "smoothing_check", "controls"])
 def test_every_generated_row_appears_in_the_report(table):
     lines = {line.strip() for line in REPORT.read_text().splitlines()}
     missing = [row for row in R.all_rows()[table] if row not in lines]
@@ -178,7 +178,39 @@ def test_report_states_the_split_counts():
         f"({s['us_estimated']} US, {s['uk_estimated']} UK)",
         f"Estimated selection is material on {s['material_selection']} of them: "
         f"{s['us_material_selection']} of {s['us_estimated']} in the US",
-        f"on {s['us_material_selection']} of the {s['us_estimated']} US targets and "
-        f"{s['uk_material_selection']} of the {s['uk_estimated']} UK targets with an estimate",
+        f"the median absolute contrast is {s['median_contrast']:.2f} points, estimated smoothing "
+        f"{s['median_smoothing']:.2f} and estimated selection {s['median_selection']:.2f}",
     ]:
         assert phrase in text, phrase
+
+
+WORDS = dict(enumerate("zero one two three four five six seven eight nine ten".split()))
+
+
+def test_report_states_the_controls_range_and_count():
+    """The ten targets whose selection is zero bound the split's error; the text must match them."""
+    text = flat()
+    d = R.load()
+    c = R.determined_controls(d["determined"], d["smoothing"])
+    assert len(c) == 10
+    lo, hi = R.signed(c["selection_est"].min()), R.signed(c["selection_est"].max())
+    mat = int(c["material_selection_est"].sum())
+    for phrase in [f"estimated selection runs {lo} to {hi} points and passes the materiality "
+                   f"test on {WORDS.get(mat, mat)}",
+                   f"Estimated selection on these targets runs {lo} to {hi} points",
+                   "The split of each contrast into selection and smoothing is not established "
+                   "on real data."]:
+        assert phrase in text, phrase
+
+
+def test_report_states_the_central_interval_coverage():
+    r = R.lcfs_coverage_ranges(R.load()["full_size"])
+    phrase = (f"So the forest's central 80% interval holds {r['aclo']}-{r['achi']}% of held-out "
+              f"donors on those targets and the honest fill's {r['hclo']}-{r['hchi']}%.")
+    assert phrase in flat(), phrase
+
+
+def test_report_makes_no_spread_compression_claim():
+    text = flat().lower()
+    for phrase in ("compress the imputed spread", "too little spread", "conditionals too narrow"):
+        assert phrase not in text, phrase

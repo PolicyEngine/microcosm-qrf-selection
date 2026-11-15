@@ -14,9 +14,6 @@ target: share of released total,non_sch_d_capital_gains,0.3690183718446397
 target: share of released total,taxable_private_pension_income,0.30004599505856033
 target: share of released total,taxable_ira_distributions,0.3987744571635037
 target: share of released total,social_security_retirement,0.3112976158100665
-target: share of released total,social_security_disability,0.3379427120676592
-target: share of released total,social_security_dependents,0.3254246386569754
-target: share of released total,social_security_survivors,0.33463777301725817
 target: share of released total,alimony_income,0.1579362991367123
 target: share of released total,alimony_expense,0.19522526558410047
 target: share of released total,salt_refund_income,0.4390139964770483
@@ -39,7 +36,6 @@ target: share of released total,farm_operations_income,1.0549084145568908
 target: share of released total,farm_rent_income,0.4600602429027706
 target: share of released total,miscellaneous_income,0.6254096823464503
 target: share of released total,partnership_income,0.4567494544749426
-target: share of released total,s_corp_income,
 target: share of released total,partnership_self_employment_net_earnings,0.49104740121413015
 target: share of released total,estate_income_would_be_qualified,0.33387508960513984
 target: share of released total,farm_operations_income_would_be_qualified,0.33512543012050344
@@ -59,11 +55,8 @@ target: share of released total,w2_wages_from_qualified_business,0.6483046101791
 target: share of released total,domestic_production_ald,0.527712859242776
 target: share of released total,unrecaptured_section_1250_gain,0.8273304180857776
 target: share of released total,first_home_mortgage_balance,0.3042777750585604
-target: share of released total,second_home_mortgage_balance,
 target: share of released total,first_home_mortgage_interest,0.3545297371975816
-target: share of released total,second_home_mortgage_interest,
 target: share of released total,first_home_mortgage_origination_year,0.28795941262692054
-target: share of released total,second_home_mortgage_origination_year,
 target: share of released total,health_savings_account_ald,0.25717759817431796
 predictor: twin mean over released mean,puf_predictor_filing_status_code,1.0
 predictor: twin mean over released mean,puf_predictor_tax_unit_person_count,1.0

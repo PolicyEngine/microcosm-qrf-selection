@@ -1,0 +1,15 @@
+key,target,sign,whole_target,identity,max_rel_resid
+puf_support_retirement_contributions,roth_401k_contributions_desired,1,True,+0.176471*traditional_401k_contributions_desired,2.8618461352200386e-15
+puf_support_retirement_contributions,roth_ira_contributions_desired,1,True,+1.55102*traditional_ira_contributions_desired,9.73246222319762e-16
+uk_lcfs,gas_consumption,1,True,+1*domestic_energy_consumption -1*electricity_consumption,1.3189325304113348e-15
+puf_chain_twin,employment_income_before_lsr,1,True,+1*puf_predictor_employment_income,8.572562907340914e-16
+puf_chain_twin,self_employment_income_before_lsr,1,True,+1*puf_predictor_self_employment_income,6.026356784730763e-16
+puf_chain_twin,self_employment_income_before_lsr,-1,True,+1*puf_predictor_self_employment_income,7.38220467295836e-16
+puf_chain_twin,taxable_interest_income,1,True,+1*puf_predictor_taxable_interest_income,5.762925601814757e-16
+puf_chain_twin,non_qualified_dividend_income,1,True,+1*puf_predictor_dividend_income -1*qualified_dividend_income,1.1610717463013484e-15
+puf_chain_twin,non_qualified_dividend_income,-1,True,-1*qualified_dividend_income +1*puf_predictor_dividend_income,3.884236723861998e-15
+puf_chain_twin,short_term_capital_gains,1,True,+1*puf_predictor_short_term_capital_gains,4.3570999597144373e-16
+puf_chain_twin,short_term_capital_gains,-1,True,+1*puf_predictor_short_term_capital_gains,8.128954346208238e-16
+puf_chain_twin,long_term_capital_gains_before_response,1,True,+1*puf_predictor_long_term_capital_gains,1.057449204699038e-15
+puf_chain_twin,long_term_capital_gains_before_response,-1,True,+1*puf_predictor_long_term_capital_gains,1.393225444604405e-15
+puf_chain_twin,first_home_mortgage_interest,1,True,+1*home_mortgage_interest,1.6216902209741185e-15

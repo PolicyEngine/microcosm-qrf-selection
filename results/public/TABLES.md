@@ -545,6 +545,30 @@ Held-out donors, % of the held-out reported total. The honest fill here takes in
 | no signal | 4800 | noise | tree | 40 | +0.28 ± 0.32 | +0.28 ± 0.32 | +0.00 ± 0.00 | -0.14 ± 0.05 | -0.14 ± 0.05 |
 | no signal | 4800 | permuted target | pooled | 40 | +0.65 ± 0.42 | +0.65 ± 0.42 | +0.00 ± 0.00 | -0.12 ± 0.05 | -0.12 ± 0.05 |
 | no signal | 4800 | permuted target | tree | 40 | +0.22 ± 0.36 | +0.22 ± 0.36 | +0.00 ± 0.00 | -0.08 ± 0.05 | -0.08 ± 0.05 |
+| difference | 1200 | target | pooled | 40 | -2.54 ± 0.78 | -0.00 ± 0.00 | -2.54 ± 0.78 | -0.98 ± 0.19 | +1.56 ± 0.75 |
+| difference | 1200 | target | tree | 40 | -2.83 ± 0.75 | +0.00 ± 0.00 | -2.83 ± 0.75 | -1.16 ± 0.17 | +1.67 ± 0.71 |
+| difference | 1200 | noise | pooled | 40 | -6.36 ± 0.76 | -0.00 ± 0.00 | -6.36 ± 0.76 | -4.21 ± 0.39 | +2.15 ± 0.59 |
+| difference | 1200 | noise | tree | 40 | -7.43 ± 0.69 | +0.00 ± 0.00 | -7.43 ± 0.69 | -4.77 ± 0.33 | +2.66 ± 0.64 |
+| difference | 1200 | permuted target | pooled | 40 | -6.32 ± 0.58 | +0.00 ± 0.00 | -6.32 ± 0.58 | -4.29 ± 0.38 | +2.02 ± 0.45 |
+| difference | 1200 | permuted target | tree | 40 | -6.85 ± 0.38 | +0.00 ± 0.00 | -6.85 ± 0.38 | -4.73 ± 0.29 | +2.12 ± 0.38 |
+| difference | 4800 | target | pooled | 40 | -0.82 ± 0.19 | +0.00 ± 0.00 | -0.82 ± 0.19 | -0.45 ± 0.10 | +0.38 ± 0.19 |
+| difference | 4800 | target | tree | 40 | -0.88 ± 0.18 | -0.00 ± 0.00 | -0.88 ± 0.18 | -0.52 ± 0.07 | +0.36 ± 0.18 |
+| difference | 4800 | noise | pooled | 40 | -5.11 ± 0.31 | +0.00 ± 0.00 | -5.11 ± 0.31 | -4.03 ± 0.23 | +1.08 ± 0.20 |
+| difference | 4800 | noise | tree | 40 | -5.56 ± 0.25 | +0.00 ± 0.00 | -5.56 ± 0.25 | -4.45 ± 0.17 | +1.11 ± 0.18 |
+| difference | 4800 | permuted target | pooled | 40 | -5.08 ± 0.35 | +0.00 ± 0.00 | -5.08 ± 0.35 | -4.07 ± 0.25 | +1.01 ± 0.21 |
+| difference | 4800 | permuted target | tree | 40 | -5.47 ± 0.27 | +0.00 ± 0.00 | -5.47 ± 0.27 | -4.44 ± 0.18 | +1.03 ± 0.16 |
+| difference, heavy tail | 1200 | target | pooled | 40 | -28.70 ± 17.75 | -0.00 ± 0.00 | -28.70 ± 17.75 | -1.38 ± 0.37 | +27.32 ± 17.90 |
+| difference, heavy tail | 1200 | target | tree | 40 | -30.02 ± 18.92 | +0.00 ± 0.00 | -30.02 ± 18.92 | -1.66 ± 0.33 | +28.36 ± 19.00 |
+| difference, heavy tail | 1200 | noise | pooled | 40 | -32.42 ± 11.38 | +0.00 ± 0.00 | -32.42 ± 11.38 | -8.35 ± 0.50 | +24.07 ± 11.31 |
+| difference, heavy tail | 1200 | noise | tree | 40 | -32.47 ± 8.99 | -0.00 ± 0.00 | -32.47 ± 8.99 | -9.09 ± 0.45 | +23.38 ± 8.92 |
+| difference, heavy tail | 1200 | permuted target | pooled | 40 | -37.55 ± 15.09 | +0.00 ± 0.00 | -37.55 ± 15.09 | -8.84 ± 0.68 | +28.71 ± 15.16 |
+| difference, heavy tail | 1200 | permuted target | tree | 40 | -37.36 ± 13.00 | +0.00 ± 0.00 | -37.36 ± 13.00 | -9.48 ± 0.53 | +27.88 ± 13.03 |
+| difference, heavy tail | 4800 | target | pooled | 40 | -8.21 ± 2.24 | +0.00 ± 0.00 | -8.21 ± 2.24 | -0.77 ± 0.21 | +7.44 ± 2.25 |
+| difference, heavy tail | 4800 | target | tree | 40 | -8.70 ± 2.73 | +0.00 ± 0.00 | -8.70 ± 2.73 | -0.82 ± 0.18 | +7.88 ± 2.72 |
+| difference, heavy tail | 4800 | noise | pooled | 40 | -15.82 ± 1.98 | -0.00 ± 0.00 | -15.82 ± 1.98 | -8.60 ± 0.46 | +7.22 ± 1.90 |
+| difference, heavy tail | 4800 | noise | tree | 40 | -17.65 ± 1.62 | -0.00 ± 0.00 | -17.65 ± 1.62 | -9.48 ± 0.37 | +8.17 ± 1.60 |
+| difference, heavy tail | 4800 | permuted target | pooled | 40 | -18.11 ± 1.66 | -0.00 ± 0.00 | -18.11 ± 1.66 | -8.90 ± 0.42 | +9.21 ± 1.53 |
+| difference, heavy tail | 4800 | permuted target | tree | 40 | -19.64 ± 1.46 | -0.00 ± 0.00 | -19.64 ± 1.46 | -9.84 ± 0.37 | +9.80 ± 1.35 |
 
 ## The contrast split into selection and smoothing
 
@@ -554,6 +578,7 @@ Held-out donors, % of the held-out reported total. The honest fill here takes in
 |---|---|---|---|---|---|---|---|---|
 | acs_rent | rent | +2.03 ± 1.46 | -0.14 ± 0.22 | +2.17 ± 1.34 | +0.58 ± 1.55 | -0.46 ± 0.19 | +4.71 ± 0.89 / +0.13 ± 0.14 | yes |
 | org_wages | hourly_wage | +0.70 ± 0.05 | -0.02 ± 0.03 | +0.72 ± 0.04 | -0.47 ± 0.06 | +0.01 ± 0.03 | +0.54 ± 0.15 / +0.03 ± 0.10 | yes |
+| org_wages | is_paid_hourly | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 / +0.00 ± 0.00 |  |
 | puf_chain_twin | employment_income_before_lsr | -0.41 ± 0.13 | -0.30 ± 0.19 | -0.11 ± 0.07 | -0.41 ± 0.15 | -0.26 ± 0.25 | -0.02 ± 0.04 / -0.01 ± 0.02 |  |
 | puf_chain_twin | self_employment_income_before_lsr | -0.68 ± 0.56 | -1.83 ± 1.14 | +1.14 ± 1.10 | -0.60 ± 0.56 | -2.78 ± 1.53 | -0.75 ± 0.14 / -0.79 ± 0.15 | yes |
 | puf_chain_twin | taxable_interest_income | -7.70 ± 0.80 | -7.12 ± 1.25 | -0.59 ± 0.56 | -9.94 ± 0.57 | -9.02 ± 1.15 | -0.06 ± 0.02 / -0.03 ± 0.05 | yes |
@@ -623,6 +648,7 @@ Held-out donors, % of the held-out reported total. The honest fill here takes in
 | sipp_financial_assets__0 | bank_account_assets | +5.56 ± 1.13 | -2.16 ± 0.39 | +7.71 ± 1.31 | +7.14 ± 1.33 | -2.74 ± 0.37 | +11.67 ± 1.35 / -1.95 ± 0.49 | yes |
 | sipp_financial_assets__1 | stock_assets | -3.09 ± 2.45 | -2.27 ± 0.74 | -0.81 ± 2.92 | -3.54 ± 2.20 | -2.94 ± 0.61 | +10.46 ± 6.16 / -2.66 ± 0.64 |  |
 | sipp_financial_assets__2 | bond_assets | -5.77 ± 7.27 | +0.55 ± 1.89 | -6.32 ± 7.46 | -7.79 ± 5.78 | -0.84 ± 1.51 | -5.33 ± 8.08 / -1.79 ± 2.72 |  |
+| sipp_head_start | takes_up_head_start_if_eligible | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | — |  |
 | sipp_vehicles | household_vehicles_value | +1.63 ± 0.81 | -0.93 ± 0.24 | +2.56 ± 0.70 | +1.63 ± 0.73 | -1.12 ± 0.29 | +5.48 ± 1.37 / +0.10 ± 0.53 | yes |
 | uk_etb_services | dfe_education_spending | -2.75 ± 1.07 | -0.24 ± 0.28 | -2.52 ± 1.27 | -0.61 ± 1.00 | -0.38 ± 0.20 | — | yes |
 | uk_etb_services | rail_subsidy_spending | +6.21 ± 1.75 | -0.85 ± 0.72 | +7.07 ± 2.09 | +5.23 ± 2.80 | -0.79 ± 0.61 | — | yes |
@@ -672,8 +698,15 @@ Held-out donors, % of the held-out reported total. The honest fill here takes in
 | uk_spi_stage2 | dla_sc_reported | -1.90 ± 0.82 | +0.25 ± 0.08 | -2.15 ± 0.82 | -0.95 ± 0.50 | +0.06 ± 0.07 | — | yes |
 | uk_spi_stage2 | pip_m_reported | +5.02 ± 0.65 | -0.02 ± 0.15 | +5.04 ± 0.67 | -2.03 ± 0.38 | +0.12 ± 0.02 | — | yes |
 | uk_spi_stage2 | pip_dl_reported | +0.57 ± 0.55 | +0.04 ± 0.13 | +0.53 ± 0.49 | +0.19 ± 0.27 | +0.15 ± 0.07 | — | yes |
+| uk_spi_stage2 | sda_reported | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | — |  |
+| uk_spi_stage2 | carers_allowance_reported | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | — |  |
 | uk_spi_stage2 | winter_fuel_allowance_reported | +2.20 ± 0.34 | +0.36 ± 0.14 | +1.84 ± 0.30 | -1.18 ± 0.46 | +0.10 ± 0.15 | — | yes |
 | uk_spi_stage2 | council_tax_benefit_reported | -2.94 ± 0.83 | -0.28 ± 0.12 | -2.66 ± 0.87 | +2.05 ± 0.70 | -0.09 ± 0.24 | — | yes |
+| uk_spi_stage2 | stands_as_sole_owner_or_partner_of_company | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | — |  |
+| uk_spi_stage2 | is_engaged_in_owned_company_trade | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | — |  |
+| uk_spi_stage2 | owned_company_is_main_employment | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | — |  |
+| uk_spi_stage2 | owned_company_carries_on_trade | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | — |  |
+| uk_spi_stage2 | owned_company_carries_on_property_business | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | — |  |
 | uk_uc_reporter_redraw | universal_credit_reported_amount | +0.66 ± 1.07 | +0.32 ± 0.28 | +0.34 ± 1.17 | +1.04 ± 0.76 | +0.56 ± 0.25 | — |  |
 | uk_was__1 | main_residence_value | +0.48 ± 0.38 | -0.67 ± 0.30 | +1.15 ± 0.34 | -0.14 ± 0.39 | -1.41 ± 0.18 | — | yes |
 | uk_was__2 | other_residential_property_value | -3.87 ± 1.87 | -1.63 ± 0.63 | -2.24 ± 2.16 | -1.05 ± 1.72 | -2.41 ± 0.68 | — | yes |
@@ -690,6 +723,7 @@ Held-out donors, % of the held-out reported total. The honest fill here takes in
 | uk_was__7 | consumer_debt | +4.00 ± 1.63 | -0.86 ± 0.43 | +4.86 ± 1.59 | +7.84 ± 1.78 | -1.16 ± 0.44 | — | yes |
 | uk_was__8 | directly_held_share_fraction | +5.76 ± 0.30 | +0.07 ± 0.10 | +5.69 ± 0.34 | -0.54 ± 0.12 | -0.10 ± 0.07 | — | yes |
 | uk_was__9 | other_residential_property_secured_debt | -8.11 ± 2.83 | -0.02 ± 0.69 | -8.10 ± 2.56 | -6.67 ± 2.09 | +0.15 ± 0.69 | — | yes |
+| voluntary_filing | would_file_taxes_voluntarily | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | +0.00 ± 0.00 | — |  |
 
 ## Reproduction checks (US)
 

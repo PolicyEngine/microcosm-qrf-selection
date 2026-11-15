@@ -175,7 +175,9 @@ def selection_rows(targets: pd.DataFrame, smoothing: pd.DataFrame) -> list[str]:
 CHECK_LABELS = {"deterministic": "y = exp(x1), no noise", "lognormal": "lognormal",
                 "lognormal, heavy tail": "lognormal, heavy tail",
                 "lognormal, discrete predictors": "lognormal, discrete predictors",
-                "no signal": "no signal (the known-answer process)"}
+                "no signal": "no signal (the known-answer process)",
+                "difference": "total less a share of it, no noise",
+                "difference, heavy tail": "total less a share of it, heavy tail, no noise"}
 CHECK_GROWN = {"target": "the target", "noise": "separate noise"}
 
 
@@ -203,7 +205,14 @@ def smoothing_numbers(targets: pd.DataFrame, smoothing: pd.DataFrame) -> dict[st
     con, smo, sel = (pd.to_numeric(est[c], errors="coerce") for c in
                      ("contrast", "smoothing", "selection_est"))
     mat_c, mat_s = _true(est["material"]), _true(est["material_selection_est"])
-    return {"reported": len(df), "estimated": len(est), "missing": len(df) - len(est),
+    # A constant target (every donor of a sign takes one value) gets a zero
+    # split without a fitted mean, whatever its held-out donor count.
+    zero = con.eq(0) & smo.eq(0) & sel.eq(0)
+    return {
+            "zero_split": int(zero.sum()), "fitted": int((~zero).sum()),
+            "fitted_median_contrast": float(con[~zero].abs().median()),
+            "fitted_median_smoothing": float(smo[~zero].abs().median()),
+            "fitted_median_selection": float(sel[~zero].abs().median()),"reported": len(df), "estimated": len(est), "missing": len(df) - len(est),
             "us_estimated": int((~uk).sum()), "uk_estimated": int(uk.sum()),
             "material_contrast": int(mat_c.sum()),
             "material_selection": int(mat_s.sum()),
@@ -218,6 +227,58 @@ def smoothing_numbers(targets: pd.DataFrame, smoothing: pd.DataFrame) -> dict[st
             "median_smoothing": float(smo.abs().median()),
             "median_selection": float(sel.abs().median()),
             "smoothing_over_half": int((smo.abs() > 0.5 * con.abs()).sum())}
+
+
+def _term(term: str) -> str:
+    coef, name = term.split("*", 1)
+    c = float(coef)
+    if abs(abs(c) - 1) < 1e-9:
+        return ("" if c > 0 else "−") + f"`{name}`"
+    return f"{c:.3f} × `{name}`"
+
+
+def identity_text(identity: str) -> str:
+    """'+1*a -1*b' as '`a` − `b`', positive terms first."""
+    terms = sorted(identity.split(), key=lambda t: float(t.split("*")[0]) < 0)
+    out = _term(terms[0])
+    for t in terms[1:]:
+        piece = _term(t)
+        out += f" − {piece[1:]}" if piece.startswith("−") else f" + {piece}"
+    return out
+
+
+def determined_controls(determined: pd.DataFrame, smoothing: pd.DataFrame) -> pd.DataFrame:
+    """Targets whose chained features fix every donor's value, with their split.
+
+    Every donor's residual about its conditional mean is zero on these, so
+    their selection is zero and their estimated selection is the fitted
+    mean's error alone. Only whole targets (every sign with a donor fixed)
+    with an estimated split count.
+    """
+    det = determined.loc[_true(determined["whole_target"])]
+    rows = []
+    for (key, target), g in det.groupby(["key", "target"], sort=False):
+        signs = set(g["sign"])
+        rows.append({"key": key, "target": target,
+                     "signs": "both signs" if signs == {1, -1} else
+                     ("positive donors" if signs == {1} else "negative donors"),
+                     "identity": identity_text(g.loc[g["sign"].eq(max(signs)), "identity"].iloc[0])})
+    df = pd.DataFrame(rows).merge(smoothing, on=["key", "target"])
+    df = df.loc[_true(df["estimated"])]
+    # The PUF chain first, then the rest of the US, then the UK.
+    group = np.where(df["key"].str.startswith("puf_chain"), 0,
+                     np.where(df["key"].str.startswith("uk_"), 2, 1))
+    df = df.iloc[np.argsort(group, kind="stable")]
+    for c in ("contrast", "contrast_se", "selection_est", "selection_est_se"):
+        df[c] = pd.to_numeric(df[c], errors="coerce")
+    df["material_selection_est"] = _true(df["material_selection_est"])
+    return df.reset_index(drop=True)
+
+
+def control_rows(controls: pd.DataFrame) -> list[str]:
+    return [f"| {r.key} | {r.target} | {r.identity}, {r.signs} | "
+            f"{plus_minus(r.contrast, r.contrast_se)} | "
+            f"{plus_minus(r.selection_est, r.selection_est_se)} |" for r in controls.itertuples()]
 
 
 def closer_rows(targets: pd.DataFrame) -> list[str]:
@@ -319,6 +380,8 @@ def lcfs_coverage_ranges(full: pd.DataFrame) -> dict[str, int]:
         for col, tau in (("coverage_0.1", "10"), ("coverage_0.9", "90")):
             out[f"{name}{tau}lo"] = round(100 * d[col].min())
             out[f"{name}{tau}hi"] = round(100 * d[col].max())
+        central = d["coverage_0.9"] - d["coverage_0.1"]
+        out[f"{name}clo"], out[f"{name}chi"] = round(100 * central.min()), round(100 * central.max())
     out["n"] = int(c.loc[c["config"].eq("production")].shape[0])
     return out
 
@@ -426,7 +489,10 @@ def load(public: Path = PUBLIC) -> dict[str, pd.DataFrame]:
             "draws": pd.read_csv(public / "draw_means.csv"),
             "full_size": pd.read_csv(public / "full_size.csv"),
             "smoothing": _optional(public / "smoothing.csv"),
-            "check": _optional(public / "smoothing_check.csv")}
+            "check": _optional(public / "smoothing_check.csv"),
+            "determined": (pd.read_csv(public / "determined.csv")
+                           if (public / "determined.csv").exists() else pd.DataFrame(
+                               columns=["key", "target", "sign", "whole_target", "identity"]))}
 
 
 def _optional(path: Path) -> pd.DataFrame:
@@ -439,6 +505,7 @@ def all_rows(public: Path = PUBLIC) -> dict[str, list[str]]:
     return {"selection": selection_rows(d["targets"], d["smoothing"]),
             "closer": closer_rows(d["targets"]),
             "smoothing_check": smoothing_check_rows(d["check"]),
+            "controls": control_rows(determined_controls(d["determined"], d["smoothing"])),
             "remedies": remedy_rows(d["compact"], d["targets"]),
             "lcfs": lcfs_rows(d["compact"]), "coverage": coverage_rows(d["coverage"]),
             "known_answer": known_answer_rows(d["known"]),

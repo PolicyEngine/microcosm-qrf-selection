@@ -16,6 +16,8 @@ Every number is a percent of the recipients' true total, mean over seeds with
 its standard error. Writes ``results/public/smoothing_check.csv``.
 
 Usage: python smoothing_check.py [--seeds 40] [--out ../results/public/smoothing_check.csv]
+       python smoothing_check.py --processes difference "difference, heavy tail" \
+           --out ../results/smoothing_check_difference.csv
        python smoothing_check.py --first-seed 40 --seeds 200 --sizes 1200 \
            --processes lognormal "lognormal, heavy tail" --grown-on noise \
            --out ../results/public/smoothing_check_more_seeds.csv
@@ -67,11 +69,20 @@ def draw_process(name, n, rng):
         X = rng.normal(size=(n, 3))
         y = np.exp(rng.normal(size=n))
         return X, y, np.full(n, np.exp(0.5))
+    if name in ("difference", "difference, heavy tail"):
+        # A target two predictors fix: a total less a share of it, as the PUF
+        # chain's non-qualified dividends are its dividend predictor less the
+        # qualified dividends before them in the chain. y = m(x) exactly.
+        z = rng.normal(size=(n, 3))
+        total = np.exp((1.0 if name == "difference" else 2.0) * z[:, 0])
+        part = total * rng.uniform(0, 1, n)
+        y = total - part
+        return np.column_stack([total, part, z[:, 1], z[:, 2]]), y, y.copy()
     raise ValueError(name)
 
 
 PROCESSES = ("deterministic", "lognormal", "lognormal, heavy tail", "lognormal, discrete predictors",
-             "no signal")
+             "no signal", "difference", "difference, heavy tail")
 GROWN_ON = ("target", "noise", "permuted target")
 
 

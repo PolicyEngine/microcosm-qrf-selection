@@ -29,8 +29,11 @@ So the public files:
   production-size forests, scaling, expected draws, coverage by tau): those
   files cover a target only when a result of it passed a test, so a
   suppressed target's presence there would reveal that its result did. Only
-  ``all_targets.csv``, which lists every measured target whatever its result,
-  keeps suppressed rows, blank.
+  ``all_targets.csv`` and ``smoothing.csv``, which list every measured target
+  whatever its result, keep suppressed rows, blank;
+- leave every suppressed target out of the files with their own schema too:
+  the PUF twins' coverage (``puf_twin_coverage.csv``) and the targets whose
+  chained features fix them (``determined.csv``).
 
 US results are all public: CPS, ACS, SCF and SIPP are public files, and the
 IRS PUF licence allows aggregates.
@@ -63,7 +66,13 @@ UK_ABSOLUTE = ("reported_total_mean", "reported_abs_mean")
 RESULT_PREFIXES = ("sel_", "prod_", "own_", "adaptive_", "honest_", "effect",
                    "residual_", "vs_reported", "pinball", "coverage", "material",
                    "selection", "ratio", "honest fills", "min_samples_leaf",
-                   "weighted_leaves", "mass_effect", "smoothing", "contrast", "n_fit")
+                   "weighted_leaves", "mass_effect", "smoothing", "contrast", "n_fit",
+                   "estimated")
+#: Donor-count columns, blanked on rows kept without a training donor count.
+COUNT_PREFIXES = ("n_fit",)
+#: Columns that hold a target's selection measure, one per result file. A
+#: target with no donor count keeps its row only when that measure is zero.
+SELECTION_COLUMNS = ("sel_pooled", "selection", "residual_selection", "selection_est")
 
 
 def public_targets(df: pd.DataFrame) -> pd.DataFrame:
@@ -90,11 +99,12 @@ def suppress_rare(out: pd.DataFrame, counts: pd.DataFrame) -> pd.DataFrame:
     if "n_train_nonzero_c" in out.columns:
         out["n_train_nonzero"] = out["n_train_nonzero_c"]
         out = out.drop(columns="n_train_nonzero_c")
-    # A target with no count is a constant positive forest (selection exactly
-    # zero, kept) or one whose signs were skipped (suppressed).
+    # A target with no count is a constant forest (selection exactly zero,
+    # kept: ``selection.analyse_fold`` builds its parts as zeros) or one whose
+    # signs were skipped (suppressed).
     n = out["n_train_nonzero"]
     sel = pd.Series(float("nan"), index=out.index)
-    for name in ("sel_pooled", "selection", "residual_selection"):
+    for name in SELECTION_COLUMNS:  # a file without one keeps no uncounted target
         if name in out.columns:
             sel = pd.to_numeric(out[name], errors="coerce")
             break
@@ -104,6 +114,13 @@ def suppress_rare(out: pd.DataFrame, counts: pd.DataFrame) -> pd.DataFrame:
     out[cols] = out[cols].astype(object)
     out.loc[rare, cols] = None
     out.loc[rare, "n_train_nonzero"] = None  # the reason says "fewer than"; no exact small count
+    # A row kept without a donor count (a constant forest) shows no count at
+    # all: its held-out donor counts can run to a handful, which would say how
+    # few donors it has.
+    uncounted = n.isna() & ~rare
+    count_cols = [c for c in out.columns if c.startswith(COUNT_PREFIXES)]
+    out[count_cols] = out[count_cols].astype(object)
+    out.loc[uncounted, count_cols] = None
     out["suppressed"] = rare.map({True: f"fewer than {SUPPRESS_BELOW} nonzero training donors",
                                   False: ""})
     return out
@@ -127,12 +144,12 @@ def public_inventory(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def keep_held_out_material(df: pd.DataFrame, targets: pd.DataFrame) -> pd.DataFrame:
-    """Drop UK targets whose held-out selection is not material.
+    """Drop UK targets whose held-out contrast is not material.
 
-    Remedy runs and the checks built on them cover targets whose selection is
+    Remedy runs and the checks built on them cover targets whose contrast is
     material on held-out donors or on production recipients. On UK rows the
     second route would reveal a production-recipient result, so a UK target
-    appears only when its held-out selection is material.
+    appears only when its held-out contrast is material.
     """
     material = targets.loc[targets["material"].fillna(False).astype(bool), ["key", "target"]]
     held_out = df.merge(material.assign(_held_out=True), on=["key", "target"], how="left")
@@ -158,13 +175,23 @@ def public_held_out(df: pd.DataFrame, counts: pd.DataFrame, targets: pd.DataFram
     return drop_suppressed(suppress_rare(out, counts))
 
 
-def puf_twin_coverage(path: Path) -> pd.DataFrame | None:
+TWIN_KEY = "puf_chain_twin"
+
+
+def suppressed_targets(public_all: pd.DataFrame, key: str) -> set[str]:
+    """Targets of one fit that ``all_targets.csv`` suppresses."""
+    rows = public_all.loc[public_all["key"].eq(key)]
+    return set(rows.loc[rows["suppressed"].fillna("").ne(""), "target"])
+
+
+def puf_twin_coverage(path: Path, suppressed: set[str]) -> pd.DataFrame | None:
     """How much of the PUF chain's production recipients the ASEC-twin subset covers.
 
     US aggregates from ``puf_chain_twin.py``'s check: the subset's share of the
     PUF tax units and of their weight, each target's share of the PUF units'
     released weighted total, and each predictor's weighted mean on the twins
-    (CPS values) over its mean at the released values.
+    (CPS values) over its mean at the released values. A suppressed target
+    carries no result anywhere, so its row is left out.
     """
     if not path.exists():
         return None
@@ -173,10 +200,32 @@ def puf_twin_coverage(path: Path) -> pd.DataFrame | None:
     rows = [{"kind": "units", "name": "share of PUF tax units", "value": check["unit_share"]},
             {"kind": "units", "name": "share of PUF tax units' weight", "value": check["weight_share"]}]
     rows += [{"kind": "target: share of released total", "name": t, "value": v}
-             for t, v in check["released_total_share"].items()]
+             for t, v in check["released_total_share"].items() if t not in suppressed]
     rows += [{"kind": "predictor: twin mean over released mean", "name": k, "value": v}
              for k, v in check["predictor_mean_twin_over_released"].items()]
     return pd.DataFrame(rows)
+
+
+def public_determined(path: Path, public_all: pd.DataFrame) -> pd.DataFrame | None:
+    """Target-signs whose chained features fix every donor's value (``determined.py``).
+
+    Only the identities: no SPI-donor fit, no suppressed target, no donor
+    counts and no near-misses (an exact fit on fewer donors than five per
+    column describes a handful of records, not the target).
+    """
+    if not path.exists():
+        return None
+    df = pd.read_csv(path)
+    # A target's selection is zero only when every sign with a donor is fixed
+    # (or constant, whose forest returns its one value).
+    fixed = df["status"].isin(["determined", "constant"]) | df["n"].eq(0)
+    whole = fixed.groupby([df["key"], df["target"]]).transform("all")
+    df = df.assign(whole_target=whole)
+    df = df.loc[df["status"].eq("determined") & ~df["key"].isin(SPI_DONOR_KEYS)]
+    shown = public_all.loc[public_all["suppressed"].fillna("").eq(""), ["key", "target"]]
+    df = df.merge(shown, on=["key", "target"])
+    return df[["key", "target", "sign", "whole_target", "identity",
+               "max_rel_resid"]].reset_index(drop=True)
 
 
 def _find(obj, key):
@@ -202,8 +251,8 @@ def main() -> None:
     coverage = pd.read_csv(ROOT / "results/coverage.csv")
     inventory = pd.read_csv(ROOT / "results/inventory_totals.csv")
     counts = targets[["key", "target", "n_train_nonzero"]]
-    suppress_rare(public_targets(targets), counts).to_csv(PUBLIC / "all_targets.csv",
-                                                          index=False)
+    public_all = suppress_rare(public_targets(targets), counts)
+    public_all.to_csv(PUBLIC / "all_targets.csv", index=False)
     public_coverage(coverage).to_csv(PUBLIC / "coverage.csv", index=False)
     public_inventory(inventory).to_csv(PUBLIC / "inventory_totals.csv", index=False)
     smoothing = ROOT / "results/smoothing.csv"
@@ -215,16 +264,20 @@ def main() -> None:
         rem = public_remedies(ROOT / "results" / name, targets)
         if rem is not None:
             drop_suppressed(suppress_rare(rem, counts)).to_csv(PUBLIC / name, index=False)
-    twin = puf_twin_coverage(ROOT / "results/capture_us_puf_chain_twin.json")
+    twin = puf_twin_coverage(ROOT / "results/capture_us_puf_chain_twin.json",
+                             suppressed_targets(public_all, TWIN_KEY))
     if twin is not None:
         twin.to_csv(PUBLIC / "puf_twin_coverage.csv", index=False)
+    determined = public_determined(ROOT / "results/determined.csv", public_all)
+    if determined is not None:
+        determined.to_csv(PUBLIC / "determined.csv", index=False)
     for name in ("scaling.csv", "draw_means.csv", "coverage_by_tau.csv"):
         check = ROOT / "results" / name
         if check.exists():
             public_held_out(pd.read_csv(check), counts, targets).to_csv(PUBLIC / name, index=False)
     for name in ("all_targets.csv", "coverage.csv", "inventory_totals.csv", "remedies.csv",
                  "remedies_compact.csv", "reproduction.csv", "scaling.csv", "draw_means.csv",
-                 "coverage_by_tau.csv", "full_size.csv", "smoothing.csv"):
+                 "coverage_by_tau.csv", "full_size.csv", "smoothing.csv", "determined.csv"):
         src = ROOT / "results" / name
         if src.exists():
             shutil.copy2(src, args.private_dir / name)

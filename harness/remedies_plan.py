@@ -1,7 +1,8 @@
-"""Write the remedy plan: every target whose selection is material.
+"""Write the remedy plan: every target whose contrast is material.
 
 One line per fit, ``<key> <target> [<target> ...]``, read by
-``run_remedies.sh``. A target enters when its selection exceeds its fold
+``run_remedies.sh``. A target enters when its adaptive-minus-honest
+contrast (selection plus smoothing) exceeds its fold
 standard error and 0.5% of the total on held-out donors or on production
 recipients (``aggregate.py``). ``puf_chain`` gives way to ``puf_chain_twin``:
 the twin fits the same donors and forests and adds production recipients.

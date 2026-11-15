@@ -13,6 +13,7 @@ $py harness/draw_means.py
 $py harness/full_size.py
 $py harness/smoothing.py
 $py harness/coverage.py
+$py harness/determined.py results/smoothing_plan.txt --out results/determined.csv
 $py harness/export_public.py --private-dir $private
 $py harness/report_tables.py --source results/public --out results/public/TABLES.md
 $py harness/report_tables.py --source results --out $private/TABLES.md --private

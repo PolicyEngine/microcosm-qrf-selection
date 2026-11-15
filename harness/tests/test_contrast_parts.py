@@ -10,7 +10,11 @@ Invariants checked:
   fills' catchments sum to the same recipients' total;
 - smoothing is linear in the conditional mean;
 - a sign with too few held-out donors gets no estimate;
-- the fitted mean stays between zero and the largest amount it fits.
+- the fitted mean stays between zero and the largest amount it fits, and the
+  unclipped fit within twice that amount, so the clip hides no runaway fit;
+- on a target two light-tailed predictors fix exactly (a total less a share
+  of it), the fitted mean lands within 5% of the true total and a weighted
+  15% of the true values.
 """
 
 from __future__ import annotations
@@ -157,5 +161,35 @@ def test_the_mean_model_stays_within_the_amounts_it_fits():
                 m = model.predict(Z)
                 assert np.all(np.isfinite(m))
                 assert m.min() >= 0.0 and m.max() <= inc.max()
+                raw = model.model.predict(Z)  # before the clip
+                assert np.all(np.isfinite(raw))
+                assert -inc.max() <= raw.min() and raw.max() <= 2.0 * inc.max()
             fitted, actual = w @ model.predict(X), w @ inc
             assert 0.5 < fitted / actual < 2.0
+
+
+def test_the_mean_model_recovers_a_light_tailed_difference():
+    """A deterministic control: the target is a total less a share of it.
+
+    The PUF chain's non-qualified dividends are its dividend predictor less
+    qualified dividends, so the true conditional mean is the target itself.
+    With lognormal totals of log standard deviation 1 the fitted mean holds;
+    with 2, or with a few amounts far above the rest, it does not
+    (``smoothing_check.py``'s "difference, heavy tail"), and this test does
+    not claim it does.
+    """
+    for seed in range(3):
+        rng = np.random.default_rng(seed)
+        n = 8000
+        total = np.round(rng.lognormal(7.5, 1.0, n))
+        part = np.round(total * rng.uniform(0, 1, n))
+        keep = total > part
+        total, part = total[keep], part[keep]
+        y = total - part
+        X = np.column_stack([total, part, rng.integers(18, 85, len(y))])
+        w = rng.uniform(1, 3000, len(y))
+        fit = rng.permutation(len(y)) < len(y) // 2
+        m = S.mean_model(X[fit], y[fit], w[fit], seed).predict(X[~fit])
+        yt, wt = y[~fit], w[~fit]
+        assert abs(wt @ m / (wt @ yt) - 1.0) < 0.05
+        assert wt @ np.abs(m - yt) / (wt @ yt) < 0.15
