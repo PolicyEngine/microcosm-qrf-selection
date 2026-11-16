@@ -230,15 +230,18 @@ def smoothing_numbers(targets: pd.DataFrame, smoothing: pd.DataFrame) -> dict[st
 
 
 def _term(term: str) -> str:
+    if "*" not in term:  # the intercept
+        c = float(term)
+        return ("" if c > 0 else "−") + f"{abs(c):,.6g}"
     coef, name = term.split("*", 1)
     c = float(coef)
     if abs(abs(c) - 1) < 1e-9:
         return ("" if c > 0 else "−") + f"`{name}`"
-    return f"{c:.3f} × `{name}`"
+    return ("" if c > 0 else "−") + f"{abs(c):.3f} × `{name}`"
 
 
 def identity_text(identity: str) -> str:
-    """'+1*a -1*b' as '`a` − `b`', positive terms first."""
+    """'+1*a -1*b' as '`a` − `b`', positive terms first; a bare number is the intercept."""
     terms = sorted(identity.split(), key=lambda t: float(t.split("*")[0]) < 0)
     out = _term(terms[0])
     for t in terms[1:]:
@@ -372,7 +375,15 @@ def distribution_rows(full: pd.DataFrame) -> list[str]:
 
 
 def lcfs_coverage_ranges(full: pd.DataFrame) -> dict[str, int]:
-    """Whole-percent ranges over the LCFS remedy targets: the production-size forest and honest fills."""
+    """Whole-percent ranges over the LCFS remedy targets: the production-size forest and honest fills.
+
+    ``coverage_tau`` is the share of held-out donors at or below the tau
+    quantile, so ``coverage_0.9 - coverage_0.1`` is the share in (q10, q90]:
+    above the 10th percentile and at or below the 90th. A donor exactly at
+    the 10th percentile falls outside it, and the public files don't carry
+    how many do. ``*90short`` counts targets with fewer than 90% at or below
+    the 90th percentile, a miss no tie explains.
+    """
     c = full.loc[full["key"].eq("uk_lcfs")]
     out = {}
     for config, name in (("production", "a"), ("honest fills", "h")):
@@ -382,6 +393,7 @@ def lcfs_coverage_ranges(full: pd.DataFrame) -> dict[str, int]:
             out[f"{name}{tau}hi"] = round(100 * d[col].max())
         central = d["coverage_0.9"] - d["coverage_0.1"]
         out[f"{name}clo"], out[f"{name}chi"] = round(100 * central.min()), round(100 * central.max())
+        out[f"{name}90short"] = int((d["coverage_0.9"] < 0.9).sum())
     out["n"] = int(c.loc[c["config"].eq("production")].shape[0])
     return out
 

@@ -393,13 +393,21 @@ def contrast_parts(model, X_a, mass_a, y_a, m_a, X_b, mass_b, y_b, m_b, X_rec, s
         selection = sum c_a (y_a - m_a) - sum c_b (y_b - m_b)
         smoothing = sum c_a m_a - sum c_b m_b
 
-    so contrast = selection + smoothing for any ``m``. With the true
-    conditional mean, smoothing is the two fills' different averaging of it,
-    and selection is zero in expectation unless the catchments depend on the
-    donors' own noise, which only the adaptive splits make them do (the method
-    of ``forest_bias.py`` in PolicyEngine/qrf-moop-shortfall, which splits one
-    fill's error against the truth). Returns, per mode, the three sums and
-    ``reached``, the recipients both fills reach.
+    so contrast = selection + smoothing for any ``m``. Take ``m`` as the
+    conditional mean given the predictors and the sign, in the survey-weighted
+    sense ``mean_model`` fits (E[w y | x, sign] / E[w | x, sign]; REPORT.md
+    section 2). Smoothing is then the two fills' different averaging of it.
+    Each fill's selection term averages zero when its donors' residuals
+    y - m average zero given everything its catchments depend on: positions,
+    sign and masses. Adaptive splits break that by steering catchments with
+    the donors' own values; holding donors out of split fitting removes that
+    route, but survey weights that carry information about y beyond x and the
+    sign (an informative design) can still leave the honest term off zero.
+    This follows ``forest_bias.py`` in PolicyEngine/qrf-moop-shortfall, which
+    splits one fill's error against the truth. The sums run over the
+    recipients both fills reach; ``complete_honest`` gives a recipient no
+    honest donor reaches its adaptive estimate, so it adds no contrast and no
+    part here. Returns, per mode, the three sums and ``reached``.
     """
     nodes = [e.tree_.node_count for e in model.estimators_]
     la, lb, lr = model.apply(X_a), model.apply(X_b), model.apply(X_rec)

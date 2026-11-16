@@ -43,7 +43,8 @@ REL_TOL = 1e-8
 #: Residual degrees of freedom an exact fit needs before it counts.
 MIN_DOF = 20
 #: A column whose scaled coefficient is at least this share of the largest
-#: one is named in the identity.
+#: one is named in the identity; so is the intercept, against the same
+#: largest term.
 NAME_SHARE = 1e-6
 
 
@@ -58,11 +59,14 @@ def sign_fit(X: np.ndarray, y: np.ndarray, columns: list[str]) -> dict:
     rel = float(np.max(np.abs(resid)) / y_max) if y_max > 0 else 0.0
     raw = coef[1:] / scale
     weight = np.abs(coef[1:])
-    top = weight.max() if len(weight) else 0.0
+    intercept = float(coef[0])
+    top = max(weight.max() if len(weight) else 0.0, abs(intercept))
     named = [f"{raw[j]:+.6g}*{columns[j]}" for j in np.argsort(-weight)
              if top > 0 and weight[j] >= NAME_SHARE * top]
-    intercept = float(coef[0])
-    return {"max_rel_resid": rel, "intercept": intercept, "identity": " ".join(named[:6])}
+    if top > 0 and abs(intercept) >= NAME_SHARE * top:
+        named.insert(0, f"{intercept:+.6g}")
+    # Every named term, the intercept included: the identity is the whole fit.
+    return {"max_rel_resid": rel, "intercept": intercept, "identity": " ".join(named)}
 
 
 def scan_key(key: str) -> list[dict]:

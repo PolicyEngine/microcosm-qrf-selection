@@ -5,6 +5,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import pandas as pd
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -203,11 +204,38 @@ def test_report_states_the_controls_range_and_count():
         assert phrase in text, phrase
 
 
-def test_report_states_the_central_interval_coverage():
+def test_report_states_the_half_open_interval_coverage():
+    """The subtraction measures (q10, q90]; the report must name that interval."""
     r = R.lcfs_coverage_ranges(R.load()["full_size"])
-    phrase = (f"So the forest's central 80% interval holds {r['aclo']}-{r['achi']}% of held-out "
-              f"donors on those targets and the honest fill's {r['hclo']}-{r['hchi']}%.")
-    assert phrase in flat(), phrase
+    text = flat()
+    for phrase in [
+        f"On {r['a90short']} of the {r['n']} targets fewer than 90% fall at or below the forest's "
+        "90th percentile, a miss no tie at the quantile explains.",
+        f"The interval (q10, q90], above the 10th percentile and at or below the 90th, holds "
+        f"{r['aclo']}-{r['achi']}% of held-out donors under the forest and "
+        f"{r['hclo']}-{r['hchi']}% under honest fills",
+    ]:
+        assert phrase in text, phrase
+    assert "central 80% interval" not in text
+
+
+def test_report_states_the_noise_control_counts():
+    """Section 2's control rows: every process, rounding-only rows counted apart."""
+    c = pd.read_csv(R.PUBLIC / "smoothing_check.csv")
+    off = c.loc[c["mode"].eq("pooled") & c["trees grown on"].isin(["noise", "permuted target"])]
+    exact = off["process"].isin(["deterministic", "difference", "difference, heavy tail"])
+    assert off.loc[exact, "selection"].abs().max() < 1e-13
+    noisy = off.loc[~exact]
+    within = int(((noisy["selection"] / noisy["selection_se"]).abs() < 2).sum())
+    text = flat()
+    for phrase in [
+        f"all {int(exact.sum())} of their pooled rows grown on noise or the permuted target read "
+        "zero to rounding",
+        f"On the {WORDS[noisy['process'].nunique()]} noisy processes, {within} of those "
+        f"{len(noisy)} rows read within two standard errors of zero.",
+    ]:
+        assert phrase in text, phrase
+    assert int(exact.sum()) + len(noisy) == len(off)
 
 
 def test_report_makes_no_spread_compression_claim():

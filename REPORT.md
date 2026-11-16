@@ -86,11 +86,15 @@ repository holds those numbers.
 - The forests' quantiles also miss on held-out positive donors. Across the 16
   LCFS targets the remedies cover, 11-15% of held-out donors fall at or below
   the production-size forest's 10th percentile and 85-91% at or below its
-  90th; honest fills give 8-12% and 89-92%. So the forest's central 80%
-  interval holds 70-79% of held-out donors on those targets and the honest
-  fill's 77-83%. Pooled coverage can't tell conditionals that run too narrow
-  from conditionals of the right width centred in the wrong places, so this
-  doesn't show what the forests do to the imputed spread (section 5).
+  90th; honest fills give 8-12% and 89-92%. On 15 of the 16 targets fewer than
+  90% fall at or below the forest's 90th percentile, a miss no tie at the
+  quantile explains. The interval (q10, q90], above the 10th percentile and at
+  or below the 90th, holds 70-79% of held-out donors under the forest and
+  77-83% under honest fills; a donor exactly at the 10th percentile falls
+  outside it, and the public files don't say how many do. Pooled coverage
+  can't tell conditionals that run too narrow from conditionals of the right
+  width centred in the wrong places, so this doesn't show what the forests do
+  to the imputed spread (section 5).
 - On the 113 targets with a material held-out contrast, against the forest
   production would grow on all of a fold's donors (section 6), honest fills
   lower mean pinball loss by a median 8.5% (lower on 102 of the 113) and bring
@@ -341,13 +345,16 @@ short of selection by up to 1.14 points. Smoothing is zero on the no-signal
 process, whose conditional mean is constant.
 
 Trees grown on noise or on the permuted target see nothing of the filling
-values, so their selection should average zero. 18 of those 20 rows read
-within two standard errors of zero. The other two, the lognormal process and
-its heavy-tailed counterpart with trees grown on noise at 1,200 donors, read
-+3.20 ± 0.94 and +6.13 ± 1.82 over 40 seeds, and they share their predictor,
-noise and half draws. Over 200 further seeds they read −0.13 ± 0.41 and −0.14
-± 0.82 (`results/public/smoothing_check_more_seeds.csv`), so this report reads
-the first 40 as sampling noise in a skewed process.
+values, so their selection should average zero. On the three processes with no
+noise (y = exp(x1) and the two differences) every residual is zero, and all 12
+of their pooled rows grown on noise or the permuted target read zero to
+rounding, under 10⁻¹³ points. On the four noisy processes, 14 of those 16 rows
+read within two standard errors of zero. The other two, the lognormal process
+and its heavy-tailed counterpart with trees grown on noise at 1,200 donors,
+read +3.20 ± 0.94 and +6.13 ± 1.82 over 40 seeds, and they share their
+predictor, noise and half draws. Over 200 further seeds they read −0.13 ± 0.41
+and −0.14 ± 0.82 (`results/public/smoothing_check_more_seeds.csv`), so this
+report reads the first 40 as sampling noise in a skewed process.
 
 On the two difference processes y is a total less a uniform share of it, and
 both are predictors, as the PUF chain's non-qualified dividends are its
@@ -745,13 +752,16 @@ fills, −0.032 for `min_samples_leaf=20`, −0.013 for `min_samples_leaf=5` and
 
 These coverages pool the held-out positive donors, and they leave out the
 sign gates and negative forests. They show the pooled quantiles
-miscalibrated and the central 80% interval, q10 to q90, holding fewer than
-80% of held-out donors. They don't show the conditionals running too narrow
-or the imputed spread compressed: conditionals of the right width centred in
-the wrong places give the same pooled pattern, and drawing from them can
-spread the imputed distribution wider than the truth. Measuring the spread
-would mean comparing the imputed and held-out distributions directly, which
-this analysis did not do.
+miscalibrated, most plainly at the 90th percentile: every row of the table
+above puts fewer than 90% of held-out donors at or below it, a miss no tie at
+the quantile explains. They also show the interval (q10, q90] holding fewer
+than 80% of held-out donors; a donor exactly at the 10th percentile falls
+outside that interval, and the public files don't say how many do. They don't
+show the conditionals running too narrow or the imputed spread compressed:
+conditionals of the right width centred in the wrong places give the same
+pooled pattern, and drawing from them can spread the imputed distribution
+wider than the truth. Measuring the spread would mean comparing the imputed
+and held-out distributions directly, which this analysis did not do.
 
 ## 6. Remedies
 

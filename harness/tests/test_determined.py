@@ -11,7 +11,9 @@ Invariants checked:
 - an exact fit with fewer than ``MIN_DOF`` donors beyond its columns is not
   called determined, and one with exactly that many is;
 - a residual just above ``REL_TOL`` of the largest amount is not determined,
-  and one just below is.
+  and one just below is;
+- an affine identity keeps its intercept through the public export and the
+  report's rendering, and no named term is cut off.
 """
 
 from __future__ import annotations
@@ -26,6 +28,8 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 
 import determined as D  # noqa: E402
+import export_public as E  # noqa: E402
+import report_rows as R  # noqa: E402
 
 
 def chain_table(n=2000, seed=0):
@@ -102,3 +106,27 @@ def test_the_tolerance_sits_at_rel_tol():
         t = base.assign(y=base["y"] + scale * y_max * bump)
         r = {x["sign"]: x for x in D.scan_table("t", t, ["a", "b", "c"], ["y"], 1e-6)}[1]
         assert r["status"] == status, (scale, r)
+
+
+def test_an_affine_identity_keeps_its_intercept_through_export(tmp_path):
+    rows = D.scan_table("t", _exact_table(200), ["a", "b", "c"], ["y"], 1e-6)
+    r = {x["sign"]: x for x in rows}[1]
+    assert r["status"] == "determined"
+    assert r["identity"].split()[0] == "+5", r["identity"]
+    path = tmp_path / "determined.csv"
+    pd.DataFrame(rows).to_csv(path, index=False)
+    shown = pd.DataFrame({"key": ["t"], "target": ["y"], "suppressed": [None]})
+    out = E.public_determined(path, shown)
+    identity = out.loc[out["sign"].eq(1), "identity"].iloc[0]
+    assert identity.split()[0] == "+5", identity
+    assert R.identity_text(identity) == "5 + `a` − 2.000 × `b`", R.identity_text(identity)
+
+
+def test_no_named_term_is_cut_off():
+    rng = np.random.default_rng(3)
+    X = rng.normal(size=(300, 8))
+    cols = [f"x{j}" for j in range(8)]
+    t = pd.DataFrame(X, columns=cols).assign(y=lambda d: 100.0 + d[cols].sum(axis=1))
+    r = {x["sign"]: x for x in D.scan_table("t", t, cols, ["y"], 1e-6)}[1]
+    assert r["status"] == "determined"
+    assert sorted(term.split("*")[-1] for term in r["identity"].split()[1:]) == cols
