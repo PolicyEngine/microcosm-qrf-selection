@@ -1,0 +1,13 @@
+# Exact versions the measurements ran on (Python 3.14.7).
+microcosm-frame @ git+https://github.com/PolicyEngine/microcosm@67ee2ddf3a08a7f0e341c67e86ef0433420ad057#subdirectory=packages/microcosm-frame
+microcosm-graph @ git+https://github.com/PolicyEngine/microcosm@67ee2ddf3a08a7f0e341c67e86ef0433420ad057#subdirectory=packages/microcosm-graph
+microcosm-fit @ git+https://github.com/PolicyEngine/microcosm@67ee2ddf3a08a7f0e341c67e86ef0433420ad057#subdirectory=packages/microcosm-fit
+quantile-forest==1.4.2
+scikit-learn==1.8.0
+numpy==2.4.6
+pandas==3.0.3
+scipy==1.17.1
+h5py==3.16.0
+tables==3.11.1
+hypothesis==6.170.15
+pytest==9.2.0
